@@ -98,12 +98,12 @@ export default function CreativesDemo({
     setToast('Image saved — attach it in WhatsApp')
   }
 
-  function handleShare() {
-    dbg(`shareFile at tap: ${shareFile ? `File(${shareFile.size}b)` : 'null'}`)
-    dbg(`navigator.share: ${!!navigator.share} | navigator.canShare: ${!!navigator.canShare}`)
-    if (shareFile && navigator.canShare) {
-      dbg(`canShare({ files }): ${navigator.canShare({ files: [shareFile] })}`)
-    }
+  async function handleShare() {
+    console.log('shareFile value:', shareFile)
+    console.log('shareFile type:', shareFile?.type)
+    console.log('shareFile size:', shareFile?.size)
+    console.log('navigator.share available:', !!navigator.share)
+    console.log('canShare with files:', navigator.canShare?.({ files: [shareFile] }))
 
     if (!shareFile) {
       setToast('Could not prepare image — try again')
@@ -111,17 +111,11 @@ export default function CreativesDemo({
     }
 
     const shareText = `${item.emoji} ${item.title} — from your Edelweiss Life advisor`
-    if (navigator.share && navigator.canShare({ files: [shareFile] })) {
-      dbg('calling navigator.share with file')
-      navigator.share({ files: [shareFile], text: shareText })
-        .then(() => dbg('navigator.share resolved (user completed share)'))
-        .catch(err => {
-          dbg(`navigator.share threw: ${err?.name} — ${err?.message}`, true)
-          if (err.name !== 'AbortError') downloadAndToast(shareFile)
-        })
-    } else {
-      dbg(`share fallback — navigator.share: ${!!navigator.share}, canShare: ${!!(navigator.canShare && navigator.canShare({ files: [shareFile] }))}`, true)
-      downloadAndToast(shareFile)
+    try {
+      await navigator.share({ files: [shareFile], text: shareText })
+    } catch (err) {
+      console.log('navigator.share error:', err.name, err.message)
+      if (err.name !== 'AbortError') downloadAndToast(shareFile)
     }
   }
 
@@ -201,6 +195,9 @@ export default function CreativesDemo({
               <WaIcon />
               Share this creative
             </button>
+            <p className="text-center text-gray-400 text-xs mt-2">
+              {shareFile ? `Image ready: ${Math.round(shareFile.size / 1024)}kb` : 'Image not ready'}
+            </p>
           </div>
         </>
       )}
