@@ -1,0 +1,205 @@
+import { useState, useEffect, useRef } from 'react'
+import { useParams } from 'react-router-dom'
+import { supabase } from '../lib/supabaseClient'
+import { contentItems } from '../data/mockData'
+import QuizDemo           from '../components/demos/QuizDemo'
+import FIRECalculatorDemo from '../components/demos/FIRECalculatorDemo'
+import ProtectionGapDemo  from '../components/demos/ProtectionGapDemo'
+import PollDemo           from '../components/demos/PollDemo'
+import MoodDemo           from '../components/demos/MoodDemo'
+import LifeWordDemo       from '../components/demos/LifeWordDemo'
+import CreativesDemo      from '../components/demos/CreativesDemo'
+
+function Disclaimer() {
+  return (
+    <div className="border-t border-[#e4e7f0] bg-white px-6 py-4">
+      <p className="text-gray-400 text-[11px] leading-relaxed text-center">
+        This communication is for awareness purposes only and does not constitute a solicitation or offer of any insurance product. © Edelweiss Life Insurance Co. Ltd.
+      </p>
+    </div>
+  )
+}
+
+const DEMOS = {
+  'quiz':            QuizDemo,
+  'fire-calculator': FIRECalculatorDemo,
+  'protection-gap':  ProtectionGapDemo,
+  'poll':            PollDemo,
+  'mood':            MoodDemo,
+  'life-word':       LifeWordDemo,
+  'creative':        CreativesDemo,
+}
+
+async function fetchIp() {
+  try {
+    const res  = await fetch('https://api.ipify.org?format=json')
+    const data = await res.json()
+    return data.ip ?? null
+  } catch {
+    return null
+  }
+}
+
+export default function CustomerLanding() {
+  const { token } = useParams()
+
+  const [link,      setLink]      = useState(null)
+  const [content,   setContent]   = useState(null)
+  const [customerIp, setCustomerIp] = useState(null)
+  const [loading,   setLoading]   = useState(true)
+  const [error,     setError]     = useState(null)
+  const [done,      setDone]      = useState(false)
+
+  // steps are collected locally and flushed on completion
+  const stepsRef          = useRef([])
+  const openedRecordedRef = useRef(false)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function init() {
+      try {
+        // 1. Look up the link by token
+        const { data: linkRecord, error: linkErr } = await supabase
+          .from('links')
+          .select('*')
+          .eq('token', token)
+          .single()
+
+        if (cancelled) return
+        if (linkErr || !linkRecord) {
+          setError('This link is not valid or has expired.')
+          return
+        }
+        setLink(linkRecord)
+
+        // 2. Resolve content from local mock (content_id is the item id string)
+        const item = contentItems.find(c => c.id === linkRecord.content_id)
+        if (!item || !DEMOS[item.demoType]) {
+          setError('The content for this link could not be loaded.')
+          return
+        }
+        setContent(item)
+
+        // 3. Capture customer IP
+        const ip = await fetchIp()
+        if (cancelled) return
+        setCustomerIp(ip)
+
+        // 4. Record "opened" interaction (fire-and-forget, insert once)
+        if (!openedRecordedRef.current) {
+          openedRecordedRef.current = true
+          await supabase.from('interactions').insert({
+            link_id:         linkRecord.id,
+            customer_id:     null,               // customers not yet in Supabase
+            rpm_id:          linkRecord.rpm_id ?? null,
+            action:          'opened',
+            customer_ip:     ip,
+            customer_device: navigator.userAgent,
+            steps:           [],
+          })
+        }
+      } catch {
+        if (!cancelled) setError('Something went wrong. Please try again.')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+
+    init()
+    return () => { cancelled = true }
+  }, [token])
+
+  function handleStep(step) {
+    stepsRef.current = [...stepsRef.current, step]
+  }
+
+  async function handleComplete() {
+    if (link) {
+      await supabase.from('interactions').insert({
+        link_id:         link.id,
+        customer_id:     null,
+        rpm_id:          link.rpm_id ?? null,
+        action:          'completed',
+        outcome:         stepsRef.current.find(s => s.persona)?.persona ?? null,
+        customer_ip:     customerIp,
+        customer_device: navigator.userAgent,
+        steps:           stepsRef.current,
+      }).catch(console.error)
+    }
+    setDone(true)
+  }
+
+  /* ── Render states ───────────────────────────────────────────────────── */
+
+  if (loading) return (
+    <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-8 h-8 border-2 border-[#0f1f3d] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+        <p className="text-gray-400 text-sm">Loading…</p>
+      </div>
+    </div>
+  )
+
+  if (error) return (
+    <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center px-4">
+      <div className="text-center max-w-xs">
+        <span className="text-5xl">🔗</span>
+        <p className="font-semibold text-gray-700 mt-3">{error}</p>
+        <p className="text-gray-400 text-sm mt-1">Please ask the sender to share a new link.</p>
+      </div>
+    </div>
+  )
+
+  if (done) return (
+    <div className="min-h-screen bg-[#f9fafb] flex flex-col">
+      <div className="flex-1 flex items-center justify-center px-4">
+        <div className="text-center max-w-xs">
+          <span className="text-5xl">🙏</span>
+          <h2 className="text-[#0f1f3d] font-bold text-xl mt-3">Thank you!</h2>
+          <p className="text-gray-500 text-sm mt-1 leading-relaxed">
+            Your advisor will be in touch. Feel free to close this page.
+          </p>
+          {link?.rpm_name && (
+            <p className="text-gray-400 text-xs mt-5">
+              Sent by <span className="font-medium">{link.rpm_name}</span> · Edelweiss Life
+            </p>
+          )}
+        </div>
+      </div>
+      <Disclaimer />
+    </div>
+  )
+
+  const Demo = DEMOS[content?.demoType]
+
+  return (
+    <div className="min-h-screen bg-[#f9fafb] flex flex-col">
+      {/* Header — customer greeting + advisor attribution */}
+      <div className="bg-[#0f1f3d] px-5 pt-6 pb-5 flex-shrink-0">
+        <h1 className="text-white text-2xl font-bold leading-snug">
+          {link.customer_name ? `Hi ${link.customer_name}! 👋` : 'Hello! 👋'}
+        </h1>
+        {link?.rpm_name && (
+          <p className="text-white/50 text-xs mt-1">
+            Sent by {link.rpm_name} ·{' '}
+            <span className="text-[#e8a020]">Edelweiss Life</span>
+          </p>
+        )}
+      </div>
+
+      <div className="flex-1">
+        <Demo
+          item={content}
+          onStep={handleStep}
+          onShare={handleComplete}
+          isCustomerView={true}
+          linkId={link.id}
+          rpmName={link.rpm_name}
+        />
+      </div>
+
+      <Disclaimer />
+    </div>
+  )
+}
