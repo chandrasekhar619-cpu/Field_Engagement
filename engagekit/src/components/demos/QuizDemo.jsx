@@ -107,11 +107,12 @@ function WaIcon() {
 }
 
 export default function QuizDemo({ onShare, onStep, isCustomerView = false, linkId }) {
-  const [currentQ,        setCurrentQ]        = useState(0)
-  const [answers,         setAnswers]         = useState([])
-  const [selected,        setSelected]        = useState(null)
-  const [phase,           setPhase]           = useState('quiz')
-  const [sharing,         setSharing]         = useState(false)
+  const [currentQ,         setCurrentQ]         = useState(0)
+  const [answers,          setAnswers]          = useState([])
+  const [selected,         setSelected]         = useState(null)
+  const [phase,            setPhase]            = useState('quiz')
+  const [shareFile,        setShareFile]        = useState(null)
+  const [shareReady,       setShareReady]       = useState(false)
   const [showDownloadHint, setShowDownloadHint] = useState(false)
 
   const cardRef = useRef(null)
@@ -121,6 +122,34 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
     if (phase !== 'result' || !isCustomerView || !linkId) return
     logOutcome(linkId, PERSONAS[getPersona(answers)].name)
   }, [phase]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Pre-render the persona card as soon as the result screen mounts
+  useEffect(() => {
+    if (phase !== 'result' || !isCustomerView) return
+    let cancelled = false
+
+    async function preRender() {
+      await new Promise(r => requestAnimationFrame(r)) // wait for paint
+      if (cancelled || !cardRef.current) { setShareReady(true); return }
+      try {
+        const { default: html2canvas } = await import('html2canvas')
+        const canvas = await html2canvas(cardRef.current, {
+          scale: 2, useCORS: true, allowTaint: true, backgroundColor: null, logging: false,
+        })
+        if (cancelled) return
+        const blob = await new Promise(res => canvas.toBlob(res, 'image/png'))
+        if (cancelled) return
+        if (blob) setShareFile(new File([blob], 'my-persona.png', { type: 'image/png' }))
+      } catch (err) {
+        console.error('Pre-render failed:', err)
+      } finally {
+        if (!cancelled) setShareReady(true)
+      }
+    }
+
+    preRender()
+    return () => { cancelled = true }
+  }, [phase, isCustomerView]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function pick(idx) {
     if (selected !== null) return
@@ -144,54 +173,35 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
   if (phase === 'result') {
     const p = PERSONAS[getPersona(answers)]
 
-    async function handleShareResult() {
-      if (!cardRef.current) {
-        // Fallback: text-only WhatsApp
-        window.open(`https://wa.me/?text=${encodeURIComponent(p.waMessage)}`, '_blank')
+    function handleShareResult() {
+      setShowDownloadHint(false)
+
+      if (shareFile && navigator.canShare?.({ files: [shareFile] })) {
+        // Mobile: image already ready — call navigator.share synchronously from tap
+        navigator.share({ files: [shareFile], text: p.waMessage }).catch(err => {
+          if (err.name !== 'AbortError') downloadPersonaImage()
+        })
         return
       }
-      setSharing(true)
-      setShowDownloadHint(false)
-      try {
-        const { default: html2canvas } = await import('html2canvas')
-        const canvas = await html2canvas(cardRef.current, {
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          backgroundColor: null,
-          logging: false,
-        })
 
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
-        if (!blob) throw new Error('Canvas blob generation failed')
-
-        const file = new File([blob], 'my-persona.png', { type: 'image/png' })
-
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          // Mobile: native share sheet — user picks WhatsApp from there
-          await navigator.share({
-            files:   [file],
-            text:    'What is your money personality? 🌟',
-          })
-        } else {
-          // Desktop / unsupported: download the image + show a hint
-          const url = URL.createObjectURL(blob)
-          const a   = document.createElement('a')
-          a.href = url
-          a.download = 'my-persona.png'
-          document.body.appendChild(a)
-          a.click()
-          document.body.removeChild(a)
-          URL.revokeObjectURL(url)
-          setShowDownloadHint(true)
-        }
-      } catch (err) {
-        console.error('Image share failed:', err)
-        // Fallback: open WhatsApp with text only
-        window.open(`https://wa.me/?text=${encodeURIComponent(p.waMessage)}`, '_blank')
-      } finally {
-        setSharing(false)
+      if (shareFile) {
+        // Has image but device can't share files (rare) — download it
+        downloadPersonaImage()
+        return
       }
+
+      // Pre-render failed — text-only WhatsApp (desktop fallback)
+      window.open(`https://wa.me/?text=${encodeURIComponent(p.waMessage)}`, '_blank')
+    }
+
+    function downloadPersonaImage() {
+      const url = URL.createObjectURL(shareFile)
+      const a = document.createElement('a')
+      a.href = url; a.download = 'my-persona.png'
+      document.body.appendChild(a); a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      setShowDownloadHint(true)
     }
 
     /* Customer-facing result */
@@ -221,15 +231,15 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
               </div>
             </div>
 
-            {/* Share image on WhatsApp / download on desktop */}
+            {/* Share image — file is pre-rendered, so this fires navigator.share instantly */}
             <button
               type="button"
               onClick={handleShareResult}
-              disabled={sharing}
+              disabled={!shareReady}
               className="w-full bg-[#25d366] hover:bg-[#1ebe5d] disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
             >
               <WaIcon />
-              {sharing ? 'Preparing…' : 'Share my result'}
+              {!shareReady ? 'Preparing…' : 'Share my result'}
             </button>
 
             {showDownloadHint && (
