@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabaseClient'
 import Navbar from '../components/Navbar'
 import ShareFlow from '../components/ShareFlow'
-import { customers, contentItems } from '../data/mockData'
+import { contentItems } from '../data/mockData'
 
 const categoryStyle = {
   Quiz:       'bg-blue-50 text-blue-600',
@@ -23,31 +24,65 @@ const policyTypeBadge = {
 
 const avatarBg = ['bg-[#0f1f3d]', 'bg-indigo-700', 'bg-emerald-700', 'bg-rose-700', 'bg-violet-700']
 
-function initials(name) {
+const actionIcon  = { opened: '🔗', completed: '✅' }
+const actionLabel = { opened: 'Link opened', completed: 'Completed' }
+
+function initials(name = '') {
   return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
 }
 
-const mockTimeline = [
-  { action: 'Link opened', detail: 'Retirement Planner shared via WhatsApp', time: '2 days ago', icon: '🔗' },
-  { action: 'Content viewed', detail: 'Spent 4 min on Retirement Planner', time: '2 days ago', icon: '👁️' },
-  { action: 'Quiz completed', detail: 'Life Goals Quiz — scored "Security-first"', time: '1 week ago', icon: '✅' },
-  { action: 'Link opened', detail: 'Tax Saver Planner shared via SMS', time: '2 weeks ago', icon: '🔗' },
-]
+function normalize(row) {
+  return {
+    ...row,
+    policyNumber: row.policy_number,
+    issueDate:    row.issue_date,
+    policyType:   row.policy_type,
+  }
+}
+
+function fmtDate(iso) {
+  return new Date(iso).toLocaleDateString('en-IN', {
+    day: 'numeric', month: 'short', year: 'numeric',
+  })
+}
 
 export default function CustomerDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user, authLoading } = useAuth()
-  const [shareItem, setShareItem] = useState(null)
 
-  if (authLoading) return (
+  const [shareItem,       setShareItem]       = useState(null)
+  const [customer,        setCustomer]        = useState(null)
+  const [interactions,    setInteractions]    = useState([])
+  const [dataLoading,     setDataLoading]     = useState(true)
+
+  useEffect(() => {
+    if (!id) return
+    let cancelled = false
+
+    Promise.all([
+      supabase.from('customers').select('*').eq('id', id).single(),
+      supabase
+        .from('interactions')
+        .select('*, links(content_id, content_type, rpm_name)')
+        .eq('customer_id', id)
+        .order('created_at', { ascending: false }),
+    ]).then(([{ data: cust }, { data: ixns }]) => {
+      if (cancelled) return
+      setCustomer(cust ? normalize(cust) : null)
+      setInteractions(ixns || [])
+      setDataLoading(false)
+    })
+
+    return () => { cancelled = true }
+  }, [id])
+
+  if (authLoading || dataLoading) return (
     <div className="min-h-screen bg-[#f4f5f9] flex items-center justify-center">
       <div className="w-7 h-7 border-2 border-[#0f1f3d] border-t-transparent rounded-full animate-spin" />
     </div>
   )
   if (!user) return <Navigate to="/" replace />
-
-  const customer = customers.find(c => c.id === id)
 
   if (!customer) {
     return (
@@ -67,9 +102,8 @@ export default function CustomerDetail() {
     )
   }
 
-  const bg = avatarBg[customer.name.charCodeAt(0) % avatarBg.length]
+  const bg         = avatarBg[customer.name?.charCodeAt(0) % avatarBg.length]
   const badgeClass = policyTypeBadge[customer.policyType] || 'bg-gray-100 text-gray-600 border-gray-200'
-  const hasInteractions = customer.lastInteraction !== null
 
   return (
     <div className="min-h-screen bg-[#f4f5f9]">
@@ -102,7 +136,7 @@ export default function CustomerDetail() {
                 <p className="text-gray-400 text-sm mt-0.5">{customer.policyNumber}</p>
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
                   <span className={`text-xs px-2.5 py-1 rounded-lg font-medium border ${badgeClass}`}>
-                    {customer.policyType}
+                    {customer.policyType || '—'}
                   </span>
                   {customer.persona ? (
                     <span className="text-xs px-2.5 py-1 bg-[#e8a020]/10 text-[#e8a020] font-semibold rounded-lg border border-[#e8a020]/25">
@@ -124,15 +158,15 @@ export default function CustomerDetail() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-gray-400 mb-0.5">Policy Number</p>
-                <p className="text-sm font-medium text-[#0f1f3d]">{customer.policyNumber}</p>
+                <p className="text-sm font-medium text-[#0f1f3d]">{customer.policyNumber || '—'}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-400 mb-0.5">Issue Date</p>
-                <p className="text-sm font-medium text-[#0f1f3d]">{customer.issueDate}</p>
+                <p className="text-sm font-medium text-[#0f1f3d]">{customer.issueDate || '—'}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-400 mb-0.5">Policy Type</p>
-                <p className="text-sm font-medium text-[#0f1f3d]">{customer.policyType}</p>
+                <p className="text-sm font-medium text-[#0f1f3d]">{customer.policyType || '—'}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-400 mb-0.5">Persona</p>
@@ -141,21 +175,40 @@ export default function CustomerDetail() {
             </div>
           </div>
 
-          {/* Engagement summary */}
+          {/* Interaction history */}
           <div className="bg-white rounded-xl border border-[#e4e7f0] p-5">
-            <h3 className="text-sm font-semibold text-[#0f1f3d] mb-4">Engagement</h3>
-            {hasInteractions ? (
+            <h3 className="text-sm font-semibold text-[#0f1f3d] mb-4">
+              Engagement History
+              {interactions.length > 0 && (
+                <span className="ml-2 text-xs font-normal text-gray-400">({interactions.length})</span>
+              )}
+            </h3>
+
+            {interactions.length > 0 ? (
               <div className="flex flex-col gap-4">
-                {mockTimeline.map((event, i) => (
-                  <div key={i} className="flex gap-3">
-                    <span className="text-lg flex-shrink-0 mt-0.5">{event.icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[#0f1f3d]">{event.action}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{event.detail}</p>
+                {interactions.map(ix => {
+                  const link         = ix.links
+                  const contentItem  = contentItems.find(c => c.id === link?.content_id)
+                  const contentTitle = contentItem?.title || link?.content_type || 'Engagement'
+                  const icon         = actionIcon[ix.action]  || '👁️'
+                  const label        = actionLabel[ix.action] || ix.action
+                  const detail       = ix.outcome
+                    ? `${contentTitle} — ${ix.outcome}`
+                    : contentTitle
+
+                  return (
+                    <div key={ix.id} className="flex gap-3">
+                      <span className="text-lg flex-shrink-0 mt-0.5">{icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-[#0f1f3d]">{label}</p>
+                        <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{detail}</p>
+                      </div>
+                      <span className="text-xs text-gray-300 flex-shrink-0 mt-0.5">
+                        {fmtDate(ix.created_at)}
+                      </span>
                     </div>
-                    <span className="text-xs text-gray-300 flex-shrink-0">{event.time}</span>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             ) : (
               <div className="flex flex-col items-center py-6 text-gray-400">
@@ -170,7 +223,7 @@ export default function CustomerDetail() {
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-[#0f1f3d]">
-                Share with {customer.name.split(' ')[0]}
+                Share with {customer.name?.split(' ')[0]}
               </h3>
               <button
                 onClick={() => navigate(`/app?customerId=${customer.id}`)}

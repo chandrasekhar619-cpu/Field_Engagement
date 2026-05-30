@@ -1,7 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
-import { customers as allCustomers } from '../data/mockData'
 import { generateShareImage } from '../lib/generateShareImage'
 
 // ── Link base URL — uses current origin so localhost works during dev ─────────
@@ -147,6 +146,24 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
   const isCreative = item.demoType === 'creative'
   const name        = user?.name        || 'Your Advisor'
   const designation = user?.designation || 'Relationship Portfolio Manager'
+
+  const [allCustomers,     setAllCustomers]     = useState([])
+  const [customersLoading, setCustomersLoading] = useState(true)
+
+  useEffect(() => {
+    supabase
+      .from('customers')
+      .select('id, name, policy_number, policy_type, persona')
+      .order('name', { ascending: true })
+      .then(({ data }) => {
+        setAllCustomers((data || []).map(r => ({
+          ...r,
+          policyNumber: r.policy_number,
+          policyType:   r.policy_type,
+        })))
+        setCustomersLoading(false)
+      })
+  }, [])
 
   const filtered = allCustomers.filter(c =>
     c.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -310,7 +327,11 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
             </div>
 
             <div className="overflow-y-auto flex-1">
-              {filtered.length === 0 ? (
+              {customersLoading ? (
+                <div className="flex justify-center py-12">
+                  <div className="w-6 h-6 border-2 border-[#0f1f3d] border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-6 text-center text-gray-400">
                   {allCustomers.length === 0 ? (
                     <>
