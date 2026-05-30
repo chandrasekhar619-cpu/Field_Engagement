@@ -52,6 +52,13 @@ export default function CreativesDemo({
 
   const [shareFile, setShareFile] = useState(null)
   const [toast,     setToast]     = useState(null)
+  const [debugLog,  setDebugLog]  = useState([])
+
+  function dbg(msg, isError = false) {
+    const line = `${new Date().toLocaleTimeString()} ${isError ? '❌' : '✓'} ${msg}`
+    console.log('[CreativesDemo]', msg)
+    setDebugLog(prev => [...prev, { line, isError }])
+  }
 
   // Log outcome when viewed in customer mode
   useEffect(() => {
@@ -63,9 +70,20 @@ export default function CreativesDemo({
     if (!isCustomerView) return
     let cancelled = false
 
+    dbg(`drawCreativeCard start — item: "${item.title}", rpmName: "${name}"`)
     drawCreativeCard(item, name, designation)
-      .then(file => { if (!cancelled && file) setShareFile(file) })
-      .catch(err => console.error('[CreativesDemo] drawCreativeCard failed:', err))
+      .then(file => {
+        if (cancelled) return
+        if (file) {
+          setShareFile(file)
+          dbg(`drawCreativeCard OK — file size: ${file.size} bytes`)
+        } else {
+          dbg('drawCreativeCard returned null (canvas.toBlob failed)', true)
+        }
+      })
+      .catch(err => {
+        dbg(`drawCreativeCard threw: ${err?.message ?? err}`, true)
+      })
 
     return () => { cancelled = true }
   }, [isCustomerView]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -81,7 +99,12 @@ export default function CreativesDemo({
   }
 
   function handleShare() {
-    console.log('[CreativesDemo] shareFile at tap time:', shareFile)
+    dbg(`shareFile at tap: ${shareFile ? `File(${shareFile.size}b)` : 'null'}`)
+    dbg(`navigator.share: ${!!navigator.share} | navigator.canShare: ${!!navigator.canShare}`)
+    if (shareFile && navigator.canShare) {
+      dbg(`canShare({ files }): ${navigator.canShare({ files: [shareFile] })}`)
+    }
+
     if (!shareFile) {
       setToast('Could not prepare image — try again')
       return
@@ -89,9 +112,15 @@ export default function CreativesDemo({
 
     const shareText = `${item.emoji} ${item.title} — from your Edelweiss Life advisor`
     if (navigator.share && navigator.canShare({ files: [shareFile] })) {
+      dbg('calling navigator.share with file')
       navigator.share({ files: [shareFile], text: shareText })
-        .catch(err => { if (err.name !== 'AbortError') downloadAndToast(shareFile) })
+        .then(() => dbg('navigator.share resolved (user completed share)'))
+        .catch(err => {
+          dbg(`navigator.share threw: ${err?.name} — ${err?.message}`, true)
+          if (err.name !== 'AbortError') downloadAndToast(shareFile)
+        })
     } else {
+      dbg(`share fallback — navigator.share: ${!!navigator.share}, canShare: ${!!(navigator.canShare && navigator.canShare({ files: [shareFile] }))}`, true)
       downloadAndToast(shareFile)
     }
   }
@@ -140,6 +169,21 @@ export default function CreativesDemo({
             className="w-full bg-[#0f1f3d] hover:bg-[#0f1f3d]/90 text-white font-semibold py-3.5 rounded-xl text-sm transition-colors"
           >
             Share this with a customer →
+          </button>
+        </div>
+      )}
+
+      {/* DEBUG PANEL — remove before production */}
+      {isCustomerView && debugLog.length > 0 && (
+        <div className="fixed top-0 left-0 right-0 z-[400] bg-black/90 text-white font-mono text-[11px] leading-relaxed p-3 max-h-56 overflow-y-auto">
+          {debugLog.map((entry, i) => (
+            <div key={i} className={entry.isError ? 'text-red-400' : 'text-green-300'}>{entry.line}</div>
+          ))}
+          <button
+            onClick={() => setDebugLog([])}
+            className="mt-2 text-yellow-400 underline text-[10px]"
+          >
+            clear
           </button>
         </div>
       )}
