@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 import { customers as allCustomers } from '../data/mockData'
+import { generateShareImage } from '../lib/generateShareImage'
 
 // ── Link base URL — uses current origin so localhost works during dev ─────────
 function linkUrl(token) { return `${window.location.origin}/c/${token}` }
@@ -133,13 +134,15 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
   const { user } = useAuth()
 
   // If a customer is already known (e.g., from CustomerDetail), skip the selector.
-  const [step, setStep] = useState('preview')
-  const [search, setSearch] = useState('')
-  const [selected, setSelected] = useState(preselectedCustomer || null)
-  const [generating, setGenerating] = useState(false)
-  const [linkError, setLinkError] = useState('')
-  const [token, setToken] = useState(null)
-  const [copied, setCopied] = useState(false)
+  const [step,            setStep]            = useState('preview')
+  const [search,          setSearch]          = useState('')
+  const [selected,        setSelected]        = useState(preselectedCustomer || null)
+  const [generating,      setGenerating]      = useState(false)
+  const [linkError,       setLinkError]       = useState('')
+  const [token,           setToken]           = useState(null)
+  const [copied,          setCopied]          = useState(false)
+  const [shareImageFile,  setShareImageFile]  = useState(null)
+  const [imageGenerating, setImageGenerating] = useState(false)
 
   const isCreative = item.demoType === 'creative'
   const name        = user?.name        || 'Your Advisor'
@@ -182,6 +185,12 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
       setSelected(customer)
       setToken(newToken)
       setStep('link')
+
+      // Generate share image in parallel — ready by the time the RPM taps WhatsApp
+      setImageGenerating(true)
+      generateShareImage(item, name, designation)
+        .then(file => { setShareImageFile(file); setImageGenerating(false) })
+        .catch(() => setImageGenerating(false))
     } catch (err) {
       setLinkError('Could not generate link. Please try again.')
       console.error('Link generation error:', err)
@@ -208,6 +217,19 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
   function openWhatsApp() {
     const link = linkUrl(token)
     const text = buildWaText(item.demoType, selected?.name || 'there', link)
+
+    if (shareImageFile && navigator.share && navigator.canShare?.({ files: [shareImageFile] })) {
+      // Mobile: native share sheet — image + text, user picks WhatsApp
+      navigator.share({ files: [shareImageFile], text })
+        .catch(err => {
+          if (err.name !== 'AbortError') {
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
+          }
+        })
+      return
+    }
+
+    // Desktop or no file-share support: text-only wa.me
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
   }
 
@@ -405,6 +427,10 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
                   WhatsApp
                 </button>
               </div>
+
+              {imageGenerating && (
+                <p className="text-gray-400 text-[11px] text-center -mt-1">Preparing image…</p>
+              )}
 
               <p className="text-gray-400 text-xs text-center leading-relaxed">
                 When this customer opens and interacts with the link, you will see it in their profile.
