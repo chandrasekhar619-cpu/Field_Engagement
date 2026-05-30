@@ -14,9 +14,10 @@ function xorDecode(encoded, key) {
 }
 
 // Strip non-printable / non-ASCII characters
-function sanitize(s) {
-  return s.replace(/[^\x20-\x7E]/g, '').trim()
-}
+// Field-specific sanitizers — targeted rather than broad ASCII strip
+function cleanPolicyNumber(s) { return s.replace(/[^A-Za-z0-9]/g, '').trim() }
+function cleanName(s)         { return s.replace(/[^A-Za-z\s\-'.]/g, '').trim() }
+function cleanIssueDate(s)    { return s.replace(/[^0-9\-]/g, '').trim() }
 
 // Parse decoded text — each line: policy_number|name|issue_date
 // Returns { records, skipped } — bad lines are skipped, never throw
@@ -25,20 +26,22 @@ function parseRecords(text) {
   const records = []
   for (const line of text.split('\n')) {
     try {
-      const trimmed = line.trim()
-      if (!trimmed) continue
-      const parts = trimmed.split('|')
+      if (!line.trim()) continue
+      const parts = line.split('|')
       if (parts.length !== 3) { skipped++; continue }
-      const policy_number = sanitize(parts[0])
-      const name          = sanitize(parts[1])
-      const issue_date    = sanitize(parts[2])
+      const policy_number = cleanPolicyNumber(parts[0])
+      const name          = cleanName(parts[1])
+      const issue_date    = cleanIssueDate(parts[2])
       if (!policy_number) { skipped++; continue }
       records.push({ policy_number, name: name || null, issue_date: issue_date || null })
     } catch {
       skipped++
     }
   }
-  return { records, skipped }
+  // Deduplicate by policy_number — keep last occurrence to match upsert semantics
+  const deduped = [...new Map(records.map(r => [r.policy_number, r])).values()]
+  const dedupSkipped = records.length - deduped.length
+  return { records: deduped, skipped: skipped + dedupSkipped }
 }
 
 export default function AdminUpload() {
