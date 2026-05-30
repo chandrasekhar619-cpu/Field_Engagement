@@ -28,7 +28,7 @@ function parseRecords(text) {
 }
 
 export default function AdminUpload() {
-  const { user } = useAuth()
+  const { user, authLoading } = useAuth()
 
   const [file,     setFile]     = useState(null)
   const [status,   setStatus]   = useState(null)   // null | 'processing' | 'done' | 'error'
@@ -36,6 +36,11 @@ export default function AdminUpload() {
   const [count,    setCount]    = useState(0)
   const [error,    setError]    = useState('')
 
+  if (authLoading) return (
+    <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center">
+      <div className="w-7 h-7 border-2 border-[#0f1f3d] border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
   if (!user || user.role !== 'admin') return <Navigate to="/" replace />
 
   function reset(newFile) {

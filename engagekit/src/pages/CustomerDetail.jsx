@@ -37,9 +37,14 @@ const mockTimeline = [
 export default function CustomerDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, authLoading } = useAuth()
   const [shareItem, setShareItem] = useState(null)
 
+  if (authLoading) return (
+    <div className="min-h-screen bg-[#f4f5f9] flex items-center justify-center">
+      <div className="w-7 h-7 border-2 border-[#0f1f3d] border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
   if (!user) return <Navigate to="/" replace />
 
   const customer = customers.find(c => c.id === id)
