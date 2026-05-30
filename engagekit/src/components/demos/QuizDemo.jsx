@@ -3,6 +3,7 @@ import FeedbackSection from '../FeedbackSection'
 import Toast from '../Toast'
 import { logOutcome } from '../../lib/logOutcome'
 import { drawPersonaCard } from '../../lib/drawCard'
+import { supabase } from '../../lib/supabaseClient'
 
 const QUESTIONS = [
   {
@@ -119,7 +120,17 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
   // Log outcome when result screen appears in customer mode
   useEffect(() => {
     if (phase !== 'result' || !isCustomerView || !linkId) return
-    logOutcome(linkId, PERSONAS[getPersona(answers)].name)
+    const personaName = PERSONAS[getPersona(answers)].name
+    logOutcome(linkId, personaName)
+
+    // Save persona back to the customers table (fire-and-forget)
+    supabase
+      .from('links').select('customer_id').eq('id', linkId).single()
+      .then(({ data }) => {
+        if (data?.customer_id) {
+          supabase.from('customers').update({ persona: personaName }).eq('id', data.customer_id)
+        }
+      })
   }, [phase]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Draw the persona card programmatically as soon as the result screen mounts
