@@ -134,13 +134,23 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
       try {
         const { default: html2canvas } = await import('html2canvas')
         const canvas = await html2canvas(cardRef.current, {
-          scale: 2, useCORS: true, allowTaint: true, backgroundColor: null, logging: false,
+          scale: 2,
+          useCORS: true,
+          allowTaint: false,
+          backgroundColor: null,
+          logging: true,
+          onclone: (doc) => {
+            const style = doc.createElement('style')
+            style.innerHTML = '* { font-family: system-ui, sans-serif !important; }'
+            doc.head.appendChild(style)
+          },
         })
         if (cancelled) return
         const blob = await new Promise(res => canvas.toBlob(res, 'image/png'))
         if (!cancelled && blob) setShareFile(new File([blob], 'result.png', { type: 'image/png' }))
+        console.log('[QuizDemo] pre-render complete, blob size:', blob?.size)
       } catch (err) {
-        console.error('Pre-render failed:', err)
+        console.error('[QuizDemo] html2canvas failed:', err)
       }
     }
 
@@ -181,7 +191,11 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
     }
 
     function handleShareResult() {
-      if (!shareFile) return  // pre-render still running (very rare)
+      console.log('[QuizDemo] shareFile at tap time:', shareFile)
+      if (!shareFile) {
+        setToast('Could not prepare image — try again')
+        return
+      }
 
       if (navigator.share && navigator.canShare({ files: [shareFile] })) {
         // Native share sheet — called synchronously from tap, gesture is intact

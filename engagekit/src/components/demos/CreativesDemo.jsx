@@ -69,13 +69,23 @@ export default function CreativesDemo({
       try {
         const { default: html2canvas } = await import('html2canvas')
         const canvas = await html2canvas(cardRef.current, {
-          scale: 2, useCORS: true, allowTaint: true, backgroundColor: null, logging: false,
+          scale: 2,
+          useCORS: true,
+          allowTaint: false,
+          backgroundColor: null,
+          logging: true,
+          onclone: (doc) => {
+            const style = doc.createElement('style')
+            style.innerHTML = '* { font-family: system-ui, sans-serif !important; }'
+            doc.head.appendChild(style)
+          },
         })
         if (cancelled) return
         const blob = await new Promise(res => canvas.toBlob(res, 'image/png'))
         if (!cancelled && blob) setShareFile(new File([blob], 'result.png', { type: 'image/png' }))
+        console.log('[CreativesDemo] pre-render complete, blob size:', blob?.size)
       } catch (err) {
-        console.error('Creative pre-render failed:', err)
+        console.error('[CreativesDemo] html2canvas failed:', err)
       }
     }
 
@@ -94,7 +104,11 @@ export default function CreativesDemo({
   }
 
   function handleShare() {
-    if (!shareFile) return  // pre-render still running (very rare)
+    console.log('[CreativesDemo] shareFile at tap time:', shareFile)
+    if (!shareFile) {
+      setToast('Could not prepare image — try again')
+      return
+    }
 
     if (navigator.share && navigator.canShare({ files: [shareFile] })) {
       navigator.share({ files: [shareFile] })
