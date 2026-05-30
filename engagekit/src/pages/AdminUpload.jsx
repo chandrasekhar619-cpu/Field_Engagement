@@ -20,7 +20,7 @@ function parseRecords(text) {
     .map(line => line.trim())
     .filter(Boolean)
     .flatMap(line => {
-      const parts = line.split(',').map(p => p.trim())
+      const parts = line.split('|').map(p => p.trim())
       if (parts.length < 3 || !parts[0]) return []
       const [policy_number, name, issue_date] = parts
       return [{ policy_number, name: name || null, issue_date: issue_date || null }]
