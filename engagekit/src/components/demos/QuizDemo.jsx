@@ -176,13 +176,24 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
     function handleShareResult() {
       setShowDownloadHint(false)
 
+      console.log('[Share] shareFile:', shareFile)
+      console.log('[Share] navigator.share available:', !!navigator.share)
+      if (navigator.canShare && shareFile) {
+        console.log('[Share] canShare result:', navigator.canShare({ files: [shareFile] }))
+      } else {
+        console.log('[Share] canShare skipped — canShare:', !!navigator.canShare, '/ shareFile:', !!shareFile)
+      }
+
       if (shareFile && navigator.canShare?.({ files: [shareFile] })) {
-        // Mobile: image already ready — call navigator.share synchronously from tap
+        console.log('[Share] Taking native share path')
         navigator.share({ files: [shareFile], text: p.waMessage }).catch(err => {
+          console.log('[Share] navigator.share threw:', err.name, err.message)
           if (err.name !== 'AbortError') downloadPersonaImage()
         })
         return
       }
+
+      console.log('[Share] Taking fallback path — shareFile:', !!shareFile, '/ canShare files:', !!(navigator.canShare && shareFile && navigator.canShare({ files: [shareFile] })))
 
       if (shareFile) {
         // Has image but device can't share files (rare) — download it
