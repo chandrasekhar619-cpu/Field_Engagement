@@ -108,6 +108,7 @@ function getCreativeTheme(item) {
 }
 
 export function drawCreativeCard(item, rpmName, rpmDesignation) {
+  console.log('drawCreative called', { title: item?.title, category: item?.category, rpmName })
   return new Promise(resolve => {
     const H = 600
     const canvas = document.createElement('canvas')
