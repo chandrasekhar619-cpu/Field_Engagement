@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import Toast from '../Toast'
 import { logOutcome } from '../../lib/logOutcome'
 
 function WaIcon() {
@@ -49,23 +50,22 @@ export default function CreativesDemo({
   const theme = THEMES[item.category] || THEMES.default
 
   const cardRef = useRef(null)
-  const [shareFile,        setShareFile]        = useState(null)
-  const [shareReady,       setShareReady]       = useState(false)
-  const [showDownloadHint, setShowDownloadHint] = useState(false)
+  const [shareBlob, setShareBlob] = useState(null)
+  const [toast,     setToast]     = useState(null)
 
   // Log outcome when viewed in customer mode
   useEffect(() => {
     if (isCustomerView && linkId) logOutcome(linkId, 'Viewed')
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Pre-render the creative card as soon as it mounts in customer view
+  // Silently pre-render the creative card as soon as it mounts in customer view
   useEffect(() => {
     if (!isCustomerView) return
     let cancelled = false
 
     async function preRender() {
       await new Promise(r => requestAnimationFrame(r))
-      if (cancelled || !cardRef.current) { setShareReady(true); return }
+      if (cancelled || !cardRef.current) return
       try {
         const { default: html2canvas } = await import('html2canvas')
         const canvas = await html2canvas(cardRef.current, {
@@ -73,12 +73,9 @@ export default function CreativesDemo({
         })
         if (cancelled) return
         const blob = await new Promise(res => canvas.toBlob(res, 'image/png'))
-        if (cancelled) return
-        if (blob) setShareFile(new File([blob], 'creative.png', { type: 'image/png' }))
+        if (!cancelled && blob) setShareBlob(blob)
       } catch (err) {
         console.error('Creative pre-render failed:', err)
-      } finally {
-        if (!cancelled) setShareReady(true)
       }
     }
 
@@ -87,32 +84,25 @@ export default function CreativesDemo({
   }, [isCustomerView]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleShare() {
-    setShowDownloadHint(false)
+    if (!shareBlob) {
+      window.open('https://wa.me/', '_blank')
+      return
+    }
 
-    if (shareFile && navigator.canShare?.({ files: [shareFile] })) {
-      navigator.share({ files: [shareFile] }).catch(err => {
-        if (err.name !== 'AbortError') downloadCreativeImage()
+    navigator.clipboard.write([new ClipboardItem({ 'image/png': shareBlob })])
+      .then(() => {
+        setToast('Copied to clipboard! ✓')
+        window.open('https://wa.me/', '_blank')
       })
-      return
-    }
-
-    if (shareFile) {
-      downloadCreativeImage()
-      return
-    }
-
-    // Pre-render failed — desktop text-only fallback
-    window.open(`https://wa.me/?text=${encodeURIComponent(item.title)}`, '_blank')
-  }
-
-  function downloadCreativeImage() {
-    const url = URL.createObjectURL(shareFile)
-    const a = document.createElement('a')
-    a.href = url; a.download = 'creative.png'
-    document.body.appendChild(a); a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    setShowDownloadHint(true)
+      .catch(() => {
+        const url = URL.createObjectURL(shareBlob)
+        const a = document.createElement('a')
+        a.href = url; a.download = 'creative.png'
+        document.body.appendChild(a); a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+        setToast('Image saved — open WhatsApp and attach it')
+      })
   }
 
   return (
@@ -163,24 +153,21 @@ export default function CreativesDemo({
         </div>
       )}
 
-      {/* Customer share CTA — image is pre-rendered, fires navigator.share instantly on tap */}
+      {/* Customer share CTA — copies blob to clipboard then opens WhatsApp */}
       {isCustomerView && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#e4e7f0] p-4 z-10">
-          <button
-            type="button"
-            onClick={handleShare}
-            disabled={!shareReady}
-            className="w-full bg-[#25d366] hover:bg-[#1ebe5d] disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
-          >
-            <WaIcon />
-            {!shareReady ? 'Preparing…' : 'Share this creative'}
-          </button>
-          {showDownloadHint && (
-            <p className="text-center text-gray-500 text-xs mt-2 leading-relaxed">
-              Image downloaded — open WhatsApp and attach it to share.
-            </p>
-          )}
-        </div>
+        <>
+          {toast && <Toast message={toast} onDone={() => setToast(null)} />}
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#e4e7f0] p-4 z-10">
+            <button
+              type="button"
+              onClick={handleShare}
+              className="w-full bg-[#25d366] hover:bg-[#1ebe5d] text-white font-semibold py-3.5 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
+            >
+              <WaIcon />
+              Share this creative
+            </button>
+          </div>
+        </>
       )}
     </div>
   )

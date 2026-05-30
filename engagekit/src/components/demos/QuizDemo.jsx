@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import FeedbackSection from '../FeedbackSection'
+import Toast from '../Toast'
 import { logOutcome } from '../../lib/logOutcome'
 
 const QUESTIONS = [
@@ -107,13 +108,12 @@ function WaIcon() {
 }
 
 export default function QuizDemo({ onShare, onStep, isCustomerView = false, linkId }) {
-  const [currentQ,         setCurrentQ]         = useState(0)
-  const [answers,          setAnswers]          = useState([])
-  const [selected,         setSelected]         = useState(null)
-  const [phase,            setPhase]            = useState('quiz')
-  const [shareFile,        setShareFile]        = useState(null)
-  const [shareReady,       setShareReady]       = useState(false)
-  const [showDownloadHint, setShowDownloadHint] = useState(false)
+  const [currentQ,  setCurrentQ]  = useState(0)
+  const [answers,   setAnswers]   = useState([])
+  const [selected,  setSelected]  = useState(null)
+  const [phase,     setPhase]     = useState('quiz')
+  const [shareBlob, setShareBlob] = useState(null)
+  const [toast,     setToast]     = useState(null)
 
   const cardRef = useRef(null)
 
@@ -123,14 +123,14 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
     logOutcome(linkId, PERSONAS[getPersona(answers)].name)
   }, [phase]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Pre-render the persona card as soon as the result screen mounts
+  // Silently pre-render the persona card as soon as the result screen mounts
   useEffect(() => {
     if (phase !== 'result' || !isCustomerView) return
     let cancelled = false
 
     async function preRender() {
-      await new Promise(r => requestAnimationFrame(r)) // wait for paint
-      if (cancelled || !cardRef.current) { setShareReady(true); return }
+      await new Promise(r => requestAnimationFrame(r))
+      if (cancelled || !cardRef.current) return
       try {
         const { default: html2canvas } = await import('html2canvas')
         const canvas = await html2canvas(cardRef.current, {
@@ -138,12 +138,9 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
         })
         if (cancelled) return
         const blob = await new Promise(res => canvas.toBlob(res, 'image/png'))
-        if (cancelled) return
-        if (blob) setShareFile(new File([blob], 'my-persona.png', { type: 'image/png' }))
+        if (!cancelled && blob) setShareBlob(blob)
       } catch (err) {
         console.error('Pre-render failed:', err)
-      } finally {
-        if (!cancelled) setShareReady(true)
       }
     }
 
@@ -174,51 +171,33 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
     const p = PERSONAS[getPersona(answers)]
 
     function handleShareResult() {
-      setShowDownloadHint(false)
-
-      console.log('[Share] shareFile:', shareFile)
-      console.log('[Share] navigator.share available:', !!navigator.share)
-      if (navigator.canShare && shareFile) {
-        console.log('[Share] canShare result:', navigator.canShare({ files: [shareFile] }))
-      } else {
-        console.log('[Share] canShare skipped — canShare:', !!navigator.canShare, '/ shareFile:', !!shareFile)
+      if (!shareBlob) {
+        // Pre-render not ready (very rare) — open WhatsApp without image
+        window.open('https://wa.me/', '_blank')
+        return
       }
 
-      if (shareFile && navigator.canShare?.({ files: [shareFile] })) {
-        console.log('[Share] Taking native share path')
-        navigator.share({ files: [shareFile], text: p.waMessage }).catch(err => {
-          console.log('[Share] navigator.share threw:', err.name, err.message)
-          if (err.name !== 'AbortError') downloadPersonaImage()
+      navigator.clipboard.write([new ClipboardItem({ 'image/png': shareBlob })])
+        .then(() => {
+          setToast('Copied to clipboard! ✓')
+          window.open('https://wa.me/', '_blank')
         })
-        return
-      }
-
-      console.log('[Share] Taking fallback path — shareFile:', !!shareFile, '/ canShare files:', !!(navigator.canShare && shareFile && navigator.canShare({ files: [shareFile] })))
-
-      if (shareFile) {
-        // Has image but device can't share files (rare) — download it
-        downloadPersonaImage()
-        return
-      }
-
-      // Pre-render failed — text-only WhatsApp (desktop fallback)
-      window.open(`https://wa.me/?text=${encodeURIComponent(p.waMessage)}`, '_blank')
-    }
-
-    function downloadPersonaImage() {
-      const url = URL.createObjectURL(shareFile)
-      const a = document.createElement('a')
-      a.href = url; a.download = 'my-persona.png'
-      document.body.appendChild(a); a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-      setShowDownloadHint(true)
+        .catch(() => {
+          const url = URL.createObjectURL(shareBlob)
+          const a = document.createElement('a')
+          a.href = url; a.download = 'my-persona.png'
+          document.body.appendChild(a); a.click()
+          document.body.removeChild(a)
+          URL.revokeObjectURL(url)
+          setToast('Image saved — open WhatsApp and attach it')
+        })
     }
 
     /* Customer-facing result */
     if (isCustomerView) {
       return (
         <div className="flex flex-col">
+          {toast && <Toast message={toast} onDone={() => setToast(null)} />}
           <div className="max-w-sm mx-auto w-full px-5 py-6 flex flex-col gap-5">
 
             {/* Shareable persona card — captured by html2canvas via cardRef */}
@@ -242,22 +221,15 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
               </div>
             </div>
 
-            {/* Share image — file is pre-rendered, so this fires navigator.share instantly */}
+            {/* Copies image to clipboard then opens WhatsApp — blob is pre-rendered */}
             <button
               type="button"
               onClick={handleShareResult}
-              disabled={!shareReady}
-              className="w-full bg-[#25d366] hover:bg-[#1ebe5d] disabled:opacity-60 text-white font-semibold py-3.5 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-[#25d366] hover:bg-[#1ebe5d] text-white font-semibold py-3.5 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
             >
               <WaIcon />
-              {!shareReady ? 'Preparing…' : 'Share my result'}
+              Share my result
             </button>
-
-            {showDownloadHint && (
-              <p className="text-center text-gray-500 text-xs -mt-2 leading-relaxed">
-                Image downloaded — open WhatsApp and attach it to share.
-              </p>
-            )}
 
             {/* Feedback — saved to Supabase; Done triggers completion screen */}
             <FeedbackSection linkId={linkId} onDone={onShare} />
