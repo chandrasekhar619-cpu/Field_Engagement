@@ -96,105 +96,72 @@ export function drawPersonaCard({ key, emoji, name, tagline }) {
   })
 }
 
-const CREATIVE_THEMES = {
-  Festive: {
-    colors:     ['#3d1500', '#1a0800'],
-    accent:     '#e8a020',
-    decorEmoji: '✨',
-    tagline:    'Protecting what matters most is the greatest gift.',
-    subline:    'This Diwali, let your loved ones feel truly secure.',
-  },
-  Occasion: {
-    colors:     ['#1a0a40', '#0d0d2b'],
-    accent:     '#a78bfa',
-    decorEmoji: '⭐',
-    tagline:    'Every year you grow is another chapter worth protecting.',
-    subline:    'Wishing you a year full of milestones — and the security to enjoy them.',
-  },
-  default: {
-    colors:     ['#1a3260', '#0f1f3d'],
-    accent:     '#e8a020',
-    decorEmoji: '💫',
-    tagline:    'The right protection changes everything.',
-    subline:    'Built for the moments that matter most.',
-  },
+// Per-occasion gradients detected by title keyword, then category, then default
+function getCreativeTheme(item) {
+  const t = item.title.toLowerCase()
+  if (t.includes('diwali'))   return { colors: ['#1a0a2e', '#2d1200'], accent: '#f97316' }
+  if (t.includes('birthday')) return { colors: ['#1a0033', '#2d0055'], accent: '#e879f9' }
+  if (t.includes('new year')) return { colors: ['#001a33', '#0d0d2e'], accent: '#60a5fa' }
+  if (item.category === 'Festive')  return { colors: ['#1a0a00', '#2d1500'], accent: '#e8a020' }
+  if (item.category === 'Occasion') return { colors: ['#0d0d2b', '#1a0a40'], accent: '#a78bfa' }
+  return { colors: ['#0f1f3d', '#1a3260'], accent: '#e8a020' }
 }
 
 export function drawCreativeCard(item, rpmName, rpmDesignation) {
   return new Promise(resolve => {
+    const H = 600
     const canvas = document.createElement('canvas')
     canvas.width = W
-    canvas.height = 1100
+    canvas.height = H
     const ctx = canvas.getContext('2d')
 
-    const theme = CREATIVE_THEMES[item.category] ?? CREATIVE_THEMES.default
+    const theme = getCreativeTheme(item)
     const [c1, c2] = theme.colors
 
     // Background gradient
-    const grad = ctx.createLinearGradient(0, 0, W, 1100)
+    const grad = ctx.createLinearGradient(0, 0, W, H)
     grad.addColorStop(0, c1)
     grad.addColorStop(1, c2)
     ctx.fillStyle = grad
-    ctx.fillRect(0, 0, W, 1100)
+    ctx.fillRect(0, 0, W, H)
 
-    // Decorative circles (accent at ~10% opacity via 8-digit hex)
-    ctx.fillStyle = theme.accent + '1a'
-    ctx.beginPath(); ctx.arc(W - 60, 80, 130, 0, Math.PI * 2); ctx.fill()
-    ctx.beginPath(); ctx.arc(60, 880, 90, 0, Math.PI * 2); ctx.fill()
+    // Decorative circles (accent at ~13% opacity)
+    ctx.fillStyle = theme.accent + '22'
+    ctx.beginPath(); ctx.arc(W - 50, 50,  90, 0, Math.PI * 2); ctx.fill()
+    ctx.beginPath(); ctx.arc(50,     450, 65, 0, Math.PI * 2); ctx.fill()
 
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
 
-    // Main emoji
-    ctx.font = '130px sans-serif'
-    ctx.fillText(item.emoji, W / 2, 200)
+    // Main emoji (80px as specified)
+    ctx.font = '80px sans-serif'
+    ctx.fillText(item.emoji, W / 2, 125)
 
-    // Decor emoji
-    ctx.font = '55px sans-serif'
-    ctx.fillText(theme.decorEmoji, W / 2, 315)
+    // Title — bold, white, word-wrapped, vertically centred around y=235
+    ctx.font = 'bold 44px system-ui, sans-serif'
+    ctx.fillStyle = 'white'
+    const titleLines = wrapLines(ctx, item.title, 680)
+    const titleY = 235 - ((titleLines.length - 1) * 58) / 2
+    titleLines.forEach((line, i) => ctx.fillText(line, W / 2, titleY + i * 58))
 
-    // "ENGAGEKIT" label
-    ctx.font = '400 16px system-ui, sans-serif'
-    ctx.fillStyle = 'rgba(255,255,255,0.35)'
-    setLetterSpacing(ctx, '4px')
-    ctx.fillText('ENGAGEKIT', W / 2, 378)
-    setLetterSpacing(ctx, '0px')
+    // "Edelweiss Life Insurance" subtitle
+    ctx.font = '400 18px system-ui, sans-serif'
+    ctx.fillStyle = 'rgba(255,255,255,0.55)'
+    ctx.fillText('Edelweiss Life Insurance', W / 2, titleY + (titleLines.length - 1) * 58 + 54)
 
-    // Title (bold, accent colour)
-    ctx.font = 'bold 52px system-ui, sans-serif'
-    ctx.fillStyle = theme.accent
-    const titleLines = wrapLines(ctx, item.title, 640)
-    const titleY = 455
-    titleLines.forEach((line, i) => ctx.fillText(line, W / 2, titleY + i * 68))
-
-    // Tagline
-    const taglineY = titleY + titleLines.length * 68 + 42
-    ctx.font = '400 27px system-ui, sans-serif'
-    ctx.fillStyle = 'rgba(255,255,255,0.85)'
-    const taglines = wrapLines(ctx, theme.tagline, 580)
-    taglines.forEach((line, i) => ctx.fillText(line, W / 2, taglineY + i * 42))
-
-    // Subline
-    const sublineY = taglineY + taglines.length * 42 + 28
-    ctx.font = '400 21px system-ui, sans-serif'
-    ctx.fillStyle = 'rgba(255,255,255,0.45)'
-    wrapLines(ctx, theme.subline, 560).forEach((line, i) =>
-      ctx.fillText(line, W / 2, sublineY + i * 36)
-    )
-
-    // RPM strip
-    const stripY = 1010
+    // Bottom strip
+    const stripY = 505
     ctx.fillStyle = 'rgba(0,0,0,0.65)'
-    ctx.fillRect(0, stripY, W, 90)
+    ctx.fillRect(0, stripY, W, H - stripY)
 
     // Avatar circle
-    const ax = 64, ay = stripY + 45
-    ctx.beginPath(); ctx.arc(ax, ay, 28, 0, Math.PI * 2)
+    const ax = 54, ay = stripY + 47
+    ctx.beginPath(); ctx.arc(ax, ay, 22, 0, Math.PI * 2)
     ctx.fillStyle = '#e8a020'; ctx.fill()
 
     // Avatar initials
     const initials = (rpmName || '?').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
-    ctx.font = 'bold 18px system-ui, sans-serif'
+    ctx.font = 'bold 15px system-ui, sans-serif'
     ctx.fillStyle = '#0f1f3d'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
@@ -202,20 +169,20 @@ export function drawCreativeCard(item, rpmName, rpmDesignation) {
 
     // RPM name
     ctx.textAlign = 'left'
-    ctx.font = '600 21px system-ui, sans-serif'
+    ctx.font = '600 17px system-ui, sans-serif'
     ctx.fillStyle = 'white'
-    ctx.fillText(rpmName || 'Your Advisor', 108, stripY + 29)
+    ctx.fillText(rpmName || 'Your Advisor', 92, stripY + 33)
 
     // RPM designation
-    ctx.font = '400 17px system-ui, sans-serif'
+    ctx.font = '400 14px system-ui, sans-serif'
     ctx.fillStyle = 'rgba(255,255,255,0.45)'
-    ctx.fillText(rpmDesignation || 'Relationship Portfolio Manager', 108, stripY + 57)
+    ctx.fillText(rpmDesignation || 'Relationship Portfolio Manager', 92, stripY + 59)
 
-    // EngageKit watermark
+    // "Edelweiss Life" watermark (right)
     ctx.textAlign = 'right'
-    ctx.font = '400 15px system-ui, sans-serif'
-    ctx.fillStyle = 'rgba(255,255,255,0.2)'
-    ctx.fillText('EngageKit', W - 30, stripY + 45)
+    ctx.font = '400 13px system-ui, sans-serif'
+    ctx.fillStyle = 'rgba(255,255,255,0.25)'
+    ctx.fillText('Edelweiss Life', W - 28, stripY + 47)
 
     canvas.toBlob(
       blob => resolve(blob ? new File([blob], 'result.png', { type: 'image/png' }) : null),

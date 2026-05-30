@@ -87,8 +87,9 @@ export default function CreativesDemo({
       return
     }
 
+    const shareText = `${item.emoji} ${item.title} — from your Edelweiss Life advisor`
     if (navigator.share && navigator.canShare({ files: [shareFile] })) {
-      navigator.share({ files: [shareFile] })
+      navigator.share({ files: [shareFile], text: shareText })
         .catch(err => { if (err.name !== 'AbortError') downloadAndToast(shareFile) })
     } else {
       downloadAndToast(shareFile)
