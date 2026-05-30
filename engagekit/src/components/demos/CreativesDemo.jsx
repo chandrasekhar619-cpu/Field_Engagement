@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import Toast from '../Toast'
 import { logOutcome } from '../../lib/logOutcome'
+import { drawCreativeCard } from '../../lib/drawCard'
 
 function WaIcon() {
   return (
@@ -49,7 +50,6 @@ export default function CreativesDemo({
 
   const theme = THEMES[item.category] || THEMES.default
 
-  const cardRef = useRef(null)
   const [shareFile, setShareFile] = useState(null)
   const [toast,     setToast]     = useState(null)
 
@@ -58,38 +58,15 @@ export default function CreativesDemo({
     if (isCustomerView && linkId) logOutcome(linkId, 'Viewed')
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Silently pre-render the creative card as soon as it mounts in customer view
+  // Draw the creative card programmatically as soon as it mounts in customer view
   useEffect(() => {
     if (!isCustomerView) return
     let cancelled = false
 
-    async function preRender() {
-      await new Promise(r => requestAnimationFrame(r))
-      if (cancelled || !cardRef.current) return
-      try {
-        const { default: html2canvas } = await import('html2canvas')
-        const canvas = await html2canvas(cardRef.current, {
-          scale: 2,
-          useCORS: true,
-          allowTaint: false,
-          backgroundColor: null,
-          logging: true,
-          onclone: (doc) => {
-            const style = doc.createElement('style')
-            style.innerHTML = '* { font-family: system-ui, sans-serif !important; }'
-            doc.head.appendChild(style)
-          },
-        })
-        if (cancelled) return
-        const blob = await new Promise(res => canvas.toBlob(res, 'image/png'))
-        if (!cancelled && blob) setShareFile(new File([blob], 'result.png', { type: 'image/png' }))
-        console.log('[CreativesDemo] pre-render complete, blob size:', blob?.size)
-      } catch (err) {
-        console.error('[CreativesDemo] html2canvas failed:', err)
-      }
-    }
+    drawCreativeCard(item, name, designation)
+      .then(file => { if (!cancelled && file) setShareFile(file) })
+      .catch(err => console.error('[CreativesDemo] drawCreativeCard failed:', err))
 
-    preRender()
     return () => { cancelled = true }
   }, [isCustomerView]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -120,8 +97,8 @@ export default function CreativesDemo({
 
   return (
     <div className="min-h-screen flex flex-col pb-24">
-      {/* Creative canvas — captured by html2canvas via cardRef in customer view */}
-      <div ref={cardRef} className={`relative flex-1 flex flex-col items-center justify-center min-h-[70vh] ${theme.bg} overflow-hidden`}>
+      {/* Creative canvas */}
+      <div className={`relative flex-1 flex flex-col items-center justify-center min-h-[70vh] ${theme.bg} overflow-hidden`}>
         <div className="absolute top-10 right-10 w-32 h-32 rounded-full opacity-10" style={{ background: theme.accentColor }} />
         <div className="absolute bottom-20 left-8 w-20 h-20 rounded-full opacity-10" style={{ background: theme.accentColor }} />
         <div className="absolute top-1/3 left-1/4 w-2 h-2 rounded-full opacity-30" style={{ background: theme.accentColor }} />

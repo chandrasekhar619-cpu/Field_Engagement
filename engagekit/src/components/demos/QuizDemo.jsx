@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import FeedbackSection from '../FeedbackSection'
 import Toast from '../Toast'
 import { logOutcome } from '../../lib/logOutcome'
+import { drawPersonaCard } from '../../lib/drawCard'
 
 const QUESTIONS = [
   {
@@ -115,46 +116,23 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
   const [shareFile, setShareFile] = useState(null)
   const [toast,     setToast]     = useState(null)
 
-  const cardRef = useRef(null)
-
   // Log outcome when result screen appears in customer mode
   useEffect(() => {
     if (phase !== 'result' || !isCustomerView || !linkId) return
     logOutcome(linkId, PERSONAS[getPersona(answers)].name)
   }, [phase]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Silently pre-render the persona card as soon as the result screen mounts
+  // Draw the persona card programmatically as soon as the result screen mounts
   useEffect(() => {
     if (phase !== 'result' || !isCustomerView) return
     let cancelled = false
 
-    async function preRender() {
-      await new Promise(r => requestAnimationFrame(r))
-      if (cancelled || !cardRef.current) return
-      try {
-        const { default: html2canvas } = await import('html2canvas')
-        const canvas = await html2canvas(cardRef.current, {
-          scale: 2,
-          useCORS: true,
-          allowTaint: false,
-          backgroundColor: null,
-          logging: true,
-          onclone: (doc) => {
-            const style = doc.createElement('style')
-            style.innerHTML = '* { font-family: system-ui, sans-serif !important; }'
-            doc.head.appendChild(style)
-          },
-        })
-        if (cancelled) return
-        const blob = await new Promise(res => canvas.toBlob(res, 'image/png'))
-        if (!cancelled && blob) setShareFile(new File([blob], 'result.png', { type: 'image/png' }))
-        console.log('[QuizDemo] pre-render complete, blob size:', blob?.size)
-      } catch (err) {
-        console.error('[QuizDemo] html2canvas failed:', err)
-      }
-    }
+    const personaKey = getPersona(answers)
+    const p = PERSONAS[personaKey]
+    drawPersonaCard({ key: personaKey, emoji: p.emoji, name: p.name, tagline: p.tagline })
+      .then(file => { if (!cancelled && file) setShareFile(file) })
+      .catch(err => console.error('[QuizDemo] drawPersonaCard failed:', err))
 
-    preRender()
     return () => { cancelled = true }
   }, [phase, isCustomerView]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -213,9 +191,8 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
           {toast && <Toast message={toast} onDone={() => setToast(null)} />}
           <div className="max-w-sm mx-auto w-full px-5 py-6 flex flex-col gap-5">
 
-            {/* Shareable persona card — captured by html2canvas via cardRef */}
+            {/* Shareable persona card */}
             <div
-              ref={cardRef}
               className={`bg-gradient-to-br ${p.gradient} rounded-2xl p-6 text-center shadow-xl relative overflow-hidden`}
             >
               <div className="absolute top-2 right-2 w-20 h-20 rounded-full bg-white/10 pointer-events-none" />
