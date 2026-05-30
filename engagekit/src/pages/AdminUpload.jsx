@@ -13,28 +13,44 @@ function xorDecode(encoded, key) {
   ).join('')
 }
 
-// Parse decoded text — each line: policy_number,name,issue_date
+// Strip non-printable / non-ASCII characters
+function sanitize(s) {
+  return s.replace(/[^\x20-\x7E]/g, '').trim()
+}
+
+// Parse decoded text — each line: policy_number|name|issue_date
+// Returns { records, skipped } — bad lines are skipped, never throw
 function parseRecords(text) {
-  return text
-    .split('\n')
-    .map(line => line.trim())
-    .filter(Boolean)
-    .flatMap(line => {
-      const parts = line.split('|').map(p => p.trim())
-      if (parts.length < 3 || !parts[0]) return []
-      const [policy_number, name, issue_date] = parts
-      return [{ policy_number, name: name || null, issue_date: issue_date || null }]
-    })
+  let skipped = 0
+  const records = []
+  for (const line of text.split('\n')) {
+    try {
+      const trimmed = line.trim()
+      if (!trimmed) continue
+      const parts = trimmed.split('|')
+      if (parts.length !== 3) { skipped++; continue }
+      const policy_number = sanitize(parts[0])
+      const name          = sanitize(parts[1])
+      const issue_date    = sanitize(parts[2])
+      if (!policy_number) { skipped++; continue }
+      records.push({ policy_number, name: name || null, issue_date: issue_date || null })
+    } catch {
+      skipped++
+    }
+  }
+  return { records, skipped }
 }
 
 export default function AdminUpload() {
   const { user, authLoading } = useAuth()
 
-  const [file,     setFile]     = useState(null)
-  const [status,   setStatus]   = useState(null)   // null | 'processing' | 'done' | 'error'
-  const [progress, setProgress] = useState({ done: 0, total: 0 })
-  const [count,    setCount]    = useState(0)
-  const [error,    setError]    = useState('')
+  const [file,        setFile]        = useState(null)
+  const [status,      setStatus]      = useState(null)  // null | 'processing' | 'done' | 'error'
+  const [progress,    setProgress]    = useState({ done: 0, total: 0 })
+  const [count,       setCount]       = useState(0)
+  const [skipped,     setSkipped]     = useState(0)
+  const [batchErrors, setBatchErrors] = useState([])
+  const [error,       setError]       = useState('')
 
   if (authLoading) return (
     <div className="min-h-screen bg-[#f9fafb] flex items-center justify-center">
@@ -48,6 +64,8 @@ export default function AdminUpload() {
     setStatus(null)
     setError('')
     setCount(0)
+    setSkipped(0)
+    setBatchErrors([])
     setProgress({ done: 0, total: 0 })
   }
 
@@ -55,32 +73,45 @@ export default function AdminUpload() {
     if (!file || status === 'processing') return
     setStatus('processing')
     setError('')
+    setBatchErrors([])
 
     try {
       const raw = await file.text()
       const decoded = xorDecode(raw, DECODE_KEY)
-      const records = parseRecords(decoded)
+      const { records, skipped: parseSkipped } = parseRecords(decoded)
 
       if (records.length === 0) {
-        setError('No valid records found after decoding. Check the file format.')
+        setError(`No valid records found after decoding (${parseSkipped} lines skipped). Check the file format.`)
         setStatus('error')
         return
       }
 
+      setSkipped(parseSkipped)
       setProgress({ done: 0, total: records.length })
 
       let uploaded = 0
+      const errors = []
+
       for (let i = 0; i < records.length; i += CHUNK_SIZE) {
+        const batchNum = Math.floor(i / CHUNK_SIZE) + 1
         const chunk = records.slice(i, i + CHUNK_SIZE)
-        const { error: upsertErr } = await supabase
-          .from('customers')
-          .upsert(chunk, { onConflict: 'policy_number' })
-        if (upsertErr) throw upsertErr
-        uploaded += chunk.length
-        setProgress({ done: uploaded, total: records.length })
+        try {
+          const { error: upsertErr } = await supabase
+            .from('customers')
+            .upsert(chunk, { onConflict: 'policy_number' })
+          if (upsertErr) {
+            errors.push(`Batch ${batchNum}: ${upsertErr.message}`)
+          } else {
+            uploaded += chunk.length
+          }
+        } catch (err) {
+          errors.push(`Batch ${batchNum}: ${err.message ?? 'unknown error'}`)
+        }
+        setProgress({ done: i + chunk.length, total: records.length })
       }
 
       setCount(uploaded)
+      setBatchErrors(errors)
       setStatus('done')
     } catch (err) {
       console.error('Upload error:', err)
@@ -159,12 +190,27 @@ export default function AdminUpload() {
 
         {/* Success */}
         {status === 'done' && (
-          <div className="mt-5 bg-green-50 border border-green-200 rounded-xl px-5 py-4 flex items-start gap-3">
-            <span className="text-green-500 text-lg leading-none mt-0.5">✓</span>
-            <div>
-              <p className="text-green-800 font-semibold text-sm">{count} records uploaded</p>
-              <p className="text-green-600 text-xs mt-0.5">Customers table updated successfully.</p>
+          <div className="mt-5 space-y-2">
+            <div className="bg-green-50 border border-green-200 rounded-xl px-5 py-4 flex items-start gap-3">
+              <span className="text-green-500 text-lg leading-none mt-0.5">✓</span>
+              <div>
+                <p className="text-green-800 font-semibold text-sm">
+                  {count} record{count !== 1 ? 's' : ''} uploaded
+                  {skipped > 0 && `, ${skipped} skipped`}
+                </p>
+                <p className="text-green-600 text-xs mt-0.5">Customers table updated successfully.</p>
+              </div>
             </div>
+            {batchErrors.length > 0 && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4">
+                <p className="text-amber-800 font-semibold text-sm mb-1">
+                  {batchErrors.length} batch{batchErrors.length !== 1 ? 'es' : ''} failed
+                </p>
+                {batchErrors.map((e, i) => (
+                  <p key={i} className="text-amber-700 text-xs leading-relaxed">{e}</p>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
