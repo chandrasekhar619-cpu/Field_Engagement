@@ -50,7 +50,7 @@ export default function CreativesDemo({
   const theme = THEMES[item.category] || THEMES.default
 
   const cardRef = useRef(null)
-  const [shareBlob, setShareBlob] = useState(null)
+  const [shareFile, setShareFile] = useState(null)
   const [toast,     setToast]     = useState(null)
 
   // Log outcome when viewed in customer mode
@@ -73,7 +73,7 @@ export default function CreativesDemo({
         })
         if (cancelled) return
         const blob = await new Promise(res => canvas.toBlob(res, 'image/png'))
-        if (!cancelled && blob) setShareBlob(blob)
+        if (!cancelled && blob) setShareFile(new File([blob], 'result.png', { type: 'image/png' }))
       } catch (err) {
         console.error('Creative pre-render failed:', err)
       }
@@ -83,26 +83,25 @@ export default function CreativesDemo({
     return () => { cancelled = true }
   }, [isCustomerView]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  function handleShare() {
-    if (!shareBlob) {
-      window.open('https://wa.me/', '_blank')
-      return
-    }
+  function downloadAndToast(file) {
+    const url = URL.createObjectURL(file)
+    const a = document.createElement('a')
+    a.href = url; a.download = file.name
+    document.body.appendChild(a); a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    setToast('Image saved — attach it in WhatsApp')
+  }
 
-    navigator.clipboard.write([new ClipboardItem({ 'image/png': shareBlob })])
-      .then(() => {
-        setToast('Copied to clipboard! ✓')
-        window.open('https://wa.me/', '_blank')
-      })
-      .catch(() => {
-        const url = URL.createObjectURL(shareBlob)
-        const a = document.createElement('a')
-        a.href = url; a.download = 'creative.png'
-        document.body.appendChild(a); a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
-        setToast('Image saved — open WhatsApp and attach it')
-      })
+  function handleShare() {
+    if (!shareFile) return  // pre-render still running (very rare)
+
+    if (navigator.share && navigator.canShare({ files: [shareFile] })) {
+      navigator.share({ files: [shareFile] })
+        .catch(err => { if (err.name !== 'AbortError') downloadAndToast(shareFile) })
+    } else {
+      downloadAndToast(shareFile)
+    }
   }
 
   return (

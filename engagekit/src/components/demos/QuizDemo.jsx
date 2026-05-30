@@ -112,7 +112,7 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
   const [answers,   setAnswers]   = useState([])
   const [selected,  setSelected]  = useState(null)
   const [phase,     setPhase]     = useState('quiz')
-  const [shareBlob, setShareBlob] = useState(null)
+  const [shareFile, setShareFile] = useState(null)
   const [toast,     setToast]     = useState(null)
 
   const cardRef = useRef(null)
@@ -138,7 +138,7 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
         })
         if (cancelled) return
         const blob = await new Promise(res => canvas.toBlob(res, 'image/png'))
-        if (!cancelled && blob) setShareBlob(blob)
+        if (!cancelled && blob) setShareFile(new File([blob], 'result.png', { type: 'image/png' }))
       } catch (err) {
         console.error('Pre-render failed:', err)
       }
@@ -170,27 +170,26 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
   if (phase === 'result') {
     const p = PERSONAS[getPersona(answers)]
 
-    function handleShareResult() {
-      if (!shareBlob) {
-        // Pre-render not ready (very rare) — open WhatsApp without image
-        window.open('https://wa.me/', '_blank')
-        return
-      }
+    function downloadAndToast(file) {
+      const url = URL.createObjectURL(file)
+      const a = document.createElement('a')
+      a.href = url; a.download = file.name
+      document.body.appendChild(a); a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      setToast('Image saved — attach it in WhatsApp')
+    }
 
-      navigator.clipboard.write([new ClipboardItem({ 'image/png': shareBlob })])
-        .then(() => {
-          setToast('Copied to clipboard! ✓')
-          window.open('https://wa.me/', '_blank')
-        })
-        .catch(() => {
-          const url = URL.createObjectURL(shareBlob)
-          const a = document.createElement('a')
-          a.href = url; a.download = 'my-persona.png'
-          document.body.appendChild(a); a.click()
-          document.body.removeChild(a)
-          URL.revokeObjectURL(url)
-          setToast('Image saved — open WhatsApp and attach it')
-        })
+    function handleShareResult() {
+      if (!shareFile) return  // pre-render still running (very rare)
+
+      if (navigator.share && navigator.canShare({ files: [shareFile] })) {
+        // Native share sheet — called synchronously from tap, gesture is intact
+        navigator.share({ files: [shareFile], text: p.waMessage })
+          .catch(err => { if (err.name !== 'AbortError') downloadAndToast(shareFile) })
+      } else {
+        downloadAndToast(shareFile)
+      }
     }
 
     /* Customer-facing result */
