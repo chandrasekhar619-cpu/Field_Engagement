@@ -91,7 +91,7 @@ export default function CustomerLanding() {
           openedRecordedRef.current = true
           await supabase.from('interactions').insert({
             link_id:         linkRecord.id,
-            customer_id:     null,               // customers not yet in Supabase
+            customer_id:     linkRecord.customer_id ?? null,
             rpm_id:          linkRecord.rpm_id ?? null,
             action:          'opened',
             customer_ip:     ip,
@@ -118,7 +118,7 @@ export default function CustomerLanding() {
     if (link) {
       await supabase.from('interactions').insert({
         link_id:         link.id,
-        customer_id:     null,
+        customer_id:     link.customer_id ?? null,
         rpm_id:          link.rpm_id ?? null,
         action:          'completed',
         outcome:         stepsRef.current.find(s => s.persona)?.persona ?? null,
