@@ -31,15 +31,6 @@ export default function ContentCard({ item, onTryIt, onShare }) {
           {item.description}
         </p>
 
-        <div className="flex flex-wrap gap-1 pt-1">
-          {item.personas.length === 0 ? (
-            <span className="text-[11px] px-2 py-0.5 bg-gray-100 text-gray-400 rounded-full">For all</span>
-          ) : (
-            item.personas.slice(0, 2).map(p => (
-              <span key={p} className="text-[11px] px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full">{p}</span>
-            ))
-          )}
-        </div>
       </div>
 
       <div className="border-t border-[#e4e7f0] flex">

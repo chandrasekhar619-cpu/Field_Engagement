@@ -159,22 +159,30 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
     logOutcome(linkId, personaName)
 
     ;(async () => {
-      console.log('Persona save IIFE starting — linkId:', linkId, 'persona:', personaName)
-
-      // Sample the links table to check customer_id values
-      const { data: sampleLinks } = await supabase
-        .from('links').select('customer_id, token').limit(5)
-      console.log('Links sample (checking customer_id):', sampleLinks)
-
       const { data: link, error: linkErr } = await supabase
         .from('links').select('customer_id').eq('id', linkId).single()
-      console.log('This link record:', link, 'error:', linkErr)
       if (linkErr) { console.error('Persona save — link fetch failed:', linkErr); return }
-      if (!link?.customer_id) { console.log('Persona save — no customer_id on this link (will not save)'); return }
-      const { error: updateErr } = await supabase
-        .from('customers').update({ persona: personaName }).eq('id', link.customer_id)
-      if (updateErr) console.error('Persona save failed:', updateErr)
-      else console.log('Persona saved:', personaName, '→ customer', link.customer_id)
+      if (!link?.customer_id) { console.log('Persona save — no customer_id on link'); return }
+
+      // Update this specific customer record
+      const { data: customerData, error: updateErr } = await supabase
+        .from('customers')
+        .update({ persona: personaName })
+        .eq('id', link.customer_id)
+        .select('customer_master_id')
+        .single()
+      if (updateErr) { console.error('Persona save failed:', updateErr); return }
+      console.log('Persona saved:', personaName, '→ customer', link.customer_id)
+
+      // Propagate to all other policies for the same person
+      if (customerData?.customer_master_id) {
+        const { error: masterErr } = await supabase
+          .from('customers')
+          .update({ persona: personaName })
+          .eq('customer_master_id', customerData.customer_master_id)
+        if (masterErr) console.error('Persona propagation failed:', masterErr)
+        else console.log('Persona propagated to all records with master_id:', customerData.customer_master_id)
+      }
     })()
   }, [phase]) // eslint-disable-line react-hooks/exhaustive-deps
 
