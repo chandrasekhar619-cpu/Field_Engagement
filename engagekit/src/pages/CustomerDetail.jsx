@@ -99,6 +99,15 @@ function initials(name = '') {
   return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
 }
 
+function PolicyField({ label, value }) {
+  return (
+    <div>
+      <p className="text-xs text-gray-400 mb-0.5">{label}</p>
+      <p className="text-sm font-medium text-[#0f1f3d]">{value}</p>
+    </div>
+  )
+}
+
 function normalize(row) {
   return {
     ...row,
@@ -257,23 +266,23 @@ export default function CustomerDetail() {
           {/* Policy details */}
           <div className="bg-white rounded-xl border border-[#e4e7f0] p-5">
             <h3 className="text-sm font-semibold text-[#0f1f3d] mb-4">Policy Details</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-xs text-gray-400 mb-0.5">Policy Number</p>
-                <p className="text-sm font-medium text-[#0f1f3d]">{customer.policyNumber || '—'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400 mb-0.5">Issue Date</p>
-                <p className="text-sm font-medium text-[#0f1f3d]">{customer.issueDate || '—'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400 mb-0.5">Policy Type</p>
-                <p className="text-sm font-medium text-[#0f1f3d]">{customer.policyType || '—'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-400 mb-0.5">Persona</p>
-                <p className="text-sm font-medium text-[#0f1f3d]">{customer.persona || '—'}</p>
-              </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-4">
+              {/* Row 1 */}
+              {customer.policyNumber && <PolicyField label="Policy Number" value={customer.policyNumber} />}
+              {customer.policyType    && <PolicyField label="Policy Type"   value={customer.policyType} />}
+              {/* Row 2 */}
+              {customer.product_name      && <PolicyField label="Product"      value={customer.product_name} />}
+              {customer.premium_due_date  && <PolicyField label="Premium Due"  value={customer.premium_due_date} />}
+              {/* Row 3 */}
+              {customer.channel   && <PolicyField label="Channel"    value={customer.channel} />}
+              {customer.issueDate && <PolicyField label="Issue Date" value={customer.issueDate} />}
+              {/* Row 4 — full width */}
+              {customer.persona && (
+                <div className="col-span-2">
+                  <p className="text-xs text-gray-400 mb-0.5">Persona</p>
+                  <p className="text-sm font-medium text-[#0f1f3d]">{customer.persona}</p>
+                </div>
+              )}
             </div>
           </div>
 

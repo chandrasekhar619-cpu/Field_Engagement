@@ -1,5 +1,15 @@
 import { useNavigate } from 'react-router-dom'
 
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+
+function fmtDueDate(str) {
+  if (!str) return null
+  const [d, m, y] = str.split('-')
+  const mi = parseInt(m, 10) - 1
+  if (mi < 0 || mi > 11 || !y) return str
+  return `Due: ${parseInt(d, 10)}-${MONTHS[mi]}-${y}`
+}
+
 const policyTypeBadge = {
   'Par':     'bg-emerald-50 text-emerald-700',
   'Non-Par': 'bg-purple-50 text-purple-700',
@@ -43,7 +53,11 @@ export default function CustomerCard({ customer }) {
           )}
         </div>
 
-        <p className="text-gray-400 text-xs mt-0.5 mb-2">{customer.policyNumber}</p>
+        <p className="text-gray-400 text-xs mt-0.5">{customer.policyNumber}</p>
+        {fmtDueDate(customer.premium_due_date) && (
+          <p className="text-gray-400 text-xs mb-1.5">{fmtDueDate(customer.premium_due_date)}</p>
+        )}
+        {!customer.premium_due_date && <div className="mb-2" />}
 
         <div className="flex items-center gap-2 flex-wrap">
           <span className={`text-[11px] px-2 py-0.5 rounded-md font-medium ${badgeClass}`}>
