@@ -52,13 +52,6 @@ export default function CreativesDemo({
 
   const [shareFile, setShareFile] = useState(null)
   const [toast,     setToast]     = useState(null)
-  const [debugLog,  setDebugLog]  = useState([])
-
-  function dbg(msg, isError = false) {
-    const line = `${new Date().toLocaleTimeString()} ${isError ? '❌' : '✓'} ${msg}`
-    console.log('[CreativesDemo]', msg)
-    setDebugLog(prev => [...prev, { line, isError }])
-  }
 
   // Log outcome when viewed in customer mode
   useEffect(() => {
@@ -70,20 +63,11 @@ export default function CreativesDemo({
     if (!isCustomerView) return
     let cancelled = false
 
-    dbg(`drawCreativeCard start — item: "${item.title}", rpmName: "${name}"`)
     drawCreativeCard(item, name, designation)
       .then(file => {
-        if (cancelled) return
-        if (file) {
-          setShareFile(file)
-          dbg(`drawCreativeCard OK — file size: ${file.size} bytes`)
-        } else {
-          dbg('drawCreativeCard returned null (canvas.toBlob failed)', true)
-        }
+        if (!cancelled && file) setShareFile(file)
       })
-      .catch(err => {
-        dbg(`drawCreativeCard threw: ${err?.message ?? err}`, true)
-      })
+      .catch(err => console.error('[CreativesDemo] drawCreativeCard failed:', err))
 
     return () => { cancelled = true }
   }, [isCustomerView]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -99,11 +83,6 @@ export default function CreativesDemo({
   }
 
   async function handleShare() {
-    console.log('shareFile value:', shareFile)
-    console.log('shareFile type:', shareFile?.type)
-    console.log('shareFile size:', shareFile?.size)
-    console.log('navigator.share available:', !!navigator.share)
-    console.log('canShare with files:', navigator.canShare?.({ files: [shareFile] }))
 
     if (!shareFile) {
       setToast('Could not prepare image — try again')
@@ -167,22 +146,7 @@ export default function CreativesDemo({
         </div>
       )}
 
-      {/* DEBUG PANEL — remove before production */}
-      {isCustomerView && debugLog.length > 0 && (
-        <div className="fixed top-0 left-0 right-0 z-[400] bg-black/90 text-white font-mono text-[11px] leading-relaxed p-3 max-h-56 overflow-y-auto">
-          {debugLog.map((entry, i) => (
-            <div key={i} className={entry.isError ? 'text-red-400' : 'text-green-300'}>{entry.line}</div>
-          ))}
-          <button
-            onClick={() => setDebugLog([])}
-            className="mt-2 text-yellow-400 underline text-[10px]"
-          >
-            clear
-          </button>
-        </div>
-      )}
-
-      {/* Customer share CTA — copies blob to clipboard then opens WhatsApp */}
+      {/* Customer share CTA */}
       {isCustomerView && (
         <>
           {toast && <Toast message={toast} onDone={() => setToast(null)} />}

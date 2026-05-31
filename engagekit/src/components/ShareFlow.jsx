@@ -268,7 +268,7 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
   const sendButtonLabel = generating
     ? 'Generating…'
     : preselectedCustomer
-      ? `Send to ${preselectedCustomer.name.split(' ')[0]} →`
+      ? `Send to ${preselectedCustomer.name} →`
       : 'Send This →'
 
   return (
