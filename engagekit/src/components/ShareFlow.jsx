@@ -2,26 +2,10 @@ import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 import { generateShareImage } from '../lib/generateShareImage'
+import { getWhatsAppMessage } from '../lib/whatsappMessages'
 
 // ── Link base URL — uses current origin so localhost works during dev ─────────
 function linkUrl(token) { return `${window.location.origin}/c/${token}` }
-
-// ── WhatsApp message templates (per demoType) ────────────────────────────────
-
-const WA_TEMPLATES = {
-  'quiz':            "Hi [Customer Name]! Here's a quick 4-question quiz that tells you your money personality — surprisingly accurate. Takes 2 minutes.",
-  'fire-calculator': "Hi [Customer Name]! This tool shows you exactly when you could retire based on your savings. Worth a look.",
-  'protection-gap':  "Hi [Customer Name]! Here's a quick calculator to check if your life cover is adequate for your family.",
-  'poll':            "Hi [Customer Name]! One quick question — curious what you think.",
-  'mood':            "Hi [Customer Name]! A quick one — how are you feeling about money right now?",
-  'life-word':       "Hi [Customer Name]! Here's today's Life Word — a financial term explained simply through a quick game.",
-  'creative':        "Hi [Customer Name]! Sharing this with you — hope it brings a smile.",
-}
-
-function buildWaText(demoType, customerName, link) {
-  const template = WA_TEMPLATES[demoType] || WA_TEMPLATES.creative
-  return template.replace('[Customer Name]', customerName) + '\n\n' + link
-}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -110,18 +94,13 @@ function InteractivePreview({ item, name }) {
   )
 }
 
-function WaMessagePreview({ demoType, customerName }) {
-  const template = WA_TEMPLATES[demoType] || WA_TEMPLATES.creative
-  const displayName = customerName || '[Customer Name]'
-  const message = template.replace('[Customer Name]', displayName)
+function WaMessagePreview({ demoType, persona, customerName }) {
+  const message = getWhatsAppMessage(demoType, persona, customerName || '[Customer Name]', '[link]')
   return (
     <div className="px-4 py-3 bg-gray-50 border-t border-[#e4e7f0]">
       <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-2">WhatsApp message preview</p>
       <div className="bg-[#dcf8c6] rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
-        <p className="text-gray-700 text-sm leading-relaxed">
-          {message}{' '}
-          <span className="text-blue-400 text-xs underline">[link]</span>
-        </p>
+        <p className="text-gray-700 text-sm leading-relaxed">{message}</p>
       </div>
     </div>
   )
@@ -140,8 +119,9 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
   const [linkError,       setLinkError]       = useState('')
   const [token,           setToken]           = useState(null)
   const [copied,          setCopied]          = useState(false)
-  const [shareImageFile,  setShareImageFile]  = useState(null)
-  const [imageGenerating, setImageGenerating] = useState(false)
+  const [shareImageFile,   setShareImageFile]   = useState(null)
+  const [imageGenerating,  setImageGenerating]  = useState(false)
+  const [usePersonaMessage, setUsePersonaMessage] = useState(true)
 
   const isCreative = item.demoType === 'creative'
   const name        = user?.name        || 'Your Advisor'
@@ -216,6 +196,7 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
       if (error) throw error
       setSelected(customer)
       setToken(newToken)
+      setUsePersonaMessage(true)
       setStep('link')
 
       // Generate share image in parallel — ready by the time the RPM taps WhatsApp
@@ -246,23 +227,27 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  function openWhatsApp() {
-    const link = linkUrl(token)
-    const text = buildWaText(item.demoType, selected?.name || 'there', link)
+  // Derive the active WhatsApp message from current state
+  const activeMsg = token && selected
+    ? getWhatsAppMessage(
+        item.demoType,
+        usePersonaMessage ? selected.persona : null,
+        selected.name || 'there',
+        linkUrl(token)
+      )
+    : ''
 
+  function openWhatsApp() {
     if (shareImageFile && navigator.share && navigator.canShare?.({ files: [shareImageFile] })) {
-      // Mobile: native share sheet — image + text, user picks WhatsApp
-      navigator.share({ files: [shareImageFile], text })
+      navigator.share({ files: [shareImageFile], text: activeMsg })
         .catch(err => {
           if (err.name !== 'AbortError') {
-            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
+            window.open(`https://wa.me/?text=${encodeURIComponent(activeMsg)}`, '_blank')
           }
         })
       return
     }
-
-    // Desktop or no file-share support: text-only wa.me
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
+    window.open(`https://wa.me/?text=${encodeURIComponent(activeMsg)}`, '_blank')
   }
 
   const sendButtonLabel = generating
@@ -294,6 +279,7 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
               }
               <WaMessagePreview
                 demoType={item.demoType}
+                persona={preselectedCustomer?.persona}
                 customerName={preselectedCustomer?.name}
               />
             </div>
@@ -428,14 +414,27 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
                 </p>
               </div>
 
-              {/* Personalised message preview */}
-              <div>
-                <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-2">Message to be sent</p>
+              {/* Message preview with persona toggle */}
+              <div className="flex flex-col gap-2">
+                <p className="text-gray-400 text-[10px] uppercase tracking-wider">Message to be sent</p>
                 <div className="bg-[#dcf8c6] rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
-                  <p className="text-gray-700 text-sm leading-relaxed">
-                    {buildWaText(item.demoType, selected?.name || 'there', linkUrl(token))}
-                  </p>
+                  <p className="text-gray-700 text-sm leading-relaxed">{activeMsg}</p>
                 </div>
+                {selected?.persona && (
+                  <button
+                    onClick={() => setUsePersonaMessage(v => !v)}
+                    className={`self-start text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+                      usePersonaMessage
+                        ? 'bg-[#e8a020]/15 text-[#e8a020] border border-[#e8a020]/30'
+                        : 'bg-gray-100 text-gray-500 border border-gray-200'
+                    }`}
+                  >
+                    {usePersonaMessage
+                      ? `✦ Personalised for ${selected.persona} · tap for generic`
+                      : `Using generic · tap to personalise for ${selected.persona}`
+                    }
+                  </button>
+                )}
               </div>
 
               <div className="flex gap-2">
