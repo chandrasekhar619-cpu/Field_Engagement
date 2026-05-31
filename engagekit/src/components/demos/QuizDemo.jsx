@@ -123,14 +123,17 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
     const personaName = PERSONAS[getPersona(answers)].name
     logOutcome(linkId, personaName)
 
-    // Save persona back to the customers table (fire-and-forget)
-    supabase
-      .from('links').select('customer_id').eq('id', linkId).single()
-      .then(({ data }) => {
-        if (data?.customer_id) {
-          supabase.from('customers').update({ persona: personaName }).eq('id', data.customer_id)
-        }
-      })
+    // Save persona to customers table — must await or chain .then() for Supabase v2 to execute
+    ;(async () => {
+      const { data: link, error: linkErr } = await supabase
+        .from('links').select('customer_id').eq('id', linkId).single()
+      if (linkErr) { console.error('Persona save — link fetch failed:', linkErr); return }
+      if (!link?.customer_id) { console.log('Persona save — no customer_id on link'); return }
+      const { error: updateErr } = await supabase
+        .from('customers').update({ persona: personaName }).eq('id', link.customer_id)
+      if (updateErr) console.error('Persona save failed:', updateErr)
+      else console.log('Persona saved:', personaName, '→ customer', link.customer_id)
+    })()
   }, [phase]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Draw the persona card programmatically as soon as the result screen mounts

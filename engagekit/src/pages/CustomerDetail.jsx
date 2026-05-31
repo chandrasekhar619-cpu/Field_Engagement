@@ -5,6 +5,26 @@ import { supabase } from '../lib/supabaseClient'
 import Navbar from '../components/Navbar'
 import ShareFlow from '../components/ShareFlow'
 import { contentItems } from '../data/mockData'
+import { toISTDate } from '../lib/formatDate'
+
+const PERSONA_GUIDANCE = {
+  'Go-Getter': {
+    dos:   ['Lead with growth stories and strong returns', 'Match their energy — be decisive and direct', 'Highlight flexibility to act fast'],
+    donts: ['Overload with paperwork upfront', 'Slow them down with excessive caution'],
+  },
+  'Protector': {
+    dos:   ['Emphasise guaranteed returns and capital safety', 'Show track record and stability data', 'Reference ratings and regulatory backing'],
+    donts: ['Push market-linked or high-risk products', 'Downplay risks to close faster'],
+  },
+  'Caregiver': {
+    dos:   ['Focus on family protection, term, and critical illness', 'Frame everything around loved ones\' security', 'Be warm and empathetic in tone'],
+    donts: ['Lead with personal wealth accumulation', 'Use cold or transactional language'],
+  },
+  'Thinker': {
+    dos:   ['Bring detailed comparisons, data sheets, and fine print', 'Give them time to research and decide', 'Match their analytical depth'],
+    donts: ['Rush towards a close or skip details', 'Use emotional appeals without data'],
+  },
+}
 
 const categoryStyle = {
   Quiz:       'bg-blue-50 text-blue-600',
@@ -40,11 +60,6 @@ function normalize(row) {
   }
 }
 
-function fmtDate(iso) {
-  return new Date(iso).toLocaleDateString('en-IN', {
-    day: 'numeric', month: 'short', year: 'numeric',
-  })
-}
 
 export default function CustomerDetail() {
   const { id } = useParams()
@@ -152,6 +167,45 @@ export default function CustomerDetail() {
             </div>
           </div>
 
+          {/* Persona guidance */}
+          {customer.persona && PERSONA_GUIDANCE[customer.persona] && (() => {
+            const g = PERSONA_GUIDANCE[customer.persona]
+            return (
+              <div className="bg-white rounded-xl border border-[#e4e7f0] p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <h3 className="text-sm font-semibold text-[#0f1f3d]">Engagement Guidance</h3>
+                  <span className="text-xs px-2 py-0.5 bg-[#e8a020]/10 text-[#e8a020] font-semibold rounded-full border border-[#e8a020]/25">
+                    {customer.persona}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-2">Do</p>
+                    <ul className="flex flex-col gap-1.5">
+                      {g.dos.map((d, i) => (
+                        <li key={i} className="flex items-start gap-1.5 text-xs text-gray-600 leading-relaxed">
+                          <span className="text-emerald-500 mt-0.5 flex-shrink-0">✓</span>
+                          {d}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-red-600 uppercase tracking-wider mb-2">Don't</p>
+                    <ul className="flex flex-col gap-1.5">
+                      {g.donts.map((d, i) => (
+                        <li key={i} className="flex items-start gap-1.5 text-xs text-gray-600 leading-relaxed">
+                          <span className="text-red-400 mt-0.5 flex-shrink-0">✕</span>
+                          {d}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
+
           {/* Policy details */}
           <div className="bg-white rounded-xl border border-[#e4e7f0] p-5">
             <h3 className="text-sm font-semibold text-[#0f1f3d] mb-4">Policy Details</h3>
@@ -204,7 +258,7 @@ export default function CustomerDetail() {
                         <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">{detail}</p>
                       </div>
                       <span className="text-xs text-gray-300 flex-shrink-0 mt-0.5">
-                        {fmtDate(ix.created_at)}
+                        {toISTDate(ix.created_at)}
                       </span>
                     </div>
                   )
