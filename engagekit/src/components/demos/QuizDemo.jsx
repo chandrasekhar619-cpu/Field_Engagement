@@ -110,6 +110,8 @@ function WaIcon() {
 }
 
 export default function QuizDemo({ onShare, onStep, isCustomerView = false, linkId }) {
+  console.log('linkId in QuizDemo:', linkId)
+
   const [currentQ,  setCurrentQ]  = useState(0)
   const [answers,   setAnswers]   = useState([])
   const [selected,  setSelected]  = useState(null)
@@ -119,16 +121,24 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
 
   // Log outcome when result screen appears in customer mode
   useEffect(() => {
+    console.log('Quiz phase changed to:', phase)
     if (phase !== 'result' || !isCustomerView || !linkId) return
     const personaName = PERSONAS[getPersona(answers)].name
     logOutcome(linkId, personaName)
 
-    // Save persona to customers table — must await or chain .then() for Supabase v2 to execute
     ;(async () => {
+      console.log('Persona save IIFE starting — linkId:', linkId, 'persona:', personaName)
+
+      // Sample the links table to check customer_id values
+      const { data: sampleLinks } = await supabase
+        .from('links').select('customer_id, token').limit(5)
+      console.log('Links sample (checking customer_id):', sampleLinks)
+
       const { data: link, error: linkErr } = await supabase
         .from('links').select('customer_id').eq('id', linkId).single()
+      console.log('This link record:', link, 'error:', linkErr)
       if (linkErr) { console.error('Persona save — link fetch failed:', linkErr); return }
-      if (!link?.customer_id) { console.log('Persona save — no customer_id on link'); return }
+      if (!link?.customer_id) { console.log('Persona save — no customer_id on this link (will not save)'); return }
       const { error: updateErr } = await supabase
         .from('customers').update({ persona: personaName }).eq('id', link.customer_id)
       if (updateErr) console.error('Persona save failed:', updateErr)

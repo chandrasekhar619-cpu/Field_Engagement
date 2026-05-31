@@ -204,7 +204,7 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
       const { error } = await supabase.from('links').insert({
         token:        newToken,
         rpm_id:       user?.id    ?? null,
-        customer_id:  null,              // customers not in Supabase yet
+        customer_id:  customer.id ?? null,
         content_id:   item.id,
         content_type: item.category,
         is_demo:      false,
