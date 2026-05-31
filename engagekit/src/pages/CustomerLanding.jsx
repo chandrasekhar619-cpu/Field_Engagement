@@ -195,6 +195,7 @@ export default function CustomerLanding() {
           onShare={handleComplete}
           isCustomerView={true}
           linkId={link.id}
+          customerName={link.customer_name}
           rpmName={link.rpm_name}
         />
       </div>

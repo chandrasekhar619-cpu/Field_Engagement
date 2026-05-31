@@ -9,20 +9,68 @@ import { toISTDate } from '../lib/formatDate'
 
 const PERSONA_GUIDANCE = {
   'Go-Getter': {
-    dos:   ['Lead with growth stories and strong returns', 'Match their energy — be decisive and direct', 'Highlight flexibility to act fast'],
-    donts: ['Overload with paperwork upfront', 'Slow them down with excessive caution'],
+    dos: [
+      'Remind them what their policy is protecting — frame it as keeping their momentum safe',
+      'Be brief and direct — they respect people who do not waste their time',
+      'Acknowledge their financial thinking — they like being seen as switched on',
+      'Frame the renewal as a smart move, not a routine task',
+      'Be transparent about numbers if they ask — they appreciate it',
+    ],
+    donts: [
+      'Lead with fear or worst-case scenarios — it will not land',
+      'Over-explaining or repeating yourself',
+      'Making it feel like a routine transaction',
+      'Suggesting they need guidance — they do not want to be managed',
+      'Long calls — say what you need to say and let them decide',
+    ],
   },
   'Protector': {
-    dos:   ['Emphasise guaranteed returns and capital safety', 'Show track record and stability data', 'Reference ratings and regulatory backing'],
-    donts: ['Push market-linked or high-risk products', 'Downplay risks to close faster'],
+    dos: [
+      'Ask about family first — business comes after the human check-in',
+      'Connect the renewal directly to what it means for their family\'s security',
+      'Give them the full picture — they want to understand, not just be told',
+      'Reassure them the claims process is simple if it ever comes to that',
+      'Be patient and unhurried — they appreciate that',
+    ],
+    donts: [
+      'Rushing them to a decision',
+      'Vague statements — they will ask follow-up questions',
+      'Skipping details — it makes them uneasy',
+      'Investment or market-linked language — they want security, not returns',
+      'Making it feel transactional — this is about their family',
+    ],
   },
   'Caregiver': {
-    dos:   ['Focus on family protection, term, and critical illness', 'Frame everything around loved ones\' security', 'Be warm and empathetic in tone'],
-    donts: ['Lead with personal wealth accumulation', 'Use cold or transactional language'],
+    dos: [
+      'Start warm — ask about family and check in genuinely before anything else',
+      'Remind them who this policy protects — the people, not the numbers',
+      'Keep the tone personal throughout — they respond to human, not formal',
+      'Be patient — they decide when they feel safe, not when pushed',
+      'End every interaction warmly — a genuine close matters to them',
+    ],
+    donts: [
+      'Opening with numbers or data — lead with people, not figures',
+      'Any pressure, even gentle — it will put them off immediately',
+      'Being businesslike or transactional',
+      'Jargon of any kind — keep every word simple',
+      'Short or abrupt calls — they need to feel the relationship, not just the task',
+    ],
   },
   'Thinker': {
-    dos:   ['Bring detailed comparisons, data sheets, and fine print', 'Give them time to research and decide', 'Match their analytical depth'],
-    donts: ['Rush towards a close or skip details', 'Use emotional appeals without data'],
+    dos: [
+      'Come prepared — know their policy details before reaching out',
+      'Share relevant facts — bonus declared, current coverage, renewal amount',
+      'Give them space to think — do not fill every silence',
+      'Be honest about what the policy does and does not cover',
+      'One well-prepared interaction beats three casual check-ins',
+    ],
+    donts: [
+      'Emotional appeals — they find it unconvincing',
+      'Vague claims you cannot back up with specifics',
+      'Calling too frequently — it signals you are not respecting their process',
+      'Creating urgency or pressure — it backfires every time',
+      'Pretending to know more than you do — they will catch it',
+    ],
   },
 }
 

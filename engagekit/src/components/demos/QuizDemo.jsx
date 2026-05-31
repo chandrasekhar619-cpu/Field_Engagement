@@ -56,6 +56,14 @@ const PERSONAS = {
       "You're not reckless — you're decisive. The only real risk is moving without a plan behind you.",
       "The right plan for you grows as fast as you do, while keeping everything you're building safe.",
     ],
+    content: n => ({
+      paragraphs: [
+        `${n} does not wait for the good things in life. They go after them. Whether it is the next career move, the next investment, or the next upgrade, ${n} has already thought about it — and has a plan to get there.`,
+        `Money, for ${n}, is not something to be handled carefully. It is something to be used well. They invest not out of fear but out of ambition — not saving for a rainy day, but building towards something specific.`,
+        `People like ${n} make bold decisions, back themselves when others hesitate, and find ways to grow their wealth while still enjoying the journey. The plan is not a safety net. It is part of the vision.`,
+      ],
+      closing: `The right plan for someone like ${n} does not slow them down — it keeps everything they are building safe while they keep moving.`,
+    }),
   },
   B: {
     name: 'Protector', emoji: '🛡️',
@@ -68,6 +76,14 @@ const PERSONAS = {
       "Your discipline is your greatest asset. While others sprint and stumble, you build reserves and finish strong.",
       "You deserve a plan that rewards your consistency — steady, guaranteed, and exactly as reliable as you are.",
     ],
+    content: n => ({
+      paragraphs: [
+        `Behind every important decision ${n} makes, there is a quiet question: will this keep my family safe? That question guides how they spend, save, and plan.`,
+        `${n} thinks in decades, not months. They build methodically — not because they fear the future, but because they respect it. They know that real security is not luck. It is preparation, done consistently and without fanfare.`,
+        `People like ${n} are the ones their families lean on. Not because they are loud about it — but because they have already taken care of it.`,
+      ],
+      closing: `For someone like ${n}, a good financial plan is not a product. It is peace of mind — quietly doing its job in the background.`,
+    }),
   },
   C: {
     name: 'Caregiver', emoji: '🤝',
@@ -80,6 +96,14 @@ const PERSONAS = {
       "You pick stability over speed and peace over profit. That quiet instinct has protected your loved ones more than you know.",
       "You need a plan that works for your family while you're here — and especially when you're not.",
     ],
+    content: n => ({
+      paragraphs: [
+        `For ${n}, money is not the point. The people in their life are. Every financial decision they make traces back to someone they love — a child's future, a parent's comfort, a partner's peace of mind.`,
+        `${n} moves on instinct and love. And that instinct is almost always right. When they put something aside, it is not for themselves — it is for the moment when someone they love needs it most.`,
+        `People like ${n} give more than they take, plan more than they talk, and care more deeply than most people ever will.`,
+      ],
+      closing: `The best thing ${n} can do for the people they love is make sure the plan is in place — so love never has to worry about money.`,
+    }),
   },
   D: {
     name: 'Thinker', emoji: '🔍',
@@ -92,6 +116,14 @@ const PERSONAS = {
       "Your rigour is rare. When you commit, it's because you've already stress-tested the outcome.",
       "You need a partner who respects your intelligence — full data, full transparency, zero pressure.",
     ],
+    content: n => ({
+      paragraphs: [
+        `${n} does not make decisions on instinct. They make them on evidence. Before any choice — financial or otherwise — they have already read, compared, questioned, and concluded. By the time they act, they are certain.`,
+        `This is not caution. It is precision. ${n} trusts data over opinions, specifics over generalities, and their own research over anyone's recommendation.`,
+        `People like ${n} build wealth quietly and deliberately. No shortcuts, no noise — just a clear-eyed understanding of where they are, where they want to be, and the most intelligent path between the two.`,
+      ],
+      closing: `For someone like ${n}, the right financial plan is one they have looked at closely, understood fully, and chosen deliberately. Nothing less.`,
+    }),
   },
 }
 
@@ -109,7 +141,7 @@ function WaIcon() {
   )
 }
 
-export default function QuizDemo({ onShare, onStep, isCustomerView = false, linkId }) {
+export default function QuizDemo({ onShare, onStep, isCustomerView = false, linkId, customerName }) {
   console.log('linkId in QuizDemo:', linkId)
 
   const [currentQ,  setCurrentQ]  = useState(0)
@@ -210,6 +242,9 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
 
     /* Customer-facing result */
     if (isCustomerView) {
+      const firstName = customerName?.split(' ')[0] || 'You'
+      const personaContent = p.content(firstName)
+
       return (
         <div className="flex flex-col">
           {toast && <Toast message={toast} onDone={() => setToast(null)} />}
@@ -235,7 +270,17 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
               </div>
             </div>
 
-            {/* Copies image to clipboard then opens WhatsApp — blob is pre-rendered */}
+            {/* Persona description */}
+            <div className="flex flex-col gap-3">
+              {personaContent.paragraphs.map((para, i) => (
+                <p key={i} className="text-gray-700 text-sm leading-relaxed">{para}</p>
+              ))}
+              <p className="text-[#0f1f3d] text-sm font-medium leading-relaxed border-t border-[#e4e7f0] pt-3 mt-1">
+                {personaContent.closing}
+              </p>
+            </div>
+
+            {/* Share result */}
             <button
               type="button"
               onClick={handleShareResult}
