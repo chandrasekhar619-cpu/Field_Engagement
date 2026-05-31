@@ -49,9 +49,10 @@ export default function CustomerCard({ customer }) {
           <span className={`text-[11px] px-2 py-0.5 rounded-md font-medium ${badgeClass}`}>
             {customer.policyType}
           </span>
-          {customer.lastInteraction ? (
-            <span className="text-gray-400 text-xs truncate">
-              {customer.lastInteraction} · {customer.lastInteractionDate}
+          {customer.hasInteractions ? (
+            <span className="flex items-center gap-1 text-emerald-600 text-xs font-medium">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+              Active
             </span>
           ) : (
             <span className="text-gray-300 text-xs">No interactions yet</span>

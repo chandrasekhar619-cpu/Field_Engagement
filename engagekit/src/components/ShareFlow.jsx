@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 import { generateShareImage } from '../lib/generateShareImage'
@@ -148,27 +148,42 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
   const designation = user?.designation || 'Relationship Portfolio Manager'
 
   const [allCustomers,     setAllCustomers]     = useState([])
-  const [customersLoading, setCustomersLoading] = useState(true)
+  const [customersLoading, setCustomersLoading] = useState(false)
+  const debounceRef = useRef(null)
 
+  // Server-side search — minimum 2 characters, top 20 results
   useEffect(() => {
-    supabase
-      .from('customers')
-      .select('id, name, policy_number, policy_type, persona')
-      .order('name', { ascending: true })
-      .then(({ data }) => {
-        setAllCustomers((data || []).map(r => ({
-          ...r,
-          policyNumber: r.policy_number,
-          policyType:   r.policy_type,
-        })))
-        setCustomersLoading(false)
-      })
-  }, [])
+    const term = search.trim()
+    clearTimeout(debounceRef.current)
 
-  const filtered = allCustomers.filter(c =>
-    c.name?.toLowerCase().includes(search.toLowerCase()) ||
-    c.policyNumber?.toLowerCase().includes(search.toLowerCase())
-  )
+    if (term.length < 2) {
+      setAllCustomers([])
+      setCustomersLoading(false)
+      return
+    }
+
+    setCustomersLoading(true)
+    debounceRef.current = setTimeout(() => {
+      supabase
+        .from('customers')
+        .select('id, name, policy_number, policy_type, persona')
+        .or(`name.ilike.%${term}%,policy_number.ilike.%${term}%`)
+        .order('name', { ascending: true })
+        .limit(20)
+        .then(({ data }) => {
+          setAllCustomers((data || []).map(r => ({
+            ...r,
+            policyNumber: r.policy_number,
+            policyType:   r.policy_type,
+          })))
+          setCustomersLoading(false)
+        })
+    }, 300)
+
+    return () => clearTimeout(debounceRef.current)
+  }, [search])
+
+  const filtered = allCustomers
 
   async function generateLink(customerOverride) {
     const customer = customerOverride || selected
@@ -331,20 +346,16 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
                 <div className="flex justify-center py-12">
                   <div className="w-6 h-6 border-2 border-[#0f1f3d] border-t-transparent rounded-full animate-spin" />
                 </div>
+              ) : search.trim().length < 2 ? (
+                <div className="flex flex-col items-center justify-center py-12 px-6 text-center text-gray-400">
+                  <span className="text-4xl mb-2">🔍</span>
+                  <p className="text-sm font-medium text-gray-500">Search by name or policy number</p>
+                  <p className="text-xs mt-1">Type at least 2 characters to find a customer</p>
+                </div>
               ) : filtered.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-6 text-center text-gray-400">
-                  {allCustomers.length === 0 ? (
-                    <>
-                      <span className="text-4xl mb-2">👤</span>
-                      <p className="text-sm font-medium text-gray-500">No customers loaded yet.</p>
-                      <p className="text-xs mt-1 leading-relaxed">Upload your customer list from the admin panel.</p>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-3xl mb-2">🔍</span>
-                      <p className="text-sm">No match for "{search}"</p>
-                    </>
-                  )}
+                  <span className="text-3xl mb-2">🔍</span>
+                  <p className="text-sm">No match for "{search}"</p>
                 </div>
               ) : (
                 filtered.map(c => {
