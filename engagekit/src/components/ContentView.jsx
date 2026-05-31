@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { contentItems, customers } from '../data/mockData'
+import { contentItems } from '../data/mockData'
+import { supabase } from '../lib/supabaseClient'
 import ContentCard from './ContentCard'
 import CreativesModal from './CreativesModal'
 import ShareFlow from './ShareFlow'
@@ -13,10 +14,21 @@ export default function ContentView() {
   const [activeLanguage, setActiveLanguage] = useState(null)
   const [creativeItem, setCreativeItem] = useState(null)
   const [shareItem, setShareItem] = useState(null)
+  const [activeCustomer, setActiveCustomer] = useState(null)
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const customerId    = searchParams.get('customerId')
-  const activeCustomer = customerId ? customers.find(c => c.id === customerId) : null
+  const customerId = searchParams.get('customerId')
+
+  // Fetch the context customer from Supabase whenever the URL param changes
+  useEffect(() => {
+    if (!customerId) { setActiveCustomer(null); return }
+    supabase
+      .from('customers')
+      .select('id, name, policy_number, policy_type, persona')
+      .eq('id', customerId)
+      .single()
+      .then(({ data }) => setActiveCustomer(data ?? null))
+  }, [customerId])
 
   function clearCustomerContext() { setSearchParams({}) }
 
@@ -38,19 +50,12 @@ export default function ContentView() {
     <>
       {/* Customer context banner */}
       {activeCustomer && (
-        <div className="sticky top-[60px] z-40 bg-[#0f1f3d] border-b border-white/10 px-4 md:px-6 py-2.5 flex items-center gap-2">
-          <span className="text-white/60 text-sm">Sharing with</span>
-          <span className="text-white font-semibold text-sm">{activeCustomer.name}</span>
-          <span className="text-white/30 text-sm">·</span>
+        <div className="sticky top-[60px] z-40 bg-[#e8a020] px-4 md:px-6 py-2 flex items-center gap-1.5">
+          <span className="text-[#0f1f3d]/70 text-xs font-medium">Sharing with</span>
+          <span className="text-[#0f1f3d] font-bold text-xs">{activeCustomer.name}</span>
           <button
             onClick={clearCustomerContext}
-            className="text-[#e8a020] text-sm font-medium hover:text-amber-300 transition-colors"
-          >
-            Change
-          </button>
-          <button
-            onClick={clearCustomerContext}
-            className="ml-auto text-white/40 hover:text-white/80 transition-colors text-base leading-none"
+            className="ml-auto text-[#0f1f3d]/60 hover:text-[#0f1f3d] transition-colors text-sm font-bold leading-none"
             aria-label="Clear customer context"
           >
             ✕
