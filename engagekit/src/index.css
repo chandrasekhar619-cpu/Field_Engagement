@@ -26,7 +26,13 @@
   40%       { transform: translateY(-20px); }
   65%       { transform: translateY(-10px); }
 }
-.mw-flip   { animation: mw-flip   300ms ease; }
-.mw-pop    { animation: mw-pop     80ms ease; }
-.mw-shake  { animation: mw-shake  400ms ease; }
-.mw-bounce { animation: mw-bounce 500ms ease; }
+.mw-flip        { animation: mw-flip        300ms ease; }
+.mw-pop         { animation: mw-pop          80ms ease; }
+.mw-shake       { animation: mw-shake       400ms ease; }
+.mw-bounce      { animation: mw-bounce      500ms ease; }
+.mw-htp-reveal  { animation: mw-htp-reveal  400ms ease both; }
+
+@keyframes mw-htp-reveal {
+  from { transform: rotateX(90deg); }
+  to   { transform: rotateX(0deg); }
+}
