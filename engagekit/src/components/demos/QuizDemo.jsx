@@ -141,7 +141,7 @@ function WaIcon() {
   )
 }
 
-export default function QuizDemo({ onShare, onStep, isCustomerView = false, linkId, customerName }) {
+export default function QuizDemo({ onShare, onStep, isCustomerView = false, linkId, customerName, shareToken, customerId: customerIdProp }) {
   console.log('linkId in QuizDemo:', linkId)
 
   const [currentQ,  setCurrentQ]  = useState(0)
@@ -159,20 +159,25 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
     logOutcome(linkId, personaName)
 
     ;(async () => {
-      const { data: link, error: linkErr } = await supabase
-        .from('links').select('customer_id').eq('id', linkId).single()
-      if (linkErr) { console.error('Persona save — link fetch failed:', linkErr); return }
-      if (!link?.customer_id) { console.log('Persona save — no customer_id on link'); return }
+      // Use customer_id passed directly from CustomerLanding; fall back to links lookup
+      let customerId = customerIdProp
+      if (!customerId) {
+        const { data: link, error: linkErr } = await supabase
+          .from('links').select('customer_id').eq('id', linkId).single()
+        if (linkErr) { console.error('Persona save — link fetch failed:', linkErr); return }
+        customerId = link?.customer_id
+      }
+      if (!customerId) { console.log('Persona save — no customer_id'); return }
 
       // Update this specific customer record
       const { data: customerData, error: updateErr } = await supabase
         .from('customers')
         .update({ persona: personaName })
-        .eq('id', link.customer_id)
+        .eq('id', customerId)
         .select('customer_master_id')
         .single()
       if (updateErr) { console.error('Persona save failed:', updateErr); return }
-      console.log('Persona saved:', personaName, '→ customer', link.customer_id)
+      console.log('Persona saved:', personaName, '→ customer', customerId)
 
       // Propagate to all other policies for the same person
       if (customerData?.customer_master_id) {
@@ -182,6 +187,16 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
           .eq('customer_master_id', customerData.customer_master_id)
         if (masterErr) console.error('Persona propagation failed:', masterErr)
         else console.log('Persona propagated to all records with master_id:', customerData.customer_master_id)
+      }
+
+      // Mark share token as used — link is now single-use
+      if (shareToken) {
+        const { error: usedErr } = await supabase
+          .from('share_tokens')
+          .update({ used: true })
+          .eq('token', shareToken)
+        if (usedErr) console.error('Failed to mark share_token as used:', usedErr)
+        else console.log('share_token marked used:', shareToken)
       }
     })()
   }, [phase]) // eslint-disable-line react-hooks/exhaustive-deps

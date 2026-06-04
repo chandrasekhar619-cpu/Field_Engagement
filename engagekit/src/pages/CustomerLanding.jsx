@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { contentItems } from '../data/mockData'
 import QuizDemo           from '../components/demos/QuizDemo'
@@ -41,14 +41,16 @@ async function fetchIp() {
 }
 
 export default function CustomerLanding() {
-  const { token } = useParams()
+  const [searchParams] = useSearchParams()
+  const token = searchParams.get('token')
 
-  const [link,      setLink]      = useState(null)
-  const [content,   setContent]   = useState(null)
+  const [link,       setLink]       = useState(null)
+  const [content,    setContent]    = useState(null)
+  const [customer,   setCustomer]   = useState(null)
   const [customerIp, setCustomerIp] = useState(null)
-  const [loading,   setLoading]   = useState(true)
-  const [error,     setError]     = useState(null)
-  const [done,      setDone]      = useState(false)
+  const [loading,    setLoading]    = useState(true)
+  const [error,      setError]      = useState(null)
+  const [done,       setDone]       = useState(false)
 
   // steps are collected locally and flushed on completion
   const stepsRef          = useRef([])
@@ -58,8 +60,45 @@ export default function CustomerLanding() {
     let cancelled = false
 
     async function init() {
+      if (!token) {
+        setError('This link has expired.')
+        setLoading(false)
+        return
+      }
+
       try {
-        // 1. Look up the link by token
+        // 1. Validate the share token
+        const { data: shareToken, error: stErr } = await supabase
+          .from('share_tokens')
+          .select('*')
+          .eq('token', token)
+          .single()
+
+        if (cancelled) return
+        if (stErr || !shareToken) {
+          setError('This link has expired.')
+          return
+        }
+        if (shareToken.used || (shareToken.expires_at && new Date(shareToken.expires_at) < new Date())) {
+          setError('This link has expired.')
+          return
+        }
+
+        // 2. Fetch customer from customers table using customer_id from the token
+        const { data: customerData, error: custErr } = await supabase
+          .from('customers')
+          .select('*')
+          .eq('id', shareToken.customer_id)
+          .single()
+
+        if (cancelled) return
+        if (custErr || !customerData) {
+          setError('This link is not valid or has expired.')
+          return
+        }
+        setCustomer(customerData)
+
+        // 3. Look up the link record for content_id and RPM metadata
         const { data: linkRecord, error: linkErr } = await supabase
           .from('links')
           .select('*')
@@ -68,12 +107,12 @@ export default function CustomerLanding() {
 
         if (cancelled) return
         if (linkErr || !linkRecord) {
-          setError('This link is not valid or has expired.')
+          setError('The content for this link could not be loaded.')
           return
         }
         setLink(linkRecord)
 
-        // 2. Resolve content from local mock (content_id is the item id string)
+        // 4. Resolve content from local mock (content_id is the item id string)
         const item = contentItems.find(c => c.id === linkRecord.content_id)
         if (!item || !DEMOS[item.demoType]) {
           setError('The content for this link could not be loaded.')
@@ -81,17 +120,17 @@ export default function CustomerLanding() {
         }
         setContent(item)
 
-        // 3. Capture customer IP
+        // 5. Capture customer IP
         const ip = await fetchIp()
         if (cancelled) return
         setCustomerIp(ip)
 
-        // 4. Record "opened" interaction (fire-and-forget, insert once)
+        // 6. Record "opened" interaction (fire-and-forget, insert once)
         if (!openedRecordedRef.current) {
           openedRecordedRef.current = true
           await supabase.from('interactions').insert({
             link_id:         linkRecord.id,
-            customer_id:     linkRecord.customer_id ?? null,
+            customer_id:     shareToken.customer_id ?? null,
             rpm_id:          linkRecord.rpm_id ?? null,
             action:          'opened',
             customer_ip:     ip,
@@ -118,7 +157,7 @@ export default function CustomerLanding() {
     if (link) {
       await supabase.from('interactions').insert({
         link_id:         link.id,
-        customer_id:     link.customer_id ?? null,
+        customer_id:     customer?.id ?? null,
         rpm_id:          link.rpm_id ?? null,
         action:          'completed',
         outcome:         stepsRef.current.find(s => s.persona)?.persona ?? null,
@@ -178,7 +217,7 @@ export default function CustomerLanding() {
       {/* Header — customer greeting + advisor attribution */}
       <div className="bg-[#0f1f3d] px-5 pt-6 pb-5 flex-shrink-0">
         <h1 className="text-white text-2xl font-bold leading-snug">
-          {link.customer_name ? `Hi ${link.customer_name}! 👋` : 'Hello! 👋'}
+          {customer?.name ? `Hi ${customer.name}! 👋` : 'Hello! 👋'}
         </h1>
         {link?.rpm_name && (
           <p className="text-white/50 text-xs mt-1">
@@ -195,8 +234,10 @@ export default function CustomerLanding() {
           onShare={handleComplete}
           isCustomerView={true}
           linkId={link.id}
-          customerName={link.customer_name}
+          customerName={customer?.name ?? link.customer_name}
           rpmName={link.rpm_name}
+          shareToken={token}
+          customerId={customer?.id}
         />
       </div>
 

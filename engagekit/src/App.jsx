@@ -22,7 +22,7 @@ export default function App() {
           <Route path="/app/customers" element={<Dashboard />} />
           <Route path="/app/customer/:id" element={<CustomerDetail />} />
           <Route path="/preview/:contentId" element={<PreviewPage />} />
-          <Route path="/c/:token" element={<CustomerLanding />} />
+          <Route path="/c" element={<CustomerLanding />} />
           <Route path="/admin/upload" element={<AdminUpload />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

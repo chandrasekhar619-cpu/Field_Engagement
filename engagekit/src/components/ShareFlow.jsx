@@ -5,14 +5,7 @@ import { generateShareImage } from '../lib/generateShareImage'
 import { getWhatsAppMessage } from '../lib/whatsappMessages'
 
 // ── Link base URL — uses current origin so localhost works during dev ─────────
-function linkUrl(token) { return `${window.location.origin}/c/${token}` }
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function generateToken() {
-  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789'
-  return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
-}
+function linkUrl(token) { return `${window.location.origin}/c?token=${token}` }
 
 function initials(name = '') {
   return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '?'
@@ -171,7 +164,18 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
     setGenerating(true)
     setLinkError('')
     try {
-      const newToken = generateToken()
+      // Get authenticated user ID for share_tokens
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+
+      // Insert into share_tokens — DB generates a UUID token
+      const { data: tokenData, error: tokenErr } = await supabase
+        .from('share_tokens')
+        .insert({ customer_id: customer.id, created_by: authUser?.id ?? null })
+        .select('token')
+        .single()
+      if (tokenErr || !tokenData?.token) throw tokenErr ?? new Error('No token returned')
+
+      const uuid = tokenData.token
 
       // Capture RPM's IP address at link-creation time
       let rpmIp = null
@@ -181,8 +185,9 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
         rpmIp = ipData.ip ?? null
       } catch { /* non-fatal */ }
 
-      const { error } = await supabase.from('links').insert({
-        token:        newToken,
+      // Insert into links for content and analytics tracking (same UUID as token)
+      const { error: linkErr } = await supabase.from('links').insert({
+        token:        uuid,
         rpm_id:       user?.id    ?? null,
         customer_id:  customer.id ?? null,
         content_id:   item.id,
@@ -193,9 +198,10 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
         rpm_name:     user?.name    ?? null,
         customer_name: customer.name ?? null,
       })
-      if (error) throw error
+      if (linkErr) throw linkErr
+
       setSelected(customer)
-      setToken(newToken)
+      setToken(uuid)
       setUsePersonaMessage(true)
       setStep('link')
 
@@ -410,7 +416,7 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
               <div className="bg-[#f4f5f9] border border-[#e4e7f0] rounded-xl p-4">
                 <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-1.5">Unique link</p>
                 <p className="text-[#0f1f3d] font-mono text-sm break-all leading-relaxed">
-                  {`${window.location.origin}/c/`}<span className="text-[#e8a020] font-bold">{token}</span>
+                  {`${window.location.origin}/c?token=`}<span className="text-[#e8a020] font-bold">{token}</span>
                 </p>
               </div>
 
