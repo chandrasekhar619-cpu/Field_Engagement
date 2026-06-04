@@ -1,264 +1,507 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import FeedbackSection from '../FeedbackSection'
 import { logOutcome } from '../../lib/logOutcome'
 
+// ── Word bank ─────────────────────────────────────────────────────────────────
+
 const WORDS = [
-  { word: "BONUS", definition: "A share of the insurer's profits added to your policy's sum assured each year. Only Par (Participating) policies earn a bonus — and it can significantly increase what your family receives." },
-  { word: "CLAIM", definition: "A formal request made to the insurer to receive a payout under your policy — whether on death, maturity, or a covered event. A smooth claims process is the real test of any insurer." },
-  { word: "RIDER", definition: "An optional add-on to your base policy that extends your coverage. Common riders include accidental death, critical illness, and waiver of premium." },
-  { word: "LAPSE", definition: "When a policy becomes inactive because the premium wasn't paid within the grace period. A lapsed policy offers no coverage — but many can be revived." },
-  { word: "ASSET", definition: "Something of financial value that you own. Your life insurance policy is an asset — it holds a surrender value and can even be used as loan collateral." },
-  { word: "YIELD", definition: "The return earned on an investment over a period. In insurance, yield matters in ULIPs where your premium is invested in market-linked funds." },
-  { word: "TRUST", definition: "A legal arrangement where assets are held by one party for the benefit of another. Placing a policy in trust ensures the payout goes directly to your chosen beneficiary." },
-  { word: "COVER", definition: "The protection your insurance policy provides. Your cover is the amount your family receives if a claim is made — also called sum assured." },
-  { word: "GRACE", definition: "A short window after your premium due date — typically 15 to 30 days — during which your policy stays active even if payment is delayed." },
-  { word: "RATES", definition: "The pricing applied to your insurance premium. Rates are determined by age, health, lifestyle, and the type and duration of cover you choose." },
-  { word: "TERMS", definition: "The conditions and duration that define how your policy works — including the premium amount, payout rules, exclusions, and the policy period." },
-  { word: "VALUE", definition: "The monetary worth of your policy. This includes the sum assured, accumulated bonuses, and the surrender value if you decide to exit the policy early." },
-  { word: "ENDOW", definition: "An endowment policy pays a lump sum at maturity or on death — whichever comes first. It combines life cover with disciplined long-term savings." },
-  { word: "FIXED", definition: "A fixed return is guaranteed by the insurer regardless of market performance. Traditional life insurance plans often offer fixed or declared bonus rates." },
-  { word: "GAINS", definition: "The profit earned on an investment above its original cost. In ULIPs and mutual funds, gains are what grow your wealth over time." },
-  { word: "INDEX", definition: "A benchmark that tracks the performance of a group of assets — like the Nifty 50 or Sensex. Some ULIP funds are index-linked." },
-  { word: "RENEW", definition: "Extending your insurance policy for another term at the end of its period. Renewing on time ensures continuous coverage without a break." },
-  { word: "REPAY", definition: "Returning borrowed money along with any interest. If you take a loan against your policy's surrender value, repayment keeps the policy intact." },
-  { word: "TAXES", definition: "Life insurance is one of the most effective tools for tax saving. Premiums paid qualify for deduction under Section 80C, and maturity proceeds are often tax-free under 10(10D)." },
-  { word: "TENOR", definition: "The duration of a financial product — how long your policy runs, or how long a loan is to be repaid. Longer tenors in insurance often mean better coverage and bonus accumulation." },
-  { word: "FUNDS", definition: "In ULIPs, your premium is split between life cover and investment funds. You can choose funds based on your risk appetite — equity, debt, or balanced." },
-  { word: "AGENT", definition: "A licensed professional who sells and services insurance policies. A good agent helps you choose the right cover, not just the most expensive one." },
-  { word: "HEDGE", definition: "A strategy to reduce financial risk. Life insurance itself is a hedge — it protects your family's future against the uncertainty of income loss." },
-  { word: "LOANS", definition: "You can borrow money against the surrender value of your life insurance policy. It's often cheaper than a personal loan and your cover stays intact." },
-  { word: "SHARE", definition: "A unit of ownership in a company. In ULIP equity funds, your premium buys units in funds that hold shares — giving you indirect market exposure." },
-  { word: "MONEY", definition: "The medium of exchange behind every financial decision. Life insurance ensures the money you've earned continues to protect your family even when you can't." },
+  {
+    word: "BONUS",
+    note: "Only PAR (participating) plans share profits with policyholders through bonuses — non-PAR and ULIP plans don't. There are three kinds. Reversionary Bonus is declared annually and added to your sum assured — once declared, it becomes guaranteed. For example, if your sum assured is ₹10 lakh and the bonus rate is ₹50 per ₹1,000, that's ₹50,000 added that year. Cash Bonus is also declared annually, but paid out as cash rather than accumulated — useful if you want regular income from the policy. Terminal Bonus is paid once, at maturity or on death, as a reward for staying invested through the full policy term."
+  },
+  {
+    word: "CLAIM",
+    note: "A claim is a formal request to the insurer for a payout. Three types: death claim (filed by the nominee), maturity claim (filed by the policyholder when the policy completes its term), and rider claim (for specific events like critical illness or accidental disability). Edelweiss Life settled 99.29% of individual claims in FY 2024-25. Keeping nominee details updated is the single most important thing you can do to make the process smooth for your family."
+  },
+  {
+    word: "RIDER",
+    note: "A rider is an optional add-on bought with your base policy for a small extra premium. Common types: Accidental Death Benefit (additional payout if death is due to an accident), Critical Illness (lump sum on diagnosis of listed conditions like cancer or heart attack), Waiver of Premium (all future premiums are waived if you become disabled or critically ill — and the policy continues as normal), and Accidental Total and Permanent Disability cover. The extra premium for a rider is usually small relative to the protection it adds."
+  },
+  {
+    word: "GRACE",
+    note: "After your premium due date, every policy gives you a buffer window before it is treated as inactive — called the grace period. Under Edelweiss Life plans: 15 days if you pay monthly, and 30 days for quarterly, half-yearly, or annual modes. Your cover stays fully active during this period even if you haven't paid yet. Miss it, and the policy lapses — though most plans allow revival by paying outstanding premiums with interest."
+  },
+  {
+    word: "FUNDS",
+    note: "Relevant to ULIPs specifically. In a Unit Linked Insurance Plan, your premium is split — part goes toward life cover, and part is invested in funds you choose. Options typically include equity funds (market-linked, higher growth potential but more volatility), debt funds (steadier, lower risk), and balanced funds (a mix of both). You can switch between funds as your goals or risk appetite change. One important rule: ULIPs have a mandatory 5-year lock-in period — you cannot fully access the money before that."
+  },
+  {
+    word: "COVER",
+    note: "Cover — the Sum Assured on Death — is the guaranteed minimum your family receives if you pass away during the policy term. How it works by plan type: in most traditional and PAR plans, the minimum is typically 10 times the annualized premium. In guaranteed income plans, you choose a coverage multiple — 5, 7, or 10 times — and a higher multiple means higher cover but affects the income payout. In a ULIP, your nominee receives whichever is higher — the sum assured or the fund value at the time of death. More cover means higher premium, but it is the core reason the policy exists."
+  },
+  {
+    word: "RENEW",
+    note: "Renewing your policy means paying your premium on time to keep it active. What is at stake if you miss it differs by plan type. In PAR plans, missing a renewal stops bonus accumulation for that year. In guaranteed income plans, it can interrupt scheduled payouts. In ULIPs, the policy enters a discontinuance mode — your funds are moved to a lower-yield Discontinued Policy Fund until the policy is revived or the 5-year lock-in period ends. The simplest fix across all plan types: set up an auto-debit and never think about it again."
+  },
+  {
+    word: "FIXED",
+    note: "In non-participating, non-linked plans — the guaranteed income and savings plans — your return is locked at inception. No market risk, no bonus variability. What the policy document shows you on day one is exactly what you receive. For example, pay ₹1 lakh a year for 10 years, and the plan guarantees ₹2.2 lakh a year as income for the next 15 years — regardless of how markets move. No upside potential, but complete predictability. It is the plan type built for people who want certainty over possibility."
+  },
+  {
+    word: "WHOLE",
+    note: "A whole life policy covers you until age 100 — not just for a fixed term of 15 or 20 years. The death benefit is payable whenever you die, not just within a policy window. Many whole life plans also pay regular income from an early policy year, making them useful for both long-term protection and retirement income planning. The premium paying term is usually shorter — typically 8 to 12 years — while the cover runs for life."
+  },
+  {
+    word: "ASSET",
+    note: "Most people think of life insurance as a cost. It is actually a financial asset. After 2 to 3 years of premium payments, the policy acquires a surrender value — money you can access in an emergency. PAR plans accumulate bonuses that increase the policy's worth over time. You can take a loan against it — up to 90% of surrender value in many plans — at rates typically lower than a personal loan. The surrender value is also tax-free if premiums have been paid for at least the first two years."
+  },
+  {
+    word: "YIELD",
+    note: "Effective return varies significantly by plan type. PAR plans: return comes from bonuses declared annually, historically around 5 to 6% for traditional plans. Non-PAR guaranteed plans: return is locked at inception, typically in the 6 to 7% effective return range for longer-term plans. ULIPs: depends on fund performance plus policy additions like Loyalty and Booster Additions — equity funds can return 8 to 12% over long periods, but nothing is guaranteed. Comparing yields across plan types only makes sense over the full policy term. Surrendering early reduces effective returns in every category."
+  },
+  {
+    word: "LOANS",
+    note: "Once your policy acquires a surrender value — typically after 2 to 3 years for traditional plans — you can borrow against it. Most Edelweiss Life plans allow loans up to 90% of the surrender value, at interest rates that are generally lower than personal loans. Your life cover stays active while the loan is outstanding. One thing to keep in mind: any unpaid loan balance, principal plus interest, is deducted from the final maturity or death payout. Borrow if you need to, but factor in repayment."
+  },
+  {
+    word: "TAXES",
+    note: "Life insurance has two main tax benefits. Section 80C: premiums paid are deductible up to ₹1.5 lakh per year, across all 80C investments combined. Section 10(10D): maturity and survival proceeds are tax-free, subject to annual premium not exceeding ₹5 lakh for policies issued after April 2023. Death benefits are always fully tax-free. For ULIPs specifically, switching between funds inside the plan carries no capital gains tax — an advantage over switching between mutual funds directly. If you surrender too early, some benefits claimed earlier may need to be reversed."
+  },
+  {
+    word: "ENDOW",
+    note: "An endowment plan is a savings-plus-insurance plan that pays a lump sum at the end of a fixed term, or on death — whichever is earlier. You pay premiums for a set number of years and receive a guaranteed amount at maturity, with bonuses added on top in PAR plans. For example, pay ₹1 lakh a year for 12 years and receive ₹18 to 20 lakh at maturity depending on bonuses declared. The fixed structure is the point — the money is committed for a purpose, which is why it actually gets saved."
+  },
+  {
+    word: "GAINS",
+    note: "In ULIPs, your total gain comes from two sources: market returns on your chosen funds, and policy-level additions credited at set milestones. Loyalty Additions — credited from around year 6 in many plans — and Booster Additions in the final years sit on top of whatever the fund earns. For example, a fund returning 10% per year plus a 2% Loyalty Addition is meaningfully better than holding the same fund outside a ULIP. This is why staying invested through the full term — rather than exiting when markets dip — makes such a significant difference."
+  },
+  {
+    word: "INDEX",
+    note: "An index fund tracks a market benchmark — like the Nifty 50 or Nifty Next 50 — rather than trying to beat it, typically at a lower fund management cost than actively managed equity funds. In a ULIP, index fund options let you participate in broad market growth without picking between individual sectors or fund managers. For someone who wants equity exposure without complexity, an index fund within a ULIP is a clean, straightforward starting point."
+  },
+  {
+    word: "VALUE",
+    note: "Surrender value is what you receive if you exit the policy before maturity. There are two components: Guaranteed Surrender Value, typically around 30% of premiums paid after the first year; and Special Surrender Value, which is usually higher and accounts for bonuses in PAR plans or fund value in ULIPs. The insurer pays whichever is greater. For ULIPs, the policy cannot be fully surrendered within the 5-year lock-in. In every plan type, the maturity payout is significantly higher than the surrender value at any intermediate point."
+  },
+  {
+    word: "RATES",
+    note: "Bonus rates in PAR plans are declared annually by the insurer based on the participating fund's performance — not guaranteed in advance, and can go up or down year to year. Edelweiss Life publishes its declared bonus rates on its website. For non-PAR guaranteed plans, the income or maturity rate is locked at policy inception — no surprises either way. For ULIPs, the relevant rate is the Net Asset Value of your chosen fund, recalculated every day as markets move."
+  },
+  {
+    word: "TENOR",
+    note: "Policy term is how long the plan runs; premium paying term is how long you actually pay premiums. These are often different — you might pay for 10 years but stay covered for 30. What the term affects by plan type: in PAR plans, a longer term means more years of bonus accumulation and compounding. In guaranteed plans, longer terms generally unlock higher guaranteed income rates. In ULIPs, a longer term lets market returns smooth out short-term volatility and gives policy additions time to fully accumulate. A 10-year ULIP and a 25-year ULIP are very different propositions even with identical fund choices."
+  },
+  {
+    word: "SHARE",
+    note: "In a ULIP's equity funds, your premium buys fund units backed by shares of listed companies. The Net Asset Value of the fund moves every day with the market. Unlike PAR plans where the insurer absorbs investment risk, in a ULIP the investment risk is entirely yours — if markets fall, your fund value falls. The upside: when markets perform well over a long period, returns can significantly exceed those of guaranteed or PAR plans. It is the plan type built for wealth accumulation over the long term, not just protection."
+  },
+  {
+    word: "MONEY",
+    note: "Life insurance works best when you think of it as money that keeps working — not a cost. A PAR plan shares the insurer's profits with you through bonuses that accumulate year on year. A guaranteed plan locks in a known return from day one. A ULIP builds a market-linked corpus while your life stays covered. What is common across all three: your premium is committed to a purpose, compounding over time, and the plan ensures it reaches your family — with or without you."
+  },
+  {
+    word: "AGENT",
+    note: "At Edelweiss Life, field agents are called Financial Life Consultants. Their role is to understand your existing cover, your income, your dependents, and your goals — and then recommend accordingly. A good Financial Life Consultant knows the difference between a PAR plan, a guaranteed plan, and a ULIP, and when each is appropriate. The quality of that first conversation has a direct bearing on whether the policy stays in-force for its full term — which is when it actually does what it was designed to do."
+  },
+  {
+    word: "HEDGE",
+    note: "Every life insurance plan is, at its core, a hedge — protection against the income loss your family would face if you were no longer around. PAR plans offer a secondary hedge against inflation, since bonuses declared on top of the base payout grow over time. ULIPs offer a market-participation hedge for long-term wealth goals. The right hedge depends on which risk you are most exposed to — loss of income, inflation eroding savings, or missing out on long-term market growth."
+  },
+  {
+    word: "TERMS",
+    note: "The terms of your policy are the conditions under which it operates — premium amount, payment frequency, policy and premium paying term, sum assured, benefit structure, exclusions, free-look period, and revival conditions. The free-look period gives you 30 days from receipt of the policy document to return it if it does not meet your expectations, with a refund minus processing charges. The exclusions section — what the policy will not cover — is the most commonly skipped and most commonly regretted part of any policy document."
+  },
 ]
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
 function getTodaysWord() {
-  const today = new Date()
-  const dayIndex = Math.floor(today.getTime() / 86400000) % WORDS.length
+  const dayIndex = Math.floor(Date.now() / 86400000) % WORDS.length
   return WORDS[dayIndex]
 }
 
 function evaluateGuess(guess, answer) {
-  const result = Array(5).fill('absent')
+  const result    = Array(5).fill('absent')
   const available = answer.split('')
-
-  // Pass 1: correct positions (green)
   for (let i = 0; i < 5; i++) {
-    if (guess[i] === answer[i]) {
-      result[i] = 'correct'
-      available[i] = null
-    }
+    if (guess[i] === answer[i]) { result[i] = 'correct'; available[i] = null }
   }
-
-  // Pass 2: present letters (yellow)
   for (let i = 0; i < 5; i++) {
     if (result[i] === 'correct') continue
     const idx = available.indexOf(guess[i])
-    if (idx !== -1) {
-      result[i] = 'present'
-      available[idx] = null
-    }
+    if (idx !== -1) { result[i] = 'present'; available[idx] = null }
   }
-
   return result
 }
 
-const TILE_STYLE = {
-  correct: 'bg-[#538d4e]  text-white border-[#538d4e]',
-  present: 'bg-[#b59f3b]  text-white border-[#b59f3b]',
-  absent:  'bg-[#3a3a3c]  text-white border-[#3a3a3c]',
-  tbd:     'bg-white      text-[#0f1f3d] border-[#0f1f3d]',
-  empty:   'bg-transparent text-transparent border-gray-300',
-}
+const STATE_PRIORITY = { correct: 3, present: 2, absent: 1 }
 
-const KEY_BASE = 'h-[52px] rounded-lg font-bold text-xs uppercase flex items-center justify-center transition-colors select-none'
+// ── Colour maps ───────────────────────────────────────────────────────────────
 
-const KEY_STYLE = {
-  correct: `${KEY_BASE} bg-[#538d4e] text-white`,
-  present: `${KEY_BASE} bg-[#b59f3b] text-white`,
-  absent:  `${KEY_BASE} bg-[#3a3a3c] text-white`,
-  unused:  `${KEY_BASE} bg-[#dde0ea] text-[#0f1f3d]`,
-}
+const TILE_BG     = { empty: 'transparent', filled: '#1a3060', correct: '#538d4e', present: '#b59f3b', absent: '#3a3a3c' }
+const TILE_BORDER = { empty: '#3a4a6b',     filled: '#3a4a6b',  correct: '#538d4e', present: '#b59f3b', absent: '#3a3a3c' }
+const KEY_BG      = { unused: '#818384', correct: '#538d4e', present: '#b59f3b', absent: '#3a3a3c' }
 
-const KEYBOARD_ROWS = [
+// ── Keyboard layout ───────────────────────────────────────────────────────────
+
+const KB_ROWS = [
   ['Q','W','E','R','T','Y','U','I','O','P'],
   ['A','S','D','F','G','H','J','K','L'],
   ['ENTER','Z','X','C','V','B','N','M','⌫'],
 ]
 
-const STATE_PRIORITY = { correct: 3, present: 2, absent: 1 }
+// ── How To Play bottom sheet ──────────────────────────────────────────────────
+
+const HTP = [
+  { word: ['B','O','N','U','S'], hi: 0, state: 'correct', caption: 'B is in the word and in the correct spot.' },
+  { word: ['C','L','A','I','M'], hi: 3, state: 'present', caption: 'I is in the word but in the wrong spot.'   },
+  { word: ['R','I','D','E','R'], hi: 2, state: 'absent',  caption: 'D is not in the word in any spot.'         },
+]
+
+function HowToPlay({ onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={onClose}>
+      <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.75)' }} />
+      <div
+        className="relative rounded-t-3xl overflow-y-auto"
+        style={{ background: '#0d2244', borderTop: '1px solid #1a3060', maxHeight: '85vh' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="px-5 pt-5 pb-10">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-white font-bold text-base tracking-wide">How to Play</h2>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm text-white"
+              style={{ background: '#1a3060' }}
+            >
+              ✕
+            </button>
+          </div>
+
+          <p className="text-sm leading-relaxed mb-5" style={{ color: 'rgba(255,255,255,0.65)' }}>
+            Guess today's finance word in 6 tries. Each guess must be 5 letters.
+            After each guess, the tiles change colour to show how close you were.
+          </p>
+
+          <div className="flex flex-col gap-5 border-t pt-5" style={{ borderColor: '#1a3060' }}>
+            {HTP.map((ex, i) => (
+              <div key={i}>
+                <div className="flex gap-2 mb-2">
+                  {ex.word.map((letter, li) => {
+                    const s = li === ex.hi ? ex.state : 'empty'
+                    return (
+                      <div
+                        key={li}
+                        className="flex-1 flex items-center justify-center font-bold text-sm text-white rounded"
+                        style={{ aspectRatio: '1/1', background: TILE_BG[s], border: `2px solid ${TILE_BORDER[s]}` }}
+                      >
+                        {letter}
+                      </div>
+                    )
+                  })}
+                </div>
+                <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  {ex.caption}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 
 export default function LifeWordDemo({ onShare, onStep, isCustomerView = false, linkId }) {
-  const { word: answer, definition } = getTodaysWord()
+  const { word: answer, note } = getTodaysWord()
 
-  const [rows,      setRows]      = useState([])        // committed rows [{letter,state}[]]
-  const [input,     setInput]     = useState('')        // current row being typed
-  const [letterMap, setLetterMap] = useState({})        // letter → best state
-  const [status,    setStatus]    = useState('playing') // 'playing' | 'won' | 'lost'
+  const [rows,         setRows]         = useState([])       // committed rows: [{letter,state}[]]
+  const [revealedMap,  setRevealedMap]  = useState({})       // 'ri-ci' → true when eval colour shown
+  const [animRowIdx,   setAnimRowIdx]   = useState(-1)       // row currently flipping
+  const [input,        setInput]        = useState('')       // current typed input
+  const [letterMap,    setLetterMap]    = useState({})       // letter → best eval state
+  const [status,       setStatus]       = useState('playing')
+  const [shakeRowIdx,  setShakeRowIdx]  = useState(-1)
+  const [bounceRowIdx, setBounceRowIdx] = useState(-1)
+  const [showHowTo,    setShowHowTo]    = useState(false)
+  const resultRef    = useRef(null)
+  const handleKeyRef = useRef(null)
 
   useEffect(() => {
     onStep?.({ step: 'viewed', timestamp: new Date().toISOString() })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const submitGuess = useCallback(() => {
-    if (input.length !== 5 || status !== 'playing') return
+  function submitGuess() {
+    const guess = input
+    if (guess.length !== 5 || status !== 'playing') return
 
-    const evaluation = evaluateGuess(input, answer)
-    const newRow     = input.split('').map((letter, i) => ({ letter, state: evaluation[i] }))
-    const nextCount  = rows.length + 1
+    const evaluation = evaluateGuess(guess, answer)
+    const newRow     = guess.split('').map((letter, i) => ({ letter, state: evaluation[i] }))
+    const ri         = rows.length
+    const nextCount  = ri + 1
+    const won        = evaluation.every(s => s === 'correct')
 
     setRows(prev => [...prev, newRow])
+    setAnimRowIdx(ri)
+    setInput('')
 
-    setLetterMap(prev => {
-      const next = { ...prev }
-      input.split('').forEach((letter, i) => {
-        const s = evaluation[i]
-        if (!next[letter] || STATE_PRIORITY[s] > STATE_PRIORITY[next[letter]]) {
-          next[letter] = s
-        }
-      })
-      return next
-    })
-
-    const won = evaluation.every(s => s === 'correct')
-    if (won) {
-      setStatus('won')
-      onStep?.({ step: 'won', tries: nextCount, timestamp: new Date().toISOString() })
-      if (isCustomerView && linkId) logOutcome(linkId, `Won in ${nextCount}`)
-    } else if (nextCount >= 6) {
-      setStatus('lost')
-      onStep?.({ step: 'lost', timestamp: new Date().toISOString() })
-      if (isCustomerView && linkId) logOutcome(linkId, 'Lost')
+    // Reveal each tile at the midpoint of its 300ms flip (tile ci starts at ci*300ms)
+    for (let ci = 0; ci < 5; ci++) {
+      setTimeout(() => {
+        setRevealedMap(prev => ({ ...prev, [`${ri}-${ci}`]: true }))
+      }, ci * 300 + 150)
     }
 
-    setInput('')
-  }, [input, answer, rows, status, isCustomerView, linkId, onStep])
+    // After all tiles have finished flipping (tile 4: 1200ms delay + 300ms = 1500ms)
+    setTimeout(() => {
+      setAnimRowIdx(-1)
 
-  const handleKey = useCallback((key) => {
+      setLetterMap(prev => {
+        const next = { ...prev }
+        guess.split('').forEach((l, i) => {
+          const s = evaluation[i]
+          if (!next[l] || STATE_PRIORITY[s] > STATE_PRIORITY[next[l]]) next[l] = s
+        })
+        return next
+      })
+
+      if (won) {
+        setStatus('won')
+        onStep?.({ step: 'won', tries: nextCount, timestamp: new Date().toISOString() })
+        if (isCustomerView && linkId) logOutcome(linkId, `Won in ${nextCount}`)
+        setTimeout(() => setBounceRowIdx(ri), 80)
+      } else if (nextCount >= 6) {
+        setStatus('lost')
+        onStep?.({ step: 'lost', timestamp: new Date().toISOString() })
+        if (isCustomerView && linkId) logOutcome(linkId, 'Lost')
+      }
+
+      if (won || nextCount >= 6) {
+        setTimeout(() => {
+          resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        }, 800)
+      }
+    }, 1550) // 4*300 + 350ms buffer after last flip
+  }
+
+  function handleKey(key) {
     if (status !== 'playing') return
-    if (key === 'BACKSPACE' || key === '⌫') { setInput(v => v.slice(0, -1)); return }
-    if (key === 'ENTER') { submitGuess(); return }
-    const letter = key.toUpperCase()
-    if (/^[A-Z]$/.test(letter)) setInput(v => v.length < 5 ? v + letter : v)
-  }, [status, submitGuess])
 
-  // Physical keyboard support
+    if (key === '⌫' || key === 'BACKSPACE') {
+      setInput(v => v.slice(0, -1))
+      return
+    }
+
+    if (key === 'ENTER') {
+      if (input.length < 5) {
+        const ri = rows.length
+        setShakeRowIdx(ri)
+        setTimeout(() => setShakeRowIdx(-1), 400)
+        return
+      }
+      submitGuess()
+      return
+    }
+
+    if (key.length === 1 && /^[A-Z]$/.test(key) && input.length < 5) {
+      setInput(v => v + key)
+    }
+  }
+
+  // Keep ref current so the keyboard listener never captures a stale closure
+  handleKeyRef.current = handleKey
+
   useEffect(() => {
     const handler = (e) => {
-      const k = e.key.toUpperCase()
-      if (k === 'ENTER' || k === 'BACKSPACE' || /^[A-Z]$/.test(k)) {
+      if (e.ctrlKey || e.altKey || e.metaKey) return
+      if      (e.key === 'Enter')     { e.preventDefault(); handleKeyRef.current('ENTER') }
+      else if (e.key === 'Backspace') { e.preventDefault(); handleKeyRef.current('BACKSPACE') }
+      else if (e.key.length === 1 && /^[a-zA-Z]$/.test(e.key)) {
         e.preventDefault()
-        handleKey(k)
+        handleKeyRef.current(e.key.toUpperCase())
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [handleKey])
+  }, []) // registered once; uses ref above
 
-  const currentRowIndex = rows.length
+  const currentRowIdx = rows.length
+
+  function tileVisual(ri, ci) {
+    const committed = rows[ri]
+    if (committed) {
+      return revealedMap[`${ri}-${ci}`] ? committed[ci].state : 'filled'
+    }
+    if (ri === currentRowIdx && input[ci]) return 'filled'
+    return 'empty'
+  }
 
   return (
-    <div className="flex flex-col">
+    <>
+      {showHowTo && <HowToPlay onClose={() => setShowHowTo(false)} />}
 
-      {/* Header */}
-      <div className="bg-[#0f1f3d] px-5 pt-5 pb-4 text-center">
-        <p className="text-[#e8a020] text-[10px] uppercase tracking-widest font-semibold mb-0.5">Finance Word Game</p>
-        <h2 className="text-white font-bold text-lg" style={{ fontFamily: "'DM Serif Display', serif" }}>
-          The Money Word
-        </h2>
-        <p className="text-white/40 text-[11px] mt-0.5">A new finance word every day</p>
-      </div>
+      <div className="flex flex-col" style={{ background: '#0d2244', minHeight: '100%' }}>
 
-      <div className="max-w-sm mx-auto w-full px-4 pt-5 pb-6 flex flex-col gap-5">
+        {/* ── Title bar ───────────────────────────────────────────────────── */}
+        <div
+          className="flex items-center justify-between px-4 py-3"
+          style={{ borderBottom: '1px solid #1a3060' }}
+        >
+          <div className="w-8" />
+          <div className="text-center">
+            <p className="text-white font-bold text-sm uppercase tracking-widest">The Money Word</p>
+            <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>A new finance word every day</p>
+          </div>
+          <button
+            onClick={() => setShowHowTo(true)}
+            className="w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold"
+            style={{ background: '#1a3060', color: 'rgba(255,255,255,0.65)' }}
+            aria-label="How to play"
+          >
+            ⓘ
+          </button>
+        </div>
 
-        {/* Grid — 6 rows × 5 tiles */}
-        <div className="flex flex-col items-center gap-1.5">
-          {Array.from({ length: 6 }, (_, ri) => {
-            const committed    = rows[ri]
-            const isActiveRow  = ri === currentRowIndex && status === 'playing'
-            return (
-              <div key={ri} className="flex gap-1.5">
-                {Array.from({ length: 5 }, (_, ci) => {
-                  let letter   = ''
-                  let styleKey = 'empty'
-                  if (committed) {
-                    letter   = committed[ci].letter
-                    styleKey = committed[ci].state
-                  } else if (isActiveRow) {
-                    letter   = input[ci] || ''
-                    styleKey = letter ? 'tbd' : 'empty'
-                  }
+        {/* ── Grid ────────────────────────────────────────────────────────── */}
+        <div className="px-3 pt-5 pb-4">
+          <div className="flex flex-col gap-2 max-w-sm mx-auto">
+            {Array.from({ length: 6 }, (_, ri) => {
+              const isFlipping = animRowIdx === ri && rows[ri] != null
+              const isBouncing = bounceRowIdx === ri
+              const isShaking  = shakeRowIdx  === ri
+
+              return (
+                <div key={ri} className={`flex gap-2 ${isShaking ? 'mw-shake' : ''}`}>
+                  {Array.from({ length: 5 }, (_, ci) => {
+                    const vis    = tileVisual(ri, ci)
+                    const letter = rows[ri]
+                      ? rows[ri][ci].letter
+                      : ri === currentRowIdx ? (input[ci] || '') : ''
+
+                    // Key changes only when this column's letter changes → remount triggers pop anim
+                    const tileKey = rows[ri]
+                      ? `c-${ri}-${ci}`
+                      : ri === currentRowIdx
+                        ? `i-${ci}-${input[ci] || ''}`
+                        : `e-${ri}-${ci}`
+
+                    // Pop plays only on the tile that just received a letter
+                    const isPop = !rows[ri] && ri === currentRowIdx
+                      && input.length > 0 && ci === input.length - 1
+
+                    return (
+                      <div
+                        key={tileKey}
+                        className="flex-1"
+                        style={{ aspectRatio: '1/1', perspective: '250px' }}
+                      >
+                        <div
+                          className={`w-full h-full border-2 flex items-center justify-center
+                            font-bold text-xl uppercase rounded select-none
+                            ${isFlipping ? 'mw-flip'   : ''}
+                            ${isPop      ? 'mw-pop'    : ''}
+                            ${isBouncing ? 'mw-bounce' : ''}`}
+                          style={{
+                            background:     TILE_BG[vis],
+                            borderColor:    TILE_BORDER[vis],
+                            color:          'white',
+                            animationDelay: isFlipping ? `${ci * 300}ms`
+                                          : isBouncing ? `${ci * 80}ms`
+                                          : '0ms',
+                          }}
+                        >
+                          {letter}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* ── Keyboard ────────────────────────────────────────────────────── */}
+        <div className="px-2 pb-4">
+          <div className="flex flex-col gap-1.5 max-w-sm mx-auto">
+            {KB_ROWS.map((row, ri) => (
+              <div key={ri} className="flex gap-1">
+                {row.map(key => {
+                  const isWide = key === 'ENTER' || key === '⌫'
+                  const state  = key.length === 1 ? (letterMap[key] || 'unused') : 'unused'
                   return (
-                    <div
-                      key={ci}
-                      className={`w-[52px] h-[52px] border-2 flex items-center justify-center rounded font-bold text-lg uppercase ${TILE_STYLE[styleKey]}`}
+                    <button
+                      key={key}
+                      onPointerDown={e => { e.preventDefault(); handleKey(key) }}
+                      className={`${isWide ? 'flex-[1.5]' : 'flex-1'} h-14 rounded-md
+                        font-bold text-white uppercase flex items-center justify-center
+                        select-none active:opacity-70`}
+                      style={{
+                        background: KEY_BG[state],
+                        fontSize:   isWide ? '11px' : '14px',
+                      }}
                     >
-                      {letter}
-                    </div>
+                      {key}
+                    </button>
                   )
                 })}
               </div>
-            )
-          })}
+            ))}
+          </div>
         </div>
 
-        {/* Result banner */}
-        {status === 'won' && (
-          <div className="text-center">
-            <p className="text-emerald-600 font-bold text-sm">🎉 Solved in {rows.length} {rows.length === 1 ? 'try' : 'tries'}!</p>
-            <p className="text-[#0f1f3d] text-2xl font-bold mt-1 tracking-[0.25em]" style={{ fontFamily: "'DM Serif Display', serif" }}>
-              {answer}
-            </p>
-          </div>
-        )}
-        {status === 'lost' && (
-          <div className="text-center">
-            <p className="text-gray-400 text-sm font-medium">The word was</p>
-            <p className="text-[#0f1f3d] text-2xl font-bold mt-1 tracking-[0.25em]" style={{ fontFamily: "'DM Serif Display', serif" }}>
-              {answer}
-            </p>
-          </div>
-        )}
-
-        {/* On-screen keyboard */}
-        <div className="flex flex-col gap-1.5">
-          {KEYBOARD_ROWS.map((row, ri) => (
-            <div key={ri} className="flex gap-1">
-              {row.map(key => {
-                const isWide  = key === 'ENTER' || key === '⌫'
-                const state   = letterMap[key] || 'unused'
-                return (
-                  <button
-                    key={key}
-                    onClick={() => handleKey(key)}
-                    className={`${isWide ? 'flex-[1.5]' : 'flex-1'} ${KEY_STYLE[state]}`}
-                  >
-                    {key}
-                  </button>
-                )
-              })}
-            </div>
-          ))}
-        </div>
-
-        {/* Definition card — shown after win or lose */}
+        {/* ── Result card ─────────────────────────────────────────────────── */}
         {status !== 'playing' && (
-          <div className="bg-[#0f1f3d]/[0.04] border border-[#e4e7f0] rounded-2xl p-4">
-            <p className="text-[#e8a020] text-[10px] uppercase tracking-wider font-semibold mb-1.5">Definition</p>
-            <p className="text-gray-700 text-sm leading-relaxed">{definition}</p>
+          <div ref={resultRef} className="px-3 pb-3 max-w-sm mx-auto w-full">
+            <div className="rounded-2xl p-5" style={{ background: '#1a3060' }}>
+              {status === 'won' ? (
+                <>
+                  <p className="font-bold text-xl" style={{ color: '#e8a020' }}>
+                    🎉 Solved in {rows.length} {rows.length === 1 ? 'try' : 'tries'}!
+                  </p>
+                  <p
+                    className="font-bold text-3xl mt-1 mb-4 tracking-[0.2em]"
+                    style={{ color: '#e8a020', fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    {answer}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-white text-sm font-medium mb-1">Today's word was</p>
+                  <p
+                    className="font-bold text-3xl mb-4 tracking-[0.2em]"
+                    style={{ color: '#e8a020', fontFamily: "'DM Serif Display', serif" }}
+                  >
+                    {answer}
+                  </p>
+                </>
+              )}
+              <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.82)' }}>
+                {note}
+              </p>
+            </div>
           </div>
         )}
 
-        <FeedbackSection linkId={linkId} onDone={isCustomerView ? onShare : undefined} />
-
-        {!isCustomerView && (
-          <button
-            onClick={onShare}
-            className="w-full bg-[#0f1f3d] hover:bg-[#0f1f3d]/90 text-white font-semibold py-3 rounded-xl text-sm transition-colors"
-          >
-            Share with a customer →
-          </button>
+        {/* ── Feedback (white card for contrast) ──────────────────────────── */}
+        {status !== 'playing' && (
+          <div className="px-3 pb-4 max-w-sm mx-auto w-full">
+            <div className="bg-white rounded-2xl">
+              <div className="p-4">
+                <FeedbackSection linkId={linkId} onDone={isCustomerView ? onShare : undefined} />
+              </div>
+            </div>
+          </div>
         )}
+
+        {/* ── RPM: share button ────────────────────────────────────────────── */}
+        {!isCustomerView && (
+          <div className="px-3 pb-6 max-w-sm mx-auto w-full">
+            <button
+              onClick={onShare}
+              className="w-full py-3.5 rounded-xl font-semibold text-sm text-white"
+              style={{ background: '#e8a020' }}
+            >
+              Share with a customer →
+            </button>
+          </div>
+        )}
+
       </div>
-    </div>
+    </>
   )
 }

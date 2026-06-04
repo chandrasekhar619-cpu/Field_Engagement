@@ -5,3 +5,28 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 .anim-slide-up { animation: slide-up 0.28s ease-out forwards; }
+
+/* ── Money Word game animations ──────────────────────────────────────────── */
+@keyframes mw-flip {
+  0%   { transform: rotateX(0deg); }
+  50%  { transform: rotateX(90deg); }
+  100% { transform: rotateX(0deg); }
+}
+@keyframes mw-pop {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.14); }
+}
+@keyframes mw-shake {
+  0%, 100%  { transform: translateX(0); }
+  20%, 60%  { transform: translateX(-6px); }
+  40%, 80%  { transform: translateX(6px); }
+}
+@keyframes mw-bounce {
+  0%, 100% { transform: translateY(0); }
+  40%       { transform: translateY(-20px); }
+  65%       { transform: translateY(-10px); }
+}
+.mw-flip   { animation: mw-flip   300ms ease; }
+.mw-pop    { animation: mw-pop     80ms ease; }
+.mw-shake  { animation: mw-shake  400ms ease; }
+.mw-bounce { animation: mw-bounce 500ms ease; }
