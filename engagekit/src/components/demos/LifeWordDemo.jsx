@@ -68,41 +68,22 @@ const KB_ROWS = [
   ['ENTER','Z','X','C','V','B','N','M','⌫'],
 ]
 
-// ── Layout constants for tile size calculation ────────────────────────────────
-
-// Heights of elements that live OUTSIDE the game component in customer view:
-// customer greeting header ~100px + disclaimer ~60px
-const OUTER_H_CUSTOMER = 160
-// Preview page: sticky banner only ~48px
-const OUTER_H_PREVIEW  = 48
-// Game title bar height
-const TITLE_BAR_H = 54
-// Keyboard: 3 rows × 46px key + 2 × 6px gap + 8px top + 10px bottom = 192px
-const KBD_H = 3 * 46 + 2 * 6 + 18
-// Grid top+bottom padding + 5 row gaps
-const GRID_OVERHEAD = 16 + 5 * 6
-
-// ── How To Play sheet ─────────────────────────────────────────────────────────
+// ── How To Play — static tiles, letters always visible ───────────────────────
 
 const HTP_ROWS = [
-  { word: ['B','O','N','U','S'], hi: 0, state: 'correct', label: 'Right letter, right spot'  },
-  { word: ['C','L','A','I','M'], hi: 3, state: 'present', label: 'Right letter, wrong spot'  },
-  { word: ['R','I','D','E','R'], hi: 2, state: 'absent',  label: 'Letter not in the word'    },
+  { word: ['B','O','N','U','S'], hi: 0, hiState: 'correct', label: 'Right letter, right spot' },
+  { word: ['C','L','A','I','M'], hi: 3, hiState: 'present', label: 'Right letter, wrong spot' },
+  { word: ['R','I','D','E','R'], hi: 2, hiState: 'absent',  label: 'Not in the word'          },
 ]
 
+const HTP_COLOR = { correct: '#538d4e', present: '#b59f3b', absent: '#3a3a3c' }
+
 function HowToPlay({ onClose }) {
-  // Reveal example tiles one by one: 0ms, 600ms, 1200ms
-  const [revealed, setRevealed] = useState(0)
-
-  useEffect(() => {
-    const t0 = setTimeout(() => setRevealed(1),    0)
-    const t1 = setTimeout(() => setRevealed(2),  600)
-    const t2 = setTimeout(() => setRevealed(3), 1200)
-    return () => { clearTimeout(t0); clearTimeout(t1); clearTimeout(t2) }
-  }, [])
-
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex flex-col justify-end"
+      onClick={onClose}
+    >
       <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.78)' }} />
       <div
         className="relative rounded-t-3xl overflow-y-auto"
@@ -116,8 +97,7 @@ function HowToPlay({ onClose }) {
             <h2 className="text-white font-bold text-base tracking-wide">How to Play</h2>
             <button
               onClick={onClose}
-              className="w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm text-white"
-              style={{ background: '#1a3060' }}
+              style={{ width: 32, height: 32, background: '#1a3060', borderRadius: '50%', border: 'none', cursor: 'pointer', color: 'white', fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
               ✕
             </button>
@@ -128,55 +108,43 @@ function HowToPlay({ onClose }) {
             After each guess, the tiles change colour to show how close you were.
           </p>
 
-          {/* Animated example rows */}
+          {/* Example rows — static, letters always visible */}
           <div className="flex flex-col gap-5 border-t pt-5" style={{ borderColor: '#1a3060' }}>
-            {HTP_ROWS.map((ex, i) => {
-              const isRevealed = revealed > i
-              return (
-                <div key={i}>
-                  <div className="flex gap-2 mb-2">
-                    {ex.word.map((letter, li) => {
-                      const isHighlight = li === ex.hi
-                      // Key changes when this tile is revealed → remount triggers mw-htp-reveal
-                      const k = `htp-${i}-${li}-${isHighlight && isRevealed}`
-                      const vis = isHighlight && isRevealed ? ex.state : 'empty'
-                      return (
-                        <div
-                          key={k}
-                          className={`flex-1 flex items-center justify-center font-bold text-sm text-white rounded
-                            ${isHighlight && isRevealed ? 'mw-htp-reveal' : ''}`}
-                          style={{
-                            aspectRatio:  '1/1',
-                            background:   TILE_BG[vis],
-                            border:       `2px solid ${TILE_BORDER[vis]}`,
-                            perspective:  '200px',
-                          }}
-                        >
-                          {letter}
-                        </div>
-                      )
-                    })}
-                  </div>
-                  <p
-                    className="text-xs font-medium"
-                    style={{
-                      color:             isRevealed ? 'rgba(255,255,255,0.75)' : 'transparent',
-                      transition:        'color 350ms ease',
-                      transitionDelay:   isRevealed ? '350ms' : '0ms',
-                    }}
-                  >
-                    {ex.label}
-                  </p>
+            {HTP_ROWS.map((ex, i) => (
+              <div key={i}>
+                <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+                  {ex.word.map((letter, li) => {
+                    const isHi = li === ex.hi
+                    const bg     = isHi ? HTP_COLOR[ex.hiState] : 'transparent'
+                    const border = isHi ? HTP_COLOR[ex.hiState] : '#3a4a6b'
+                    return (
+                      <div
+                        key={li}
+                        style={{
+                          width: 48, height: 48, flexShrink: 0,
+                          background: bg,
+                          border: `2px solid ${border}`,
+                          borderRadius: 4,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontWeight: 700, fontSize: 20, color: '#ffffff',
+                        }}
+                      >
+                        {letter}
+                      </div>
+                    )
+                  })}
                 </div>
-              )
-            })}
+                <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, fontWeight: 500 }}>
+                  {ex.label}
+                </p>
+              </div>
+            ))}
           </div>
 
-          {/* Got it button */}
+          {/* Got it */}
           <button
             onClick={onClose}
-            className="mt-6 w-full py-3 rounded-xl font-bold text-sm text-white"
-            style={{ background: '#e8a020' }}
+            style={{ marginTop: 24, width: '100%', padding: '12px 0', background: '#e8a020', border: 'none', borderRadius: 12, color: 'white', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
           >
             Got it →
           </button>
@@ -189,7 +157,14 @@ function HowToPlay({ onClose }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function LifeWordDemo({ onShare, onStep, isCustomerView = false, linkId }) {
+export default function LifeWordDemo({
+  onShare, onStep,
+  isCustomerView = false,
+  linkId,
+  customerName,
+  rpmName,
+  customerId,
+}) {
   const { word: answer, note } = getTodaysWord()
 
   // Game state
@@ -202,28 +177,36 @@ export default function LifeWordDemo({ onShare, onStep, isCustomerView = false, 
   const [shakeRowIdx,  setShakeRowIdx]  = useState(-1)
   const [bounceRowIdx, setBounceRowIdx] = useState(-1)
   const [showHowTo,    setShowHowTo]    = useState(false)
-  const [tileSize,     setTileSize]     = useState(60)
+  const [tileSize,     setTileSize]     = useState(52)
 
-  const resultRef    = useRef(null)
-  const handleKeyRef = useRef(null)
+  const gridContainerRef = useRef(null)
+  const resultRef        = useRef(null)
+  const handleKeyRef     = useRef(null)
 
-  // ── Tile size: calculate from viewport to fit without scrolling ─────────────
+  // ── FIX 1: ResizeObserver on grid container → dynamic tile sizing ──────────
   useEffect(() => {
-    function calc() {
-      const winH     = window.innerHeight
-      const winW     = window.innerWidth
-      const outerH   = isCustomerView ? OUTER_H_CUSTOMER : OUTER_H_PREVIEW
-      const gameH    = winH - outerH           // height of entire game component
-      const contentH = gameH - TITLE_BAR_H     // below the title bar
-      const gridH    = contentH - KBD_H        // below the keyboard
-      const tileH    = Math.floor((gridH - GRID_OVERHEAD) / 6) - 1
-      const tileW    = Math.floor((Math.min(winW, 390) - 24 - 4 * 6) / 5) - 1
-      setTileSize(Math.max(36, Math.min(tileH, tileW, 76)))
+    const el = gridContainerRef.current
+    if (!el) return
+
+    function measure(target) {
+      const H = target.clientHeight
+      const W = target.clientWidth
+      if (!H || !W) return
+      const gap = 6
+      const heightBased = Math.floor((H - 5 * gap) / 6)
+      const widthBased  = Math.floor((W - 4 * gap) / 5)
+      setTileSize(Math.max(30, Math.min(heightBased, widthBased, 72)))
     }
-    calc()
-    window.addEventListener('resize', calc)
-    return () => window.removeEventListener('resize', calc)
-  }, [isCustomerView]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    const ro = new ResizeObserver(entries => {
+      for (const e of entries) measure(e.target)
+    })
+    ro.observe(el)
+    // Also measure after first paint in case observer fires late
+    requestAnimationFrame(() => measure(el))
+
+    return () => ro.disconnect()
+  }, [])
 
   // ── Auto-show How to Play for customers ────────────────────────────────────
   useEffect(() => {
@@ -279,7 +262,6 @@ export default function LifeWordDemo({ onShare, onStep, isCustomerView = false, 
         if (isCustomerView && linkId) logOutcome(linkId, 'Lost')
       }
 
-      // FIX 3: scroll so the full result card (including note) is visible
       if (won || nextCount >= 6) {
         setTimeout(() => {
           resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
@@ -328,188 +310,222 @@ export default function LifeWordDemo({ onShare, onStep, isCustomerView = false, 
     return 'empty'
   }
 
-  // ── Render ──────────────────────────────────────────────────────────────────
-
-  // FIX 1: game area height = viewport minus everything outside this component
-  const outerH   = isCustomerView ? OUTER_H_CUSTOMER : OUTER_H_PREVIEW
-  const gameAreaH = `calc(100dvh - ${outerH}px)`
+  // ── FIX 1: game-wrapper is exactly 100dvh (customer view) or calc(...) for RPM preview
+  const gameWrapperH = isCustomerView ? '100dvh' : 'calc(100dvh - 48px)'
 
   return (
     <>
       {showHowTo && <HowToPlay onClose={() => setShowHowTo(false)} />}
 
-      <div style={{ background: '#0d2244' }}>
+      {/* ── Game wrapper: locked to viewport height ─────────────────────── */}
+      <div style={{
+        height:         gameWrapperH,
+        display:        'flex',
+        flexDirection:  'column',
+        overflow:       'hidden',
+        background:     '#0d2244',
+      }}>
 
-        {/* ── Full-viewport game play area (title + grid + keyboard) ───────── */}
-        <div style={{ height: gameAreaH, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-
-          {/* Title bar */}
-          <div
-            className="flex items-center justify-between px-4"
-            style={{ flexShrink: 0, height: TITLE_BAR_H, borderBottom: '1px solid #1a3060' }}
-          >
-            <div style={{ width: 32 }} />
-            <div className="text-center">
-              <p className="text-white font-bold text-sm uppercase tracking-widest">The Money Word</p>
-              <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>A new finance word every day</p>
-            </div>
-            <button
-              onClick={() => setShowHowTo(true)}
-              className="w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold"
-              style={{ background: '#1a3060', color: 'rgba(255,255,255,0.65)' }}
-              aria-label="How to play"
-            >
-              ⓘ
-            </button>
+        {/* 1. Customer header — compact, flex-shrink 0, ~70px */}
+        {isCustomerView && (
+          <div style={{ flexShrink: 0, background: '#0f1f3d', padding: '12px 20px 8px' }}>
+            <p style={{ color: 'white', fontSize: 20, fontWeight: 700, lineHeight: '28px', margin: 0 }}>
+              {customerName ? `Hi ${customerName}! 👋` : 'Hello! 👋'}
+            </p>
+            {rpmName && (
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12, margin: '2px 0 0' }}>
+                Sent by {rpmName} · <span style={{ color: '#e8a020' }}>Edelweiss Life</span>
+              </p>
+            )}
           </div>
+        )}
 
-          {/* Grid — flex-1 fills space above keyboard */}
-          <div
-            style={{
-              flex: 1, minHeight: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              padding: '8px 12px',
-            }}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {Array.from({ length: 6 }, (_, ri) => {
-                const isFlipping = animRowIdx === ri && rows[ri] != null
-                const isBouncing = bounceRowIdx === ri
-                const isShaking  = shakeRowIdx === ri
-
-                return (
-                  <div key={ri} className={`flex ${isShaking ? 'mw-shake' : ''}`} style={{ gap: 6 }}>
-                    {Array.from({ length: 5 }, (_, ci) => {
-                      const vis    = tileVisual(ri, ci)
-                      const letter = rows[ri]
-                        ? rows[ri][ci].letter
-                        : ri === currentRowIdx ? (input[ci] || '') : ''
-
-                      const tileKey = rows[ri]
-                        ? `c-${ri}-${ci}`
-                        : ri === currentRowIdx
-                          ? `i-${ci}-${input[ci] || ''}`
-                          : `e-${ri}-${ci}`
-
-                      const isPop = !rows[ri] && ri === currentRowIdx
-                        && input.length > 0 && ci === input.length - 1
-
-                      return (
-                        <div
-                          key={tileKey}
-                          style={{ width: tileSize, height: tileSize, flexShrink: 0, perspective: '250px' }}
-                        >
-                          <div
-                            className={`w-full h-full border-2 flex items-center justify-center
-                              font-bold uppercase rounded select-none
-                              ${isFlipping  ? 'mw-flip'   : ''}
-                              ${isPop       ? 'mw-pop'    : ''}
-                              ${isBouncing  ? 'mw-bounce' : ''}`}
-                            style={{
-                              fontSize:       Math.max(14, Math.round(tileSize * 0.42)),
-                              background:     TILE_BG[vis],
-                              borderColor:    TILE_BORDER[vis],
-                              color:          'white',
-                              animationDelay: isFlipping ? `${ci * 300}ms`
-                                            : isBouncing ? `${ci * 80}ms`
-                                            : '0ms',
-                            }}
-                          >
-                            {letter}
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )
-              })}
-            </div>
+        {/* 2. Title section — compact, flex-shrink 0 */}
+        <div style={{
+          flexShrink:   0,
+          padding:      '6px 16px',
+          display:      'flex',
+          alignItems:   'center',
+          justifyContent: 'space-between',
+          borderBottom: '1px solid #1a3060',
+        }}>
+          <div style={{ width: 32 }} />
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ color: 'white', fontWeight: 700, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>
+              The Money Word
+            </p>
+            <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, margin: 0 }}>
+              A new finance word every day
+            </p>
           </div>
+          <button
+            onClick={() => setShowHowTo(true)}
+            style={{ width: 32, height: 32, background: '#1a3060', borderRadius: '50%', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.65)', fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            aria-label="How to play"
+          >
+            ⓘ
+          </button>
+        </div>
 
-          {/* Keyboard */}
-          <div style={{ flexShrink: 0, padding: '0 8px 10px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxWidth: 440, margin: '0 auto' }}>
-              {KB_ROWS.map((row, ri) => (
-                <div key={ri} style={{ display: 'flex', gap: 4 }}>
-                  {row.map(key => {
-                    const isWide = key === 'ENTER' || key === '⌫'
-                    const state  = key.length === 1 ? (letterMap[key] || 'unused') : 'unused'
+        {/* 3. Grid container — flex: 1, ResizeObserver measures this */}
+        <div
+          ref={gridContainerRef}
+          style={{
+            flex:           1,
+            minHeight:      0,
+            display:        'flex',
+            alignItems:     'center',
+            justifyContent: 'center',
+            overflow:       'hidden',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {Array.from({ length: 6 }, (_, ri) => {
+              const isFlipping = animRowIdx === ri && rows[ri] != null
+              const isBouncing = bounceRowIdx === ri
+              const isShaking  = shakeRowIdx === ri
+
+              return (
+                <div
+                  key={ri}
+                  className={isShaking ? 'mw-shake' : ''}
+                  style={{ display: 'flex', gap: 6 }}
+                >
+                  {Array.from({ length: 5 }, (_, ci) => {
+                    const vis    = tileVisual(ri, ci)
+                    const letter = rows[ri]
+                      ? rows[ri][ci].letter
+                      : ri === currentRowIdx ? (input[ci] || '') : ''
+
+                    const tileKey = rows[ri]
+                      ? `c-${ri}-${ci}`
+                      : ri === currentRowIdx
+                        ? `i-${ci}-${input[ci] || ''}`
+                        : `e-${ri}-${ci}`
+
+                    const isPop = !rows[ri] && ri === currentRowIdx
+                      && input.length > 0 && ci === input.length - 1
+
                     return (
-                      <button
-                        key={key}
-                        onPointerDown={e => { e.preventDefault(); handleKey(key) }}
-                        className={`${isWide ? 'flex-[1.5]' : 'flex-1'} rounded-md font-bold text-white
-                          flex items-center justify-center select-none active:opacity-70`}
-                        style={{
-                          height:     46,
-                          background: KEY_BG[state],
-                          fontSize:   isWide ? '11px' : '14px',
-                        }}
+                      <div
+                        key={tileKey}
+                        style={{ width: tileSize, height: tileSize, flexShrink: 0, perspective: '250px' }}
                       >
-                        {key}
-                      </button>
+                        <div
+                          className={`w-full h-full border-2 flex items-center justify-center
+                            font-bold uppercase rounded select-none
+                            ${isFlipping  ? 'mw-flip'   : ''}
+                            ${isPop       ? 'mw-pop'    : ''}
+                            ${isBouncing  ? 'mw-bounce' : ''}`}
+                          style={{
+                            fontSize:       Math.max(14, Math.round(tileSize * 0.42)),
+                            background:     TILE_BG[vis],
+                            borderColor:    TILE_BORDER[vis],
+                            color:          'white',
+                            animationDelay: isFlipping ? `${ci * 300}ms`
+                                          : isBouncing ? `${ci * 80}ms`
+                                          : '0ms',
+                          }}
+                        >
+                          {letter}
+                        </div>
+                      </div>
                     )
                   })}
                 </div>
-              ))}
-            </div>
+              )
+            })}
           </div>
+        </div>
 
-        </div>{/* end fixed game area */}
-
-        {/* ── Below-fold: result + feedback (page scrolls to here) ──────── */}
-        {status !== 'playing' && (
-          <div ref={resultRef} style={{ padding: '16px 12px 0' }}>
-            <div className="rounded-2xl p-5 max-w-sm mx-auto" style={{ background: '#1a3060' }}>
-              {status === 'won' ? (
-                <>
-                  <p className="font-bold text-xl" style={{ color: '#e8a020' }}>
-                    🎉 Solved in {rows.length} {rows.length === 1 ? 'try' : 'tries'}!
-                  </p>
-                  <p className="font-bold text-3xl mt-1 mb-4 tracking-[0.2em]"
-                    style={{ color: '#e8a020', fontFamily: "'DM Serif Display', serif" }}>
-                    {answer}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="text-white text-sm font-medium mb-1">Today's word was</p>
-                  <p className="font-bold text-3xl mb-4 tracking-[0.2em]"
-                    style={{ color: '#e8a020', fontFamily: "'DM Serif Display', serif" }}>
-                    {answer}
-                  </p>
-                </>
-              )}
-              <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.82)' }}>
-                {note}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {status !== 'playing' && (
-          <div style={{ padding: '12px 12px 16px' }}>
-            <div className="bg-white rounded-2xl max-w-sm mx-auto">
-              <div className="p-4">
-                <FeedbackSection linkId={linkId} onDone={isCustomerView ? onShare : undefined} />
+        {/* 4. Keyboard — flex-shrink 0 */}
+        <div style={{ flexShrink: 0, padding: '6px 8px 10px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxWidth: 500, margin: '0 auto' }}>
+            {KB_ROWS.map((row, ri) => (
+              <div key={ri} style={{ display: 'flex', gap: 5 }}>
+                {row.map(key => {
+                  const isWide = key === 'ENTER' || key === '⌫'
+                  const state  = key.length === 1 ? (letterMap[key] || 'unused') : 'unused'
+                  return (
+                    <button
+                      key={key}
+                      onPointerDown={e => { e.preventDefault(); handleKey(key) }}
+                      style={{
+                        flex:       isWide ? '0 0 auto' : '1 1 0',
+                        minWidth:   isWide ? 44 : undefined,
+                        height:     52,
+                        background: KEY_BG[state],
+                        border:     'none',
+                        borderRadius: 6,
+                        color:      'white',
+                        fontWeight: 700,
+                        fontSize:   isWide ? '11px' : '13px',
+                        textTransform: 'uppercase',
+                        cursor:     'pointer',
+                        display:    'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        userSelect: 'none',
+                        WebkitUserSelect: 'none',
+                      }}
+                    >
+                      {key}
+                    </button>
+                  )
+                })}
               </div>
-            </div>
+            ))}
           </div>
-        )}
+        </div>
 
-        {!isCustomerView && (
-          <div style={{ padding: '0 12px 24px' }}>
-            <button
-              onClick={onShare}
-              className="w-full max-w-sm mx-auto block py-3.5 rounded-xl font-semibold text-sm text-white"
-              style={{ background: '#e8a020' }}
-            >
-              Share with a customer →
-            </button>
+      </div>{/* end game-wrapper */}
+
+      {/* ── Below fold: result + feedback (page scrolls to here on game end) ── */}
+      {status !== 'playing' && (
+        <div ref={resultRef} style={{ background: '#0d2244', padding: '16px 12px 0' }}>
+          <div style={{ background: '#1a3060', borderRadius: 16, padding: 20, maxWidth: 384, margin: '0 auto' }}>
+            {status === 'won' ? (
+              <>
+                <p style={{ color: '#e8a020', fontWeight: 700, fontSize: 20, margin: '0 0 4px' }}>
+                  🎉 Solved in {rows.length} {rows.length === 1 ? 'try' : 'tries'}!
+                </p>
+                <p style={{ color: '#e8a020', fontWeight: 700, fontSize: 28, letterSpacing: '0.2em', fontFamily: "'DM Serif Display', serif", margin: '0 0 16px' }}>
+                  {answer}
+                </p>
+              </>
+            ) : (
+              <>
+                <p style={{ color: 'white', fontSize: 14, fontWeight: 500, margin: '0 0 4px' }}>Today's word was</p>
+                <p style={{ color: '#e8a020', fontWeight: 700, fontSize: 28, letterSpacing: '0.2em', fontFamily: "'DM Serif Display', serif", margin: '0 0 16px' }}>
+                  {answer}
+                </p>
+              </>
+            )}
+            <p style={{ color: 'rgba(255,255,255,0.82)', fontSize: 14, lineHeight: 1.6, margin: 0 }}>
+              {note}
+            </p>
           </div>
-        )}
+        </div>
+      )}
 
-      </div>
+      {status !== 'playing' && (
+        <div style={{ background: '#0d2244', padding: '12px 12px 16px' }}>
+          <div style={{ background: 'white', borderRadius: 16, padding: 16, maxWidth: 384, margin: '0 auto' }}>
+            <FeedbackSection linkId={linkId} onDone={isCustomerView ? onShare : undefined} />
+          </div>
+        </div>
+      )}
+
+      {!isCustomerView && (
+        <div style={{ background: '#0d2244', padding: '0 12px 24px' }}>
+          <button
+            onClick={onShare}
+            style={{ display: 'block', width: '100%', maxWidth: 384, margin: '0 auto', padding: '14px 0', background: '#e8a020', border: 'none', borderRadius: 12, color: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
+          >
+            Share with a customer →
+          </button>
+        </div>
+      )}
     </>
   )
 }

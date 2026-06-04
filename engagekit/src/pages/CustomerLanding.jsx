@@ -219,6 +219,25 @@ export default function CustomerLanding() {
 
   const Demo = DEMOS[content?.demoType]
 
+  // Word game: Demo manages its own 100dvh container + customer header internally
+  if (content?.demoType === 'life-word') {
+    return (
+      <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', background: '#0d2244' }}>
+        <Demo
+          item={content}
+          onStep={handleStep}
+          onShare={handleComplete}
+          isCustomerView={true}
+          linkId={link.id}
+          customerName={customer?.name ?? link.customer_name}
+          rpmName={link.rpm_name}
+          customerId={customer?.id}
+        />
+        <Disclaimer />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-[#f9fafb] flex flex-col">
       {/* Header — customer greeting + advisor attribution */}
