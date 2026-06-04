@@ -141,8 +141,7 @@ function WaIcon() {
   )
 }
 
-export default function QuizDemo({ onShare, onStep, isCustomerView = false, linkId, customerName, shareToken, customerId: customerIdProp }) {
-  console.log('linkId in QuizDemo:', linkId)
+export default function QuizDemo({ onShare, onStep, isCustomerView = false, linkId, customerName, customerId: customerIdProp }) {
 
   const [currentQ,  setCurrentQ]  = useState(0)
   const [answers,   setAnswers]   = useState([])
@@ -153,7 +152,6 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
 
   // Log outcome when result screen appears in customer mode
   useEffect(() => {
-    console.log('Quiz phase changed to:', phase)
     if (phase !== 'result' || !isCustomerView || !linkId) return
     const personaName = PERSONAS[getPersona(answers)].name
     logOutcome(linkId, personaName)
@@ -187,16 +185,6 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
           .eq('customer_master_id', customerData.customer_master_id)
         if (masterErr) console.error('Persona propagation failed:', masterErr)
         else console.log('Persona propagated to all records with master_id:', customerData.customer_master_id)
-      }
-
-      // Mark share token as used — link is now single-use
-      if (shareToken) {
-        const { error: usedErr } = await supabase
-          .from('share_tokens')
-          .update({ used: true })
-          .eq('token', shareToken)
-        if (usedErr) console.error('Failed to mark share_token as used:', usedErr)
-        else console.log('share_token marked used:', shareToken)
       }
     })()
   }, [phase]) // eslint-disable-line react-hooks/exhaustive-deps

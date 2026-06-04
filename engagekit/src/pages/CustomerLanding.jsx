@@ -98,6 +98,13 @@ export default function CustomerLanding() {
         }
         setCustomer(customerData)
 
+        // Mark token as used — single-use from first valid open, covers all content types
+        const { error: tokenMarkErr } = await supabase
+          .from('share_tokens')
+          .update({ used: true })
+          .eq('token', token)
+        if (tokenMarkErr) console.error('share_token mark-used failed:', tokenMarkErr)
+
         // 3. Look up the link record for content_id and RPM metadata
         const { data: linkRecord, error: linkErr } = await supabase
           .from('links')
@@ -236,7 +243,6 @@ export default function CustomerLanding() {
           linkId={link.id}
           customerName={customer?.name ?? link.customer_name}
           rpmName={link.rpm_name}
-          shareToken={token}
           customerId={customer?.id}
         />
       </div>
