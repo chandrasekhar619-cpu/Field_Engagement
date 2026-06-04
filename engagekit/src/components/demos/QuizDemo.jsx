@@ -7,39 +7,39 @@ import { supabase } from '../../lib/supabaseClient'
 
 const QUESTIONS = [
   {
-    text: "Rs. 50,000 lands in your account unexpectedly. What's your first move?",
+    text: "When it comes to money, what matters most to you?",
     options: [
-      "Book that trip I've been putting off",
-      "Clear a due or top up my savings",
-      "Keep it aside — something might come up for the family",
-      "Research where it'll grow the most, then decide",
+      "Building wealth and making the most of every opportunity",
+      "Stability and long-term security for my family",
+      "Taking care of the people who depend on me",
+      "Understanding exactly what I have and making smart, informed choices",
     ],
   },
   {
-    text: "Your close ones would describe your relationship with money as…",
+    text: "How do you handle a big financial decision?",
     options: [
-      "You enjoy it — you work hard for it",
-      "Careful — you know where every rupee goes",
-      "Safe side always — better to have it than not",
-      "Deliberate — you always think a few steps ahead",
+      "I trust my instincts — I back myself to figure it out",
+      "I plan ahead so I am never caught off guard",
+      "I think about how it will affect the people I care about",
+      "I do my homework and decide only when I am fully informed",
     ],
   },
   {
-    text: "An unexpected bill hits. You…",
+    text: "How do you feel about financial risk?",
     options: [
-      "Sort it out and move on — you'll earn it back",
-      "That's what the buffer was for",
-      "A bit stressed, but family helps figure it out",
-      "Go back, see what went wrong, adjust the plan",
+      "I embrace it — risk is how you grow",
+      "I manage it carefully — I would rather be safe than sorry",
+      "It worries me, especially if it could affect my family",
+      "I take calculated risks only after understanding every angle",
     ],
   },
   {
-    text: "Big money decision coming up. You…",
+    text: "Which of these sounds most like you?",
     options: [
-      "Back yourself — your gut hasn't failed you",
-      "Go through it carefully and tick every box",
-      "Talk to someone you trust before deciding",
-      "Research until you're sure — data over opinions",
+      "I set ambitious targets and push myself to reach them",
+      "I am the person my family relies on to have things sorted",
+      "Everything I do financially is ultimately for the people I love",
+      "I trust my own research and analysis over anyone else's advice",
     ],
   },
 ]
