@@ -46,6 +46,16 @@ export default function Navbar({ activeView }) {
         >
           Customers
         </button>
+        <button
+          onClick={() => navigate('/app/reference')}
+          className={`px-3 md:px-4 py-1.5 rounded-full text-xs md:text-sm font-medium transition-all ${
+            activeView === 'reference'
+              ? 'bg-white text-[#0f1f3d] shadow-sm'
+              : 'text-white/60 hover:text-white'
+          }`}
+        >
+          📘
+        </button>
       </div>
 
       {/* Right — admin shortcut + user */}

@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPOC Handbook — Edelweiss Life</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14; --surface: #13161e; --card: #181c26; --border: #252a38;
+    --accent: #e8a020; --accent2: #3fc9a0; --accent3: #6478f0; --danger: #e05757;
+    --text: #e8eaf0; --muted: #8891a8; --light: #c4c9d9;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+  header{
+    background:rgba(13,15,20,0.97); border-bottom:1px solid var(--border);
+    padding:0 24px; display:flex; align-items:center; justify-content:space-between;
+    height:54px; position:sticky; top:0; z-index:300;
+  }
+  .logo{font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:var(--accent);}
+  .logo span{color:var(--muted); font-size:0.78rem; font-family:'DM Sans',sans-serif; font-weight:400; margin-left:8px;}
+  .hbadge{font-size:0.65rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; background:rgba(63,201,160,0.1); border:1px solid rgba(63,201,160,0.25); color:var(--accent2); padding:3px 10px; border-radius:20px;}
+
+  /* product tabs */
+  .ptabs{
+    max-width:1000px; margin:0 auto; padding:20px 20px 0;
+    display:flex; gap:8px; flex-wrap:wrap;
+  }
+  .ptab{
+    background:var(--card); border:2px solid var(--border); border-radius:10px;
+    padding:12px 18px; cursor:pointer; flex:1; min-width:160px;
+    text-align:center; transition:all .18s;
+  }
+  .ptab:hover{border-color:var(--accent);}
+  .ptab.active{border-color:var(--accent); background:rgba(232,160,32,0.07);}
+  .ptab-name{font-size:0.85rem; font-weight:700; color:var(--light);}
+  .ptab-sub{font-size:0.68rem; color:var(--muted); margin-top:2px;}
+
+  /* section nav */
+  .snav-wrap{ position:sticky; top:54px; z-index:250; background:rgba(13,15,20,0.97); border-bottom:1px solid var(--border);}
+  .snav{
+    max-width:1000px; margin:0 auto; padding:10px 20px;
+    display:flex; gap:6px; overflow-x:auto; scrollbar-width:none;
+  }
+  .snav::-webkit-scrollbar{display:none;}
+  .snav a{
+    font-size:0.74rem; font-weight:600; color:var(--muted);
+    text-decoration:none; padding:6px 12px; border-radius:20px;
+    white-space:nowrap; border:1px solid transparent; transition:all .15s;
+  }
+  .snav a:hover{ color:var(--light); border-color:var(--border); }
+
+  .wrap{ max-width:1000px; margin:0 auto; padding:28px 20px 100px; }
+  .product-doc{ display:none; }
+  .product-doc.active{ display:block; }
+
+  section{ margin-bottom: 44px; scroll-margin-top: 110px; }
+
+  .sec-title{
+    font-size:0.7rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--accent); margin-bottom:16px; display:flex; align-items:center; gap:10px;
+  }
+  .sec-title::after{ content:''; flex:1; height:1px; background:var(--border); }
+
+  /* SNAPSHOT */
+  .snap-headline{
+    font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:700; color:#fff;
+    line-height:1.35; margin-bottom:14px;
+  }
+  .snap-grid{
+    display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:14px;
+  }
+  @media(max-width:560px){.snap-grid{grid-template-columns:1fr;}}
+  .snap-item{ background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px 14px; }
+  .snap-k{ font-size:0.65rem; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:3px; }
+  .snap-v{ font-size:0.85rem; color:var(--text); font-weight:500; }
+  .snap-note{ font-size:0.85rem; color:var(--light); line-height:1.7; font-weight:300; }
+  .snap-note strong{ color:var(--accent2); font-weight:600; }
+
+  /* JOURNEY TIMELINE */
+  .timeline{ position:relative; padding-left:28px; }
+  .timeline::before{
+    content:''; position:absolute; left:9px; top:6px; bottom:6px; width:2px;
+    background:linear-gradient(to bottom, var(--accent), var(--accent2), var(--accent3));
+  }
+  .tl-item{ position:relative; padding-bottom:20px; }
+  .tl-item:last-child{ padding-bottom:0; }
+  .tl-dot{
+    position:absolute; left:-28px; top:2px; width:18px; height:18px; border-radius:50%;
+    background:var(--card); border:2px solid var(--accent);
+    display:flex; align-items:center; justify-content:center; font-size:0.6rem; font-weight:700; color:var(--accent);
+  }
+  .tl-year{ font-family:'DM Mono',monospace; font-size:0.7rem; font-weight:600; color:var(--accent); letter-spacing:0.06em; margin-bottom:3px; }
+  .tl-body{ background:var(--card); border:1px solid var(--border); border-radius:8px; padding:12px 16px; }
+  .tl-title{ font-size:0.86rem; font-weight:600; color:#fff; margin-bottom:5px; }
+  .tl-desc{ font-size:0.8rem; color:var(--light); line-height:1.6; font-weight:300; }
+  .tl-desc strong{ color:var(--accent2); font-weight:600; }
+
+  /* RENEWAL TALKING POINTS */
+  .renewal-cards{ display:flex; flex-direction:column; gap:10px; }
+  .rc{
+    background:var(--card); border:1px solid var(--border); border-left:3px solid var(--accent2);
+    border-radius:8px; padding:14px 16px;
+  }
+  .rc-hook{ font-size:0.88rem; font-weight:600; color:#fff; margin-bottom:6px; }
+  .rc-body{ font-size:0.81rem; color:var(--light); line-height:1.65; font-weight:300; }
+  .rc-body strong{ color:var(--accent); font-weight:600; }
+  .rc-body em{ color:var(--accent2); font-style:normal; font-weight:500; }
+
+  .risk-box{
+    margin-top:12px; display:flex; gap:10px; align-items:flex-start;
+    background:rgba(224,87,87,0.06); border:1px solid rgba(224,87,87,0.2);
+    border-radius:8px; padding:12px 14px; font-size:0.8rem; color:var(--light); line-height:1.6;
+  }
+  .risk-box strong{ color:var(--danger); font-weight:600; }
+
+  /* FAQ */
+  .faq-cat{ margin-bottom:18px; }
+  .faq-cat-title{
+    font-size:0.72rem; font-weight:700; color:var(--accent3); text-transform:uppercase;
+    letter-spacing:0.08em; margin-bottom:10px; padding-left:2px;
+  }
+  .faq-item{ background:var(--card); border:1px solid var(--border); border-radius:8px; margin-bottom:8px; overflow:hidden; }
+  .faq-q{
+    padding:13px 16px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;
+    gap:10px; font-size:0.85rem; font-weight:600; color:var(--light); transition:background .15s;
+  }
+  .faq-q:hover{ background:#1d2230; }
+  .faq-q .fchev{ color:var(--muted); font-size:0.8rem; transition:transform .2s; flex-shrink:0; }
+  .faq-q.open .fchev{ transform:rotate(180deg); color:var(--accent2); }
+  .faq-a{ display:none; padding:0 16px 14px; font-size:0.81rem; color:var(--light); line-height:1.7; font-weight:300; }
+  .faq-a.open{ display:block; }
+  .faq-a strong{ color:var(--accent); font-weight:600; }
+  .faq-a .verify{
+    margin-top:8px; font-size:0.75rem; color:var(--accent2); background:rgba(63,201,160,0.06);
+    border:1px solid rgba(63,201,160,0.18); border-radius:6px; padding:8px 10px;
+  }
+
+  /* MILESTONES */
+  .milestone-list{ display:flex; flex-direction:column; gap:8px; }
+  .ms-row{
+    display:flex; gap:12px; align-items:flex-start; background:var(--card);
+    border:1px solid var(--border); border-radius:8px; padding:12px 16px;
+  }
+  .ms-trigger{
+    font-family:'DM Mono',monospace; font-size:0.72rem; font-weight:600; color:var(--accent);
+    background:var(--surface); border:1px solid var(--border); border-radius:6px;
+    padding:4px 10px; flex-shrink:0; white-space:nowrap; height:fit-content;
+  }
+  .ms-text{ font-size:0.82rem; color:var(--light); line-height:1.6; font-weight:300; }
+  .ms-text strong{ color:#fff; font-weight:600; }
+
+  /* RPU REALITY */
+  .rpu-formula{
+    background:var(--surface); border:1px solid var(--border); border-radius:8px;
+    padding:12px 16px; margin-bottom:14px; font-family:'DM Mono',monospace; font-size:0.78rem;
+    color:var(--accent2); line-height:1.7;
+  }
+  .rpu-formula .label{ font-family:'DM Sans',sans-serif; font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; font-weight:600; display:block; margin-bottom:6px; }
+  .rpu-example{
+    background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px 18px; margin-bottom:14px;
+  }
+  .rpu-example-title{ font-size:0.85rem; font-weight:700; color:#fff; margin-bottom:10px; }
+  .rpu-compare{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+  @media(max-width:520px){ .rpu-compare{ grid-template-columns:1fr; } }
+  .rpu-col{ border-radius:8px; padding:12px 14px; }
+  .rpu-col.before{ background:rgba(63,201,160,0.06); border:1px solid rgba(63,201,160,0.2); }
+  .rpu-col.after{ background:rgba(224,87,87,0.06); border:1px solid rgba(224,87,87,0.2); }
+  .rpu-col-label{ font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px; }
+  .rpu-col.before .rpu-col-label{ color:var(--accent2); }
+  .rpu-col.after .rpu-col-label{ color:var(--danger); }
+  .rpu-row{ display:flex; justify-content:space-between; font-size:0.8rem; color:var(--light); padding:3px 0; }
+  .rpu-row .rv{ font-weight:600; color:#fff; }
+  .rpu-note{ font-size:0.81rem; color:var(--light); line-height:1.7; font-weight:300; }
+  .rpu-note strong{ color:var(--accent); font-weight:600; }
+
+  .rpu-stops{ margin-top:14px; }
+  .rpu-stops-title{ font-size:0.72rem; font-weight:700; color:var(--danger); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px; }
+  .rpu-stop-item{
+    display:flex; gap:10px; align-items:flex-start; font-size:0.81rem; color:var(--light);
+    line-height:1.6; font-weight:300; padding:8px 0; border-bottom:1px solid var(--border);
+  }
+  .rpu-stop-item:last-child{ border-bottom:none; }
+  .rpu-stop-item .si{ color:var(--danger); flex-shrink:0; font-size:0.9rem; }
+  .rpu-stop-item strong{ color:#fff; font-weight:600; }
+
+  .rpu-compound{
+    margin-top:14px; background:rgba(232,160,32,0.05); border:1px solid rgba(232,160,32,0.2);
+    border-radius:8px; padding:12px 16px; font-size:0.81rem; color:var(--light); line-height:1.7; font-weight:300;
+  }
+  .rpu-compound strong{ color:var(--accent); font-weight:600; }
+
+  /* SURRENDER BRIDGE */
+  .sb-box{
+    background:rgba(232,160,32,0.05); border:1px solid rgba(232,160,32,0.2);
+    border-radius:10px; padding:16px 18px;
+  }
+  .sb-list{ display:flex; flex-direction:column; gap:10px; margin-top:10px; }
+  .sb-item{ font-size:0.82rem; color:var(--light); line-height:1.65; font-weight:300; padding-left:14px; border-left:2px solid var(--accent); }
+  .sb-item strong{ color:var(--accent); font-weight:600; }
+  .sb-link{ display:inline-block; margin-top:12px; font-size:0.78rem; color:var(--accent2); font-weight:600; }
+
+  footer{ max-width:1000px; margin:0 auto; padding:20px; text-align:center; font-size:0.72rem; color:var(--muted); border-top:1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Edelweiss Life <span>SPOC Reference Handbook</span></div>
+  <div class="hbadge">Renewal &amp; Engagement</div>
+</header>
+
+<div class="ptabs">
+  <div class="ptab active" onclick="selectProduct('wu',this)">
+    <div class="ptab-name">📊 Wealth Ultima</div>
+    <div class="ptab-sub">ULIP · Non-Par</div>
+  </div>
+  <div class="ptab" onclick="selectProduct('fsp',this)">
+    <div class="ptab-name">🌿 Flexi-Savings Plan</div>
+    <div class="ptab-sub">Non-Linked · Par</div>
+  </div>
+  <div class="ptab" onclick="selectProduct('gfs',this)">
+    <div class="ptab-name">🛡️ Guaranteed Flexi STAR</div>
+    <div class="ptab-sub">Non-Linked · Non-Par</div>
+  </div>
+  <div class="ptab" onclick="selectProduct('lp',this)">
+    <div class="ptab-name">🏛️ Legacy Plus</div>
+    <div class="ptab-sub">Non-Linked · Par · Whole Life</div>
+  </div>
+</div>
+
+<div class="snav-wrap">
+  <div class="snav">
+    <a href="#sec-snapshot">Snapshot</a>
+    <a href="#sec-journey">Policy Journey</a>
+    <a href="#sec-renewal">Renewal Talking Points</a>
+    <a href="#sec-rpu">⚠️ RPU Reality Check</a>
+    <a href="#sec-faq">Customer FAQs</a>
+    <a href="#sec-milestones">Milestone Alerts</a>
+    <a href="#sec-surrender">If Surrender Comes Up</a>
+  </div>
+</div>
+
+<div class="wrap" id="docroot"></div>
+
+<footer>For SPOC / field engagement use only. Not for customer distribution. Tax positions are indicative — advise customers to consult a tax advisor. Benefits subject to policy terms and prevailing tax laws.</footer>
+
+<script>
+const DOCS = {
+  // ════════════════════════════════════════════════════════
+  wu: {
+    snapshot: {
+      headline: "A flexible investment account with built-in life cover — automatic asset rebalancing, free fund switches, and guaranteed loyalty additions that reward staying invested.",
+      grid: [
+        ['Product Type','Unit Linked Insurance Plan (ULIP), Non-Par'],
+        ['Customer Got This For','Long-term wealth creation with market exposure + life cover'],
+        ['Core Mechanism','SMP (monthly investing) + STP (auto asset allocation) + SWP (income) + Additions'],
+        ['Lock-in','5 years (cannot withdraw/surrender freely before this)'],
+        ['Investment Control','Self-Managed (7 funds) or auto STP (Lifestage / Profit Target)'],
+        ['Loyalty Mechanism','Guaranteed + Loyalty Additions from Yr 6, Booster Additions at Yr 10/15/20+'],
+      ],
+      note: "Think of this as the customer's <strong>market-linked savings account with a safety net</strong>. The fund grows with markets, but the policy structure adds guaranteed top-ups over time that a plain mutual fund folio never gets. Your job: keep the fund topped up with premiums so it keeps qualifying for these additions, and help the customer use SWP/switches instead of exiting."
+    },
+    rpu: {
+      formula: 'Reduced Paid-Up Sum Assured = Original Sum Assured × (Premiums Paid ÷ Premiums Payable)\n\n→ Applies only after the 5-year lock-in. Within lock-in, non-payment sends the fund to the Discontinued Policy Fund instead (see Renewal Talking Points).',
+      example: {
+        title: 'Worked example — PPT 10 yrs, customer stops after Year 4 (40% paid)',
+        before: {label:'If premiums continue', rows:[['Sum Assured','100% (full cover)'],['Loyalty Additions (Yr 6 on)','0.15% of avg. FV, every year till PPT'],['Guaranteed + Booster Additions','Continue on a growing fund base']]},
+        after: {label:'Once Reduced Paid-Up', rows:[['Sum Assured','40% — permanently'],['Loyalty Additions','Stop entirely — not just reduced, zero'],['Guaranteed + Booster Additions','Continue, but on a frozen, non-growing fund base']]},
+      },
+      stops: [
+        {text:'<strong>Loyalty Additions stop completely</strong> — this isn\'t a 40% Loyalty Addition, it\'s zero. And even if the customer revives later, Loyalty Additions for the missed years are never retroactively credited — that growth window is gone forever.'},
+        {text:'<strong>The fund stops receiving new premium-driven growth</strong> — Guaranteed and Booster Additions still apply, but they\'re now a percentage of a smaller, stagnant fund rather than one that\'s actively growing with fresh premiums.'},
+      ],
+      compound: 'Why this matters more than 40% sounds: the customer doesn\'t just lose 60% of their cover — they lose the <strong>entire Loyalty Addition mechanism for every remaining year of the policy</strong>, which was specifically designed to reward exactly this kind of long-term holding. A customer who stops at Year 4 of a 20-year policy gives up 16 years of Loyalty Additions entirely, on top of the 60% cut to Sum Assured.'
+    },
+    journey: [
+      {year:'Year 1–5', title:'Foundation phase — lock-in, higher charges', desc:'Premium allocation charge starts at <strong>6% in Year 1</strong>, tapering to 4% in Years 2–5. No additions yet. The fund cannot be fully withdrawn or surrendered during this period — if discontinued, money moves to the Discontinued Policy Fund (min. 4% guaranteed) until Year 5.'},
+      {year:'End of Year 5', title:'Partial withdrawals unlock', desc:'From here, the customer can withdraw any amount <strong>free of cost</strong>, as long as the fund stays above 105% of total premiums paid. This is the first major liquidity milestone — useful if the customer ever asks "can I take some money out?"'},
+      {year:'Year 6 onwards', title:'Additions phase begins + charges drop to near-zero', desc:'<strong>Guaranteed Addition (0.25% of avg. FV)</strong> and <strong>Loyalty Addition (0.15% of avg. FV)</strong> are credited annually. Premium allocation charge becomes <strong>0%</strong> and policy admin charge becomes <strong>Nil</strong>. This is the phase where the policy starts "paying back" structurally.'},
+      {year:'Year 10', title:'Booster Addition + SWP eligibility (if PPT ≥ 10)', desc:'A <strong>Booster Addition of 2.75%</strong> of the 5-year average fund value is credited. If Premium Paying Term is 10 years or more, the customer also becomes eligible to start a <strong>Systematic Withdrawal Plan (SWP)</strong> — up to 12% of fund value per year as a second income.'},
+      {year:'Year 15', title:'Second Booster Addition', desc:'Another <strong>2.75% Booster Addition</strong> credited on the 5-year average fund value — same mechanism as Year 10.'},
+      {year:'Year 20 onwards (every 5 yrs)', title:'Booster rate increases to 3.50%', desc:'From Year 20, and every 5 years after, the <strong>Booster Addition rate rises to 3.50%</strong> of the 5-year average fund value — the policy\'s reward for long-term persistency accelerates.'},
+      {year:'Maturity', title:'Fund Value paid out — lumpsum or Settlement Option', desc:'The full Fund Value is paid as Maturity Benefit. The customer can take it as a <strong>lumpsum</strong>, or spread it over <strong>1–5 years via the Settlement Option</strong> while the balance remains invested (only FMC + mortality charges apply during this period).'},
+    ],
+    renewal: [
+      {hook:'Every premium grows the base on which future Additions are calculated.', body:'Guaranteed, Loyalty, and Booster Additions are all calculated as a <strong>percentage of average Fund Value</strong>. A premium paid today increases that base for every future addition — meaning this year\'s premium has a compounding effect on additions years down the line. Skipping a premium doesn\'t just delay growth, it permanently shrinks the base all future additions are calculated on.'},
+      {hook:'If currently in the lock-in period (Years 1–5), missing a premium moves the fund to the Discontinued Policy Fund — earning a flat ~4%, with risk cover stopped.', body:'This is the single most important renewal message for early-tenure customers. <em>Discontinuance during lock-in ≠ surrender</em> — the money is stuck at a low guaranteed rate with zero life cover and zero exposure to equity growth until Year 5, regardless of what the customer wants. The premium they\'re hesitant to pay is the only thing keeping their fund actively invested and covered.'},
+      {hook:'Post-lock-in, missing premiums triggers Reduced Paid-Up — Loyalty Additions stop permanently.', body:'After Year 5, non-payment converts the policy to <strong>Reduced Paid-Up</strong> status with a reduced sum assured. Critically, <strong>Loyalty Additions are not credited for Reduced Paid-Up policies</strong> — even if the customer revives later, past Loyalty Additions for the missed years are not made up. This is a permanent, irreversible loss that\'s easy to avoid with one renewal call.'},
+      {hook:'Approaching a Booster year? That\'s your strongest renewal hook.', body:'If the customer is in Year 9, 14, or approaching a multiple of 5 after Year 20, remind them: <strong>a Booster Addition (2.75% or 3.5% of their 5-year average fund value) is due at the next policy anniversary</strong> — but only if the policy is in-force and premiums are current. This converts an abstract "please renew" into a concrete "you\'re about to receive X."'},
+    ],
+    faq: {
+      'Premium & Renewal': [
+        {q:'What happens if I miss a premium payment in the first 5 years?', a:'After the Grace Period (15 days for monthly, 30 days otherwise) lapses, the Fund Value (minus Discontinuance Charges) moves to the <strong>Discontinued Policy Fund</strong>, where it earns a flat minimum guaranteed rate (currently 4% p.a.). The life cover stops. You can revive within 3 years by paying all due premiums — no interest/fee is charged on revival, but Discontinuance Charges already deducted are added back.', verify:'Confirm exact revival window and Discontinuance Charge slab based on the customer\'s Annualised Premium band.'},
+        {q:'What happens if I miss a premium after Year 5?', a:'The policy becomes <strong>Reduced Paid-Up</strong> — the Sum Assured reduces proportionally (original SA × premiums paid / premiums payable), no further Loyalty Additions are credited, but Guaranteed and Booster Additions continue. The customer can revive within 3 years to restore full benefits, though Loyalty Additions for the lapsed years are not retroactively credited.'},
+        {q:'Can I increase or decrease my premium?', a:'The base premium amount generally cannot be changed mid-term, but the customer can pay <strong>Top-up Premiums</strong> at any time (except the last 5 years before maturity) — each top-up has its own 5-year lock-in for partial withdrawal purposes. The Premium Paying Term itself can be increased or decreased (subject to a minimum revised PPT of 10 years), provided all due premiums are paid.'},
+        {q:'Can I switch from monthly to annual (or any other mode)?', a:'Yes, premium frequency can typically be changed at policy anniversary — check with operations for the specific process, as modal loadings will apply to the new frequency.'},
+      ],
+      'Fund, Additions & Growth': [
+        {q:'How is my current Fund Value calculated?', a:'Fund Value = (units allocated × current NAV of each fund the money is in). NAV moves daily based on market performance of the underlying fund(s) chosen — Equity Large Cap, Mid Cap, Bond, Gilt, etc.'},
+        {q:'What exactly are Guaranteed, Loyalty, and Booster Additions, and when do I get them?', a:'<strong>Guaranteed Addition</strong> (0.25% of average FV) and <strong>Loyalty Addition</strong> (0.15% of average FV) are credited every year from end of Year 6 to maturity (Loyalty only till end of PPT). <strong>Booster Addition</strong> (2.75% of 5-year average FV) is credited at the end of Years 10 and 15, and at <strong>3.50%</strong> every 5 years from Year 20 onward. All additions are added directly to the Fund Value — they are not separate payouts.'},
+        {q:'Can I switch between funds, and does it cost anything?', a:'Yes — if on the <strong>Self-Managed Strategy</strong>, switches between the 7 available funds (Equity Large Cap, Mid Cap, Blue Chip, Top 250, Bond, Gilt, Managed) are <strong>unlimited and free</strong>, minimum ₹5,000 per switch. If the customer has opted for an STP (Lifestage or Profit Target), switching is not available — they\'d need to opt out of the STP first.'},
+        {q:'What is SWP and when can I use it?', a:'Systematic Withdrawal Plan lets the customer withdraw a fixed % of Fund Value (up to 12% p.a.) at a chosen frequency (yearly/half-yearly/quarterly/monthly), starting from <strong>Year 10 onward</strong>, provided PPT is 10 years or more. It works as a second income while the rest of the fund stays invested.'},
+      ],
+      'Loans & Liquidity': [
+        {q:'Can I take a loan against this policy?', a:'<strong>No — Wealth Ultima does not offer a policy loan facility.</strong> If the customer needs funds, the correct path is a partial withdrawal (free, unlimited after Year 5) rather than a loan.', verify:''},
+        {q:'How much can I withdraw, and is there a charge?', a:'After Year 5, <strong>unlimited free partial withdrawals</strong> are allowed, as long as the resulting Fund Value stays at or above 105% of total premiums paid (including top-ups). Minimum withdrawal is ₹500. Before Year 5, no withdrawals are permitted at all (per IRDAI lock-in rules for all ULIPs).'},
+      ],
+      'Tax': [
+        {q:'Is the maturity amount taxable?', a:'Under <strong>Section 10(10D)</strong>, ULIP maturity proceeds are tax-exempt, provided the annual premium does not exceed <strong>₹2.5 lakh</strong> (for policies issued after Feb 1, 2021). If the customer\'s annual premium is above this threshold, gains may be taxed as capital gains — recommend they consult a tax advisor for their specific case.'},
+        {q:'Are premiums eligible for tax deduction?', a:'Premiums may be eligible under <strong>Section 80C</strong> (up to ₹1.5 lakh/year), subject to the premium not exceeding 10% of Sum Assured. Confirm current applicability with the customer\'s tax advisor as rules have evolved.'},
+      ],
+      'Charges': [
+        {q:'What charges apply to my policy?', a:'Premium Allocation Charge (6% in Yr 1, 4% in Yrs 2–5, 0% from Yr 6), Policy Administration Charge (1.65% p.a. of AP in Yrs 1–5, Nil from Yr 6, capped at ₹6,000/yr), Fund Management Charge (up to 1.35% p.a., varies by fund), and Mortality Charges (monthly, based on Sum at Risk). Switching, premium redirection, and partial withdrawals are <strong>free</strong>.'},
+        {q:'Why did my charges drop after Year 5?', a:'This is by design — Wealth Ultima front-loads charges in the early years and becomes near-zero-cost (excluding FMC and mortality) from Year 6 onward. The <strong>Reduction in Yield (RIY) drops from ~1.3–1.45% at Year 10 to ~0.5–0.8% at Year 30</strong> — well within the IRDAI ceiling of 3% (10 yrs) / 2.25% (15+ yrs).'},
+      ],
+      'Maturity & Death Benefit': [
+        {q:'What do I get at maturity?', a:'The full <strong>Fund Value</strong> as of the maturity date — taken either as a lumpsum or via the Settlement Option (1–5 years, in instalments, with the balance remaining invested).'},
+        {q:'What does my family receive if something happens to me?', a:'The <strong>higher of</strong>: Fund Value, Sum Assured (less relevant partial withdrawals in the last 2 years), or 105% of total premiums paid — plus the equivalent calculation for any Top-up Fund. If <strong>Little Champ Benefit</strong> was opted and the policyholder (not the life insured) passes away, the present value of all future premiums is credited to the fund and the policy continues for the child with no further payments required.'},
+      ],
+    },
+    milestones: [
+      {trigger:'Yr 5 (approaching)', text:'Remind the customer that <strong>full free liquidity opens up</strong> — useful if they\'ve been asking about access to funds.'},
+      {trigger:'Yr 6', text:'First <strong>Guaranteed + Loyalty Addition</strong> credited — a good moment to show the customer their statement and point out the new line items.'},
+      {trigger:'Yr 9–10', text:'<strong>Booster Addition (2.75%)</strong> due at Year 10 — also check if PPT ≥ 10 to flag <strong>SWP eligibility</strong> as an income option.'},
+      {trigger:'Yr 14–15', text:'Second <strong>Booster Addition (2.75%)</strong> due.'},
+      {trigger:'Yr 19–20 and every 5 yrs after', text:'<strong>Booster rate increases to 3.50%</strong> — strongest persistency message in the product.'},
+      {trigger:'6 months before maturity', text:'Discuss <strong>Settlement Option</strong> — does the customer want a lumpsum or phased payout?'},
+    ],
+    surrender: [
+      {text:'<strong>Partial withdrawal, not full exit:</strong> after Year 5, the customer can take exactly what they need without surrendering — the policy keeps earning additions on the remainder.'},
+      {text:'<strong>Free fund switch:</strong> if dissatisfaction is about market performance, switching to Bond/Gilt funds (zero cost) addresses the concern without losing the policy structure or life cover.'},
+      {text:'<strong>Booster proximity check:</strong> always check the policy year first — if a Booster Addition is due within 12 months, that alone is often enough to change the conversation.'},
+    ],
+  },
+
+  // ════════════════════════════════════════════════════════
+  fsp: {
+    snapshot: {
+      headline: "A traditional savings + life cover plan with three distinct shapes — regular income, income plus periodic lumpsums, or pure accumulation — chosen at inception and not interchangeable later.",
+      grid: [
+        ['Product Type','Non-Linked, Participating, Non-Par-style guaranteed + bonus structure'],
+        ['Plan Options','Flexi-Income / Flexi-Income PRO / Large Sum (fixed at inception)'],
+        ['Income Start Year','Year 2, Year 5, or PPT+1 (chosen at inception)'],
+        ['Bonus Types','Guaranteed Income + Cash Bonus + Reversionary Bonus + Terminal Bonus'],
+        ['Policy Loan','Up to 60% of Surrender Value, rate ≈ SBI MCLR + 0.5%'],
+        ['Optional Add-on','Life Cover Continuation Benefit (life cover up to 20 yrs post-maturity)'],
+      ],
+      note: "First thing to establish in any conversation: <strong>which of the three Plan Options does this customer have?</strong> The benefits, the income timing, and the renewal conversation are completely different across Flexi-Income, Flexi-Income PRO, and Large Sum. Once that's confirmed, everything else follows."
+    },
+    rpu: {
+      formula: 'Reduced Paid-Up Factor = Premiums Paid ÷ Premiums Payable\n\nApplied to: Guaranteed Income, Guaranteed Lumpsum (PRO), Cash Bonus, Sum Assured on Maturity, Sum Assured on Death — all multiplied by this factor, permanently.',
+      example: {
+        title: 'Worked example — PPT 10 yrs, customer stops after Year 4 (40% paid), Flexi-Income PRO',
+        before: {label:'If premiums continue', rows:[['Guaranteed Income','100% of original, every year from ISY'],['Guaranteed Lumpsum (e.g. Yr 10)','100% — full scheduled milestone'],['Reversionary Bonus','Keeps accruing every year till ISY−1']]},
+        after: {label:'Once Reduced Paid-Up', rows:[['Guaranteed Income','40% of original — for every remaining payout year'],['Guaranteed Lumpsum (e.g. Yr 10)','40% of the scheduled amount'],['Reversionary Bonus','Stops accruing entirely from this point']]},
+      },
+      stops: [
+        {text:'<strong>No further Reversionary Bonus accrues</strong> — whatever was declared up to the point of discontinuance is locked in (at the reduced factor), but every future year\'s bonus declaration is simply skipped. For a policy with Income Start Year 5 or PPT+1, this directly shrinks the 15-instalment RB payout the customer would otherwise receive.'},
+        {text:'<strong>Guaranteed Lumpsum milestones (Flexi-Income PRO) are also cut to the RPU factor</strong> — a customer expecting, say, ₹3L at Year 10 would now receive ~₹1.2L (at a 40% factor) if discontinuance happened before that milestone.'},
+      ],
+      compound: 'The Guaranteed Income reduction isn\'t a one-time hit — it\'s a <strong>permanent per-year cut applied across the entire remaining payout schedule</strong>, which for many customers runs 20–40 years. A 60% cut to an annual income that was supposed to run for 30 years is a 60% cut to 30 years of cash flow, not just "this year\'s" payment.'
+    },
+    journey: [
+      {year:'Years 1 → (ISY−1)', title:'Reversionary Bonus accrual phase (if ISY = 5 or PPT+1)', desc:'If the customer\'s Income Start Year is 5 or PPT+1 (not 2), <strong>Reversionary Bonus accrues every year from Year 1</strong> based on par fund performance — but isn\'t paid out yet. This bonus, once declared, is locked in permanently.'},
+      {year:'Income Start Year (2 / 5 / PPT+1)', title:'Survival Benefit payouts begin', desc:'<strong>Guaranteed Income</strong> starts. If ISY was 5 or PPT+1, the <strong>accrued Reversionary Bonus also starts paying out</strong> — spread over 15 equal annual instalments. <strong>Cash Bonus</strong> (if declared, based on par fund performance) also starts from this point.'},
+      {year:'Every 5 years (PRO option only)', title:'Guaranteed Lumpsum payouts (Years 10/15/20/25/30 for PPT 8–10; or 15/20/25/30 for PPT 12–15)', desc:'Customers on <strong>Flexi-Income PRO</strong> receive a scheduled <strong>Guaranteed Lumpsum</strong> on top of regular income — this is the single most useful renewal/engagement hook for PRO customers. Always check proximity to the next milestone.'},
+      {year:'Throughout (Large Sum option)', title:'No survival benefit — silent accumulation', desc:'<strong>Large Sum</strong> customers receive nothing during the term. Loyalty Sum Assured (10–75% of SAM depending on PPT/PT), Reversionary Bonus, and Terminal Bonus all accumulate and are paid together at maturity. This is the option most likely to generate "why am I not getting anything?" queries — context matters here.'},
+      {year:'Maturity', title:'Final payout', desc:'<strong>Flexi-Income / PRO:</strong> Sum Assured on Maturity + any accrued Reversionary Bonus + Terminal Bonus. <strong>Large Sum:</strong> Sum Assured on Maturity + Loyalty Sum Assured + accrued Reversionary Bonus + Terminal Bonus.'},
+      {year:'Post-Maturity (if Life Cover Continuation opted)', title:'Life cover continues for 5–20 years', desc:'If opted at inception (requires PPT ≥ 10 yrs, PT ≥ 20 yrs, maturity age ≤ 75), a life cover of <strong>10× annualised premium</strong> continues for 5 to 20 years post-maturity, depending on age at maturity — at no extra cost.'},
+    ],
+    renewal: [
+      {hook:'Reversionary Bonus, once declared, is permanent — but only accrues while premiums are current.', body:'Each year of paid premiums adds another year of <strong>declared, locked-in Reversionary Bonus</strong> to the policy — which compounds the eventual payout (paid in 15 instalments from the Income Start Year). A missed premium doesn\'t just pause this; if it triggers Reduced Paid-Up, <strong>no further Reversionary Bonus accrues at all</strong> going forward.'},
+      {hook:'PRO customers: check the next Guaranteed Lumpsum date before every renewal call.', body:'If a customer on Flexi-Income PRO is, say, 18 months from their next scheduled Guaranteed Lumpsum payout (Year 10/15/20/25/30), this is the strongest possible renewal anchor: <strong>"your next milestone payout of approximately ₹X is in Y months — let\'s make sure the policy stays in-force to receive it."</strong>'},
+      {hook:'Large Sum customers often think nothing is happening — show them the accumulation.', body:'Because there\'s no survival benefit, Large Sum customers may feel disengaged. Use the renewal call to walk through <strong>Loyalty Sum Assured accrual</strong> (already locked in based on years completed) and the <strong>Reversionary Bonus declared so far</strong> — making the "silent" accumulation visible reduces drop-off risk significantly.'},
+      {hook:'If Life Cover Continuation Benefit was opted, missing the PPT/PT eligibility window forfeits it permanently.', body:'This benefit must be opted <strong>at inception</strong> and requires specific PPT/PT combinations. If the customer has it, frame ongoing premiums as protecting a <strong>post-retirement life cover</strong> that cannot be purchased separately at that age without heavy loading.'},
+    ],
+    faq: {
+      'Premium & Renewal': [
+        {q:'What happens if I miss a premium payment?', a:'After the Grace Period (15 days monthly / 30 days otherwise), if at least 2 full years of premiums have been paid, the policy becomes <strong>Reduced Paid-Up</strong> — survival benefits, Guaranteed Income, Guaranteed Lumpsum (PRO), and Cash Bonus all reduce proportionally based on (premiums paid ÷ premiums payable). No further Reversionary Bonus accrues. If fewer than 2 years\' premiums were paid, the policy lapses with no benefits, though revival is possible within 5 years.'},
+        {q:'Can I change my Plan Option (e.g. from Large Sum to Flexi-Income)?', a:'Plan Option is selected at inception and is <strong>not designed to be changed mid-term</strong>. If a customer\'s needs have shifted significantly, this should be escalated to the advisor/service team for a broader portfolio review — not addressed as a simple modification request.'},
+        {q:'Can I increase or decrease my premium?', a:'The Premium Paying Frequency can be changed (with applicable modal loadings), but the core premium amount and PPT structure are generally fixed at inception. Confirm with operations for any specific modification request.'},
+      ],
+      'Benefits & Income': [
+        {q:'When does my income actually start?', a:'Depends on the chosen <strong>Income Start Year (ISY)</strong> — either Year 2, Year 5, or PPT+1. Confirm this from the policy schedule, as it materially changes what the customer should expect and when.'},
+        {q:'What is Reversionary Bonus, and is it really guaranteed?', a:'It\'s a bonus declared annually based on par fund performance. <strong>Once declared, it cannot be taken back</strong> — but the <em>rate</em> for future years is not guaranteed in advance. It\'s paid out in 15 equal instalments starting from the Income Start Year (only applicable if ISY is 5 or PPT+1, not 2).'},
+        {q:'What\'s the difference between my plan option and the other two?', a:'<strong>Flexi-Income:</strong> regular guaranteed income + bonuses from ISY. <strong>Flexi-Income PRO:</strong> same, plus Guaranteed Lumpsum payouts every 5 years. <strong>Large Sum:</strong> no income during the term — everything (including Loyalty Sum Assured) is paid as an enhanced lumpsum at maturity.'},
+        {q:'I opted for Life Cover Continuation — what does that actually mean?', a:'Post-maturity, a life cover of <strong>10× your annualised premium</strong> continues for a period based on your age at maturity: 20 years (age 20–45), 15 years (46–55), 10 years (56–65), or 5 years (66–75) — at no additional premium.'},
+        {q:'What is "accruing Survival Benefits" — should I opt in?', a:'Instead of taking annual payouts in cash, the customer can let them accumulate within the policy at a <strong>guaranteed 2% p.a. + declared bonus rate</strong>, withdrawable in full anytime. Good option for customers who don\'t need the cash flow yet and want it to compound tax-efficiently within the policy.'},
+      ],
+      'Loans & Liquidity': [
+        {q:'Can I take a loan against this policy, and how much?', a:'Yes — up to <strong>60% of Surrender Value</strong>, once the policy has acquired surrender value (after 2 full premium years). Rate is linked to SBI MCLR + 0.5% (floor 7%), reviewed periodically.'},
+      ],
+      'Tax': [
+        {q:'Is my income/maturity amount taxable?', a:'As a traditional life insurance plan, payouts are generally exempt under <strong>Section 10(10D)</strong>, subject to the premium not exceeding the prescribed % of Sum Assured (or ₹5 lakh annual premium cap for policies issued after April 2023). Recommend the customer confirm their specific eligibility with a tax advisor.'},
+      ],
+      'Maturity & Death Benefit': [
+        {q:'What exactly will I get at maturity?', a:'<strong>Flexi-Income/PRO:</strong> Sum Assured on Maturity + accrued Reversionary Bonus (if any remains unpaid) + Terminal Bonus (if declared). <strong>Large Sum:</strong> the above plus Loyalty Sum Assured on Maturity (10–75% of SAM depending on PPT/PT combination).'},
+        {q:'What happens to my family if I pass away during the policy term?', a:'Sum Assured on Death (minimum 7× Annualised Premium, increasing each year) + any accrued Reversionary Bonus + pro-rata Guaranteed Income/Lumpsum/Cash Bonus due that year + Terminal Bonus if declared. Minimum guaranteed is <strong>105% of total premiums paid</strong>.'},
+      ],
+    },
+    milestones: [
+      {trigger:'Income Start Year approaching', text:'Prep the customer for their first <strong>Survival Benefit / Guaranteed Income payout</strong> — confirm bank details are updated for ECS.'},
+      {trigger:'PRO: Yrs 10/15/20/25/30 (per PPT)', text:'<strong>Guaranteed Lumpsum</strong> due — strongest renewal anchor for this option.'},
+      {trigger:'Large Sum: Yrs 5/10/15/20', text:'<strong>Loyalty Sum Assured</strong> increments accrue — good moment to show accumulated value on a statement.'},
+      {trigger:'Maturity − 5 yrs (if Life Cover Continuation opted)', text:'Remind the customer about the post-maturity life cover period that begins — and confirm nominee details are current.'},
+    ],
+    surrender: [
+      {text:'<strong>Policy loan (60% of SV)</strong> is the first option for any liquidity need — it keeps the bonus accrual and income schedule intact.'},
+      {text:'<strong>Reversionary Bonus already accrued is guaranteed</strong> — surrendering converts a 15-year guaranteed payout schedule into a discounted lumpsum today. Quantify this if possible.'},
+      {text:'<strong>PRO customers near a Guaranteed Lumpsum date</strong> — this is almost always the deciding factor. Check the policy year first.'},
+    ],
+  },
+
+  // ════════════════════════════════════════════════════════
+  gfs: {
+    snapshot: {
+      headline: "A guaranteed-return savings plan — the customer knows exactly what they'll receive and when, with an optional regular income stream. No market dependency, no surprises.",
+      grid: [
+        ['Product Type','Non-Linked, Non-Participating, Guaranteed Savings'],
+        ['Plan Options','Lump Sum (pure accumulation) or Lump Sum Plus Income'],
+        ['Growth Mechanism','Guaranteed Additions accrue yearly from Year 2 (Lump Sum option)'],
+        ['Income Start (Plus Income)','2 years after Premium Paying Term ends'],
+        ['Policy Loan','Up to 60% of Surrender Value, rate ≈ SBI MCLR + 0.5% (~9.6% currently)'],
+        ['Special Feature','Preponement — advance future income as a lumpsum (opted at inception only, irreversible)'],
+      ],
+      note: "This is the <strong>simplest of the three products to explain</strong> — everything is guaranteed and pre-determined. The main job here is making sure the customer understands what they signed up for (especially <strong>Preponement</strong>, if opted) and that every premium directly and permanently increases a guaranteed number."
+    },
+    rpu: {
+      formula: 'Reduced Paid-Up Factor = Total months Premiums paid ÷ Total months Premiums originally payable\n\nApplied to: Income Benefit Pay-out, Sum Assured on Maturity, accrued Guaranteed Additions, Sum Assured on Death — all multiplied by this factor, permanently. (This is the exact formula stated in the brochure.)',
+      example: {
+        title: 'Worked example — PPT 10 yrs (120 months), customer stops after Year 4 (48 months paid)',
+        before: {label:'If premiums continue', rows:[['RPU Factor','100%'],['Income Benefit Pay-out (Plus Income)','Full guaranteed annual income, for full Income Duration'],['Guaranteed Additions (Lump Sum)','Continue accruing every year till end of Policy Term']]},
+        after: {label:'Once Reduced Paid-Up', rows:[['RPU Factor','48 ÷ 120 = 40%'],['Income Benefit Pay-out','40% of original — for the entire chosen Income Duration'],['Guaranteed Additions','Stop accruing — frozen at the amount calculated up to the paid-up date']]},
+      },
+      stops: [
+        {text:'<strong>Guaranteed Additions stop accruing entirely</strong> — the brochure\'s own formula for Reduced Paid-up Guaranteed Additions is based on "total Annualized Premium paid till the date of paid-up" — a number that stops growing the moment premiums stop. No further accrual happens for the remaining Policy Term.'},
+        {text:'If <strong>Preponement</strong> was opted, the math gets layered: the customer already received an advance against future income, and now the remaining (already-reduced-by-preponement) income gets <em>further</em> reduced by the RPU factor. Two reductions stack on top of each other.'},
+      ],
+      compound: 'This product\'s Income Benefit Pay-out for the Lump Sum Plus Income option can run <strong>10 to 35 years</strong> depending on the chosen Income Duration. A 40% RPU factor doesn\'t mean "you get 40% this year" — it means <strong>every single instalment for the next 10–35 years is permanently fixed at 40% of what it would have been</strong>. For a 30-year Income Duration, that 60% gap compounds into a very large total lifetime shortfall — far larger than the "missed premiums" that caused it.'
+    },
+    journey: [
+      {year:'Year 1', title:'Policy starts — no benefits yet', desc:'Standard start. If <strong>Preponement</strong> was opted (Lump Sum Plus Income only), this is also when the irrevocable preponement percentage was locked in for each future year of the PPT+1 period.'},
+      {year:'Year 2 onwards (Lump Sum option)', title:'Guaranteed Additions begin accruing', desc:'From the <strong>2nd policy year</strong>, Guaranteed Additions accrue every year (in arrears) as a percentage of total Annualised Premium paid — and continue till the end of the Policy Term. These are <strong>locked in immediately upon accrual</strong> and paid as a lumpsum at maturity along with the Sum Assured on Maturity.'},
+      {year:'If Preponement opted (Plus Income option)', title:'Preponed lumpsum paid during PPT+1', desc:'If the customer chose to prepone a percentage of future income, that <strong>discounted lumpsum is paid out during the Premium Paying Term + 1 year period</strong> — at the start or end of the relevant policy year, as chosen at inception. All subsequent regular Income Benefit Pay-outs are permanently reduced by the preponed amount.'},
+      {year:'2 years after PPT ends (Plus Income option)', title:'Income Benefit Pay-outs begin', desc:'A <strong>level guaranteed annual income</strong> begins, payable in arrears for the chosen Income Duration (10/15/20/25/30 years for PPT 8–12, or 15/20/25/30/35 years for PPT 5–7) or until death, whichever is earlier.'},
+      {year:'Maturity', title:'Final payout', desc:'<strong>Lump Sum option:</strong> Sum Assured on Maturity + all accrued Guaranteed Additions, paid together. <strong>Plus Income option:</strong> the last Income Benefit instalment + Sum Assured on Maturity (max of 10 or PPT, × Annualised Premium), paid together.'},
+    ],
+    renewal: [
+      {hook:'Every premium directly increases a guaranteed, locked-in number — this is the easiest renewal story in the whole portfolio.', body:'Unlike market-linked products, Guaranteed Additions and the eventual Income Benefit Pay-out are <strong>calculated directly off cumulative Annualised Premiums paid</strong>. There\'s no "maybe" — paying this year\'s premium has a known, calculable effect on the maturity corpus or income amount. Use this directness as the core message.'},
+      {hook:'Reduced Paid-Up math is harsh and permanent — frame this clearly.', body:'If premiums stop after at least 1 full year is paid, the policy becomes Reduced Paid-Up: every future benefit (Income Benefit Pay-out, Sum Assured on Maturity, accrued Guaranteed Additions) is multiplied by <strong>(months of premium paid ÷ months of premium originally payable)</strong>. For a 10-year PPT policy where only 4 years were paid, that\'s a permanent <strong>40% factor</strong> applied to everything going forward. This is one of the more dramatic numbers to walk a customer through.'},
+      {hook:'If Preponement was opted, the customer may have already "spent" part of their future income — make sure they remember this.', body:'Preponement is <strong>opted at inception and cannot be changed or reversed</strong>. If the customer opted for, say, 50% preponement, their regular Income Benefit Pay-outs from the Income Start Year onward are <strong>permanently reduced</strong> by that proportion (the preponed amount was already paid out as a lumpsum during PPT+1). When discussing future income expectations, always check whether preponement was opted — this avoids a confused/upset customer later.', verify:'Check the policy schedule for the preponement percentage table opted at inception, if any.'},
+    ],
+    faq: {
+      'Premium & Renewal': [
+        {q:'What happens if I miss a premium?', a:'If at least the first full policy year\'s premium was paid, the policy becomes <strong>Reduced Paid-Up</strong> — all future benefits (Sum Assured on Maturity, Income Benefit Pay-out, accrued Guaranteed Additions) are reduced by the factor (months of premium paid ÷ months originally payable), permanently. If even the first year wasn\'t completed, the policy lapses with <strong>no paid-up value</strong>. Revival is possible within 5 years of the first unpaid premium.'},
+        {q:'Can my premium amount change later?', a:'The premium, PPT, and Policy Term are fixed at inception based on the chosen Plan Option, Sum Assured on Death multiple, and other parameters. There is no indication of mid-term premium flexibility in this product — treat the schedule as fixed.'},
+      ],
+      'Benefits & Growth': [
+        {q:'When do I start getting income? (Lump Sum Plus Income)', a:'Income begins <strong>2 years after the Premium Paying Term ends</strong>, and continues annually (in arrears) for the chosen Income Duration or until death, whichever comes first.'},
+        {q:'What exactly is a "Guaranteed Addition" and how is it calculated?', a:'For the Lump Sum option, Guaranteed Additions accrue every year from Year 2 to the end of the Policy Term, expressed as a <strong>percentage of total Annualised Premium paid to date</strong>. These accrue in arrears and are paid out together with the Sum Assured on Maturity at the end of the term — they are <strong>not</strong> paid as annual cash.'},
+        {q:'What is Preponement, and did I opt for it?', a:'Preponement (Lump Sum Plus Income option only) lets the customer take a <strong>lumpsum advance against future Income Benefit Pay-outs</strong>, paid out during the PPT+1 period. It must be chosen at inception, the percentage is fixed per policy year, and <strong>cannot be changed or reversed later</strong>. If opted, all future regular income is permanently reduced by the preponed share. Check the policy schedule to confirm whether — and how much — was opted.', verify:'This is one of the most important things to verify before answering any income-related question for this product.'},
+        {q:'What\'s the Sum Assured on Death multiple, and can it be changed?', a:'The customer chose a multiple of <strong>5, 7, or 10</strong> times Annualised Premium at inception (5 and 7 are age-dependent — 7 for entry age below 50, 5 for 50+; 10 is available to all). This affects the death benefit calculation and is generally fixed at inception.'},
+      ],
+      'Loans & Liquidity': [
+        {q:'Can I take a loan, and how much?', a:'Yes — up to <strong>60% of Surrender Value</strong> once the policy has acquired surrender value (after 1 full year\'s premium, surrender value starts; check exact GSV timing). Current loan rate is approximately <strong>9.6% p.a.</strong> (SBI 3-yr MCLR + 0.5%, floor 7%). If the customer has opted for Preponement, the surrender value used for loan calculation already accounts for the preponed amount.'},
+      ],
+      'Tax': [
+        {q:'Is the maturity or income amount taxable?', a:'As a traditional non-par life insurance plan, payouts are generally exempt under <strong>Section 10(10D)</strong>, subject to applicable premium-to-sum-assured conditions under prevailing tax law. Recommend the customer confirm their specific position with a tax advisor.'},
+      ],
+      'Maturity & Death Benefit': [
+        {q:'What will I get at maturity?', a:'<strong>Lump Sum option:</strong> Sum Assured on Maturity + all accrued Guaranteed Additions, as a single lumpsum. <strong>Lump Sum Plus Income option:</strong> the final Income Benefit Pay-out instalment + Sum Assured on Maturity (which equals the higher of 10 or the PPT, multiplied by Annualised Premium), paid together.'},
+        {q:'What does my family receive if I pass away during the term?', a:'Depends on the SAD multiple chosen (5/7/10× Annualised Premium) and Plan Option. For the Plus Income option, it also includes the present value of <strong>remaining future Income Benefit Pay-outs</strong> (using the DB Factor table). In all cases, the death benefit is never less than <strong>105% of total premiums paid</strong> or the applicable surrender value, whichever is higher.'},
+      ],
+    },
+    milestones: [
+      {trigger:'Year 2 (Lump Sum option)', text:'First <strong>Guaranteed Addition</strong> accrues — good moment to show the customer their policy is now actively growing.'},
+      {trigger:'PPT completion + 2 yrs (Plus Income option)', text:'<strong>Income Benefit Pay-outs begin</strong> — confirm bank/ECS details well in advance.'},
+      {trigger:'PPT + 1 (if Preponement opted)', text:'Final window for the <strong>preponed lumpsum payout</strong> — confirm this has been processed correctly and the customer understands their income going forward is permanently adjusted.'},
+    ],
+    surrender: [
+      {text:'<strong>Policy loan (60% of SV at ~9.6%)</strong> is the natural first option — preserves the guaranteed Income Benefit Pay-out schedule and Guaranteed Additions entirely.'},
+      {text:'<strong>Reduced Paid-Up math is the key persuasion point</strong> — show the customer the (months paid ÷ months payable) factor applied to surrender vs. how much more is preserved by simply continuing or converting to RPU rather than surrendering outright.'},
+      {text:'Because every benefit here is <strong>guaranteed and calculable</strong>, this product is well-suited to a side-by-side "here\'s exactly what you keep vs. exactly what you lose" comparison — more so than the par or ULIP products.'},
+    ],
+  },
+
+  // ════════════════════════════════════════════════════════
+  lp: {
+    snapshot: {
+      headline: "A whole-life plan that starts paying guaranteed income from Year 1 and continues till age 100 — essentially a personal pension that starts almost immediately, with an option to cover two lives.",
+      grid: [
+        ['Product Type','Non-Linked, Participating, Whole Life Savings'],
+        ['Plan Options','Lifelong Income Option (single life) / Family Secure Option (joint life)'],
+        ['Income Start','As early as Year 1 — Guaranteed Income + Cash Bonus (from Yr 2)'],
+        ['Policy Term','To Age 100 — income runs for life'],
+        ['Customisation','Accrual of Survival Benefits — opt in/out anytime, 0–100%'],
+        ['Policy Loan','Up to 60% of Surrender Value, rate ≈ SBI MCLR + 0.5% (~9.6%)'],
+      ],
+      note: "This is the only product in the portfolio where the customer is <strong>already receiving income from Year 1</strong> — that's a powerful, tangible fact to anchor every conversation around. The other defining choice is <strong>Lifelong Income vs. Family Secure</strong> — confirm which one the customer has, since Family Secure covers two lives and behaves very differently on a first death."
+    },
+    journey: [
+      {year:'Year 1', title:'Guaranteed Income starts immediately', desc:'Unlike almost every other savings plan, <strong>Guaranteed Income begins from the very first policy year</strong> — calculated as 8.6 per 1,000 of Sum Assured on Maturity (7.4 in Year 1 only, for entry ages 56+). This income continues annually for life (till age 100) or death, whichever is earlier.'},
+      {year:'Year 2 onwards', title:'Cash Bonus joins the income', desc:'From Year 2, a <strong>non-guaranteed Cash Bonus</strong> (based on par fund performance) is added on top of the Guaranteed Income — also expressed per 1,000 of SAM and paid annually for life.'},
+      {year:'Any time', title:'Accrual of Survival Benefits — opt in/out freely', desc:'The customer can choose to <strong>accumulate their annual income instead of taking it as cash</strong> — it then grows at a guaranteed 2% p.a. plus a declared bonus rate, fully withdrawable (0–100%) at any time. This can be switched on or off multiple times during the policy term — a genuinely flexible feature most customers don\'t know they have.'},
+      {year:'On first death (Family Secure only)', title:'Cover continues for the survivor — no further premiums', desc:'If the Primary Life Insured dies first, the SAD for the Primary is paid as a lumpsum, <strong>no further premiums are required</strong>, and the policy continues — income keeps flowing to the Secondary Life Insured until their death or maturity. If the Secondary dies first, cover continues for the Primary <strong>provided premiums continue</strong>.'},
+      {year:'Maturity (Age 100)', title:'Final lumpsum payout', desc:'On survival to age 100, <strong>Sum Assured on Maturity + Terminal Bonus (if declared)</strong> is paid as a lumpsum, <em>in addition</em> to that year\'s income payout. For most customers this is a multi-decade horizon — but it means the policy was never designed to "end" in the way term-bound products do.'},
+    ],
+    renewal: [
+      {hook:'"You\'re already receiving income on this policy" is the single strongest renewal opener available across the entire portfolio.', body:'No other product in the portfolio can say this from Year 1. If a customer is hesitant about the next premium, reminding them that <strong>income is already flowing — and that this premium is what keeps that income (and the eventual age-100 lumpsum) growing</strong> reframes the decision completely. This isn\'t "pay now, benefit later" — it\'s "keep what you\'re already getting, and let it grow."'},
+      {hook:'Every premium increases the Sum Assured on Maturity (SAM) — and SAM is the single number that drives Guaranteed Income, the age-100 lumpsum, AND the death benefit floor.', body:'SAM = SAM Multiple × Annualised Premium. Because <strong>Guaranteed Income is calculated as 8.6 per 1,000 of SAM</strong>, a higher SAM means a higher income <em>for life</em> — not just a larger eventual lumpsum. This makes the premium-to-benefit link unusually direct and easy to explain.'},
+      {hook:'Family Secure customers: use the renewal call to reinforce what happens to the other life insured.', body:'Many Family Secure customers don\'t fully register that this is a <strong>two-life policy</strong> until something happens. A periodic reminder — "if anything happens to [spouse/parent], the policy continues, income keeps coming, and in the case of the Primary passing first, no further premiums are even needed" — builds trust and is a natural, non-salesy engagement point.'},
+      {hook:'If the customer doesn\'t need the income right now, the Accrual option is a strong "don\'t let this go to waste" conversation.', body:'Customers sometimes don\'t realise their annual income is simply being paid out (and possibly under-utilised) when they\'d rather it compound. Suggesting they <strong>switch to Accrual of Survival Benefits (2% guaranteed + bonus, withdrawable anytime)</strong> turns an passive payout into an active decision — and is a good reason for a proactive call that isn\'t about premiums at all.'},
+    ],
+    rpu: {
+      formula: 'Reduced Paid-Up Factor = Total months Premiums paid ÷ Total months Premiums originally payable\n\nApplied to: Guaranteed Income, Cash Bonus, Sum Assured on Maturity (SAM), Sum Assured on Death (SAD) — all multiplied by this factor, permanently, from the date of paid-up onward.',
+      example: {
+        title: 'Worked example — PPT 10 yrs, customer stops after Year 4 (40% paid), entry age 35',
+        before: {label:'If premiums continue', rows:[['Guaranteed Income','100% of original, every year, for life (to age 100)'],['SAM at age 100','100% of original'],['SAD (death benefit floor)','100% of original']]},
+        after: {label:'Once Reduced Paid-Up', rows:[['Guaranteed Income','40% of original — every year, for the rest of the customer\'s life'],['SAM at age 100','40% of original'],['SAD','40% of original']]},
+      },
+      stops: [
+        {text:'<strong>The income cut applies immediately and retroactively to the income already in payment</strong> — this is the only product where the customer is already receiving the benefit being cut. From the date the policy becomes Reduced Paid-Up, their <em>next</em> income instalment drops to 40% — a very visible, immediate change.'},
+        {text:'Cash Bonus on a Reduced Paid-Up policy is <strong>declared separately based on the policy\'s reduced asset share</strong> — it does not simply continue at the old declared rate applied to a smaller base. In practice this typically means a smaller Cash Bonus rate as well, compounding the Guaranteed Income cut.', verify:'Confirm with the policy document whether Terminal Bonus continues to accrue for Reduced Paid-Up policies under this product — this was not explicitly addressed in the brochure extract reviewed.'},
+      ],
+      compound: 'This is, by a wide margin, <strong>the most consequential RPU scenario in the entire portfolio</strong>. Because Guaranteed Income under this product runs <em>until age 100</em>, a 40% RPU factor applied at, say, age 39 (Year 4 of a policy taken at age 35) means a <strong>60% cut to income for the next 61 years</strong>. No other product in the lineup has a payout horizon this long — so the same percentage cut here represents a dramatically larger lifetime rupee impact than the identical percentage would in a 20 or 30-year product. This is the conversation where "just a 60% reduction" should never be said lightly.'
+    },
+    faq: {
+      'Premium & Renewal': [
+        {q:'I\'m already receiving income — what happens to it if I stop paying premiums?', a:'Provided at least one full year\'s premium has been paid, the policy becomes <strong>Reduced Paid-Up</strong> — your Guaranteed Income, Cash Bonus, Sum Assured on Maturity, and Sum Assured on Death are all <strong>permanently reduced</strong> by the factor (months of premium paid ÷ months originally payable), and no further bonus growth accrues. Critically, <strong>this reduced income continues for the rest of your life (to age 100)</strong> — so the impact compounds over many decades. If even the first year\'s premium wasn\'t completed, no paid-up value applies at all.', verify:''},
+        {q:'Can I switch between Lifelong Income and Family Secure Option?', a:'Plan Option is selected at inception based on the benefit structure and underwriting (Family Secure requires two lives with insurable interest). This is not designed as a mid-term switch — escalate to the advisor/service team if the customer\'s circumstances have materially changed (e.g., they now want to cover a second life).'},
+        {q:'What is "Accrual of Survival Benefits" and how do I use it?', a:'Instead of taking the annual income as cash, the customer can let it <strong>accumulate within the policy at a guaranteed 2% p.a. plus a declared bonus rate</strong>. They can withdraw any portion — from 0% to 100% — at any time. This can be switched on or off as many times as the customer likes during the policy term, with no penalty.'},
+      ],
+      'Benefits & Income': [
+        {q:'How is my Guaranteed Income calculated?', a:'It\'s expressed as <strong>8.6 per 1,000 of Sum Assured on Maturity (SAM)</strong> — so a policy with SAM of ₹10,00,000 pays Guaranteed Income of approximately ₹8,600 per year, from Year 1, for life. (For entry ages 56 and above, the first year is slightly lower at 7.4 per 1,000, then 8.6 from Year 2.)'},
+        {q:'What if I live to 100?', a:'On survival to age 100, the policy pays out <strong>Sum Assured on Maturity plus Terminal Bonus (if declared)</strong> as a lumpsum — in addition to that year\'s income. The policy doesn\'t simply "stop" at some earlier point; it\'s genuinely designed to run for the customer\'s full lifetime.'},
+        {q:'(Family Secure) What happens when one of us passes away?', a:'<strong>If the Primary Life Insured dies first:</strong> their Sum Assured on Death is paid as a lumpsum, <strong>no further premiums are required</strong>, and income continues to be paid until the Secondary\'s death or maturity (with Maturity Benefit payable if the Secondary survives to age 100). <strong>If the Secondary dies first:</strong> their Sum Assured on Death is paid as a lumpsum, and cover continues for the Primary — <em>provided premiums continue as scheduled</em>. This distinction (premiums waived vs. not) is important to get right when explaining this to a customer.'},
+        {q:'Is the Cash Bonus guaranteed?', a:'No — Guaranteed Income is guaranteed; <strong>Cash Bonus is declared annually based on par fund performance</strong> from Year 2 onward, and is paid alongside the Guaranteed Income for as long as the policy is in-force.'},
+      ],
+      'Loans & Liquidity': [
+        {q:'Can I take a loan, and how much?', a:'Yes — up to <strong>60% of Surrender Value</strong>, once the policy has acquired surrender value (after at least 2 consecutive years of premiums). Current rate is approximately <strong>9.6% p.a.</strong> (SBI 3-yr MCLR + 0.5%, floor 7%). If the customer has accrued survival benefits and wants a loan, those accrued benefits are <strong>paid out first</strong>, before any loan is granted against the policy.'},
+      ],
+      'Tax': [
+        {q:'Is my income or maturity amount taxable?', a:'As a traditional participating life insurance plan, payouts are generally exempt under <strong>Section 10(10D)</strong>, subject to applicable premium-to-sum-assured conditions under prevailing tax law. Recommend the customer confirm their specific position with a tax advisor — especially relevant here given the very long payout horizon.'},
+      ],
+      'Maturity & Death Benefit': [
+        {q:'What will I get if I survive to maturity (age 100)?', a:'<strong>Sum Assured on Maturity + Terminal Bonus (if declared)</strong>, paid as a lumpsum — on top of that year\'s Guaranteed Income and Cash Bonus.'},
+        {q:'What does my family receive if I pass away during the term?', a:'<strong>Lifelong Income Option:</strong> Sum Assured on Death (7× Annualised Premium, increasing each year) + Terminal Bonus (if declared) + pro-rata Guaranteed Income and Cash Bonus for the year of death. The minimum is the higher of <strong>105% of total premiums paid</strong> or <strong>10× Annual Premium</strong>. <strong>Family Secure Option:</strong> depends on whether this is the first or second death — see the "what happens when one of us passes away" answer above. In all cases, <strong>Death Benefit will never be less than the Surrender Value</strong> applicable at that time.'},
+      ],
+    },
+    milestones: [
+      {trigger:'Year 1', text:'<strong>First Guaranteed Income payout</strong> — confirm bank/ECS details are set up correctly from day one, since this is the earliest-paying product in the portfolio.'},
+      {trigger:'Year 2', text:'<strong>Cash Bonus</strong> joins the annual payout for the first time — good moment to show the customer their first bonus declaration.'},
+      {trigger:'Anytime — periodic check-in', text:'Ask whether the customer is using or needs their annual income — if not, raise the <strong>Accrual of Survival Benefits</strong> option as a way to put idle payouts to work.'},
+      {trigger:'On any life event (Family Secure)', text:'If the customer mentions a health event involving either life insured, proactively clarify how the <strong>first-death provisions</strong> apply to their specific policy.'},
+    ],
+    surrender: [
+      {text:'<strong>"You\'re giving up an income you\'re already receiving"</strong> — for Legacy Plus, surrender isn\'t a future opportunity cost, it\'s the immediate loss of a payment stream already in motion. This framing is uniquely powerful for this product.'},
+      {text:'<strong>Policy loan (60% of SV at ~9.6%)</strong> — preserves the lifelong income stream entirely while addressing the immediate cash need.'},
+      {text:'<strong>Accrual of Survival Benefits</strong> can be paused/resumed freely — if the customer feels they\'re "not getting enough," walking through how accrual compounds (2% guaranteed + bonus) vs. a one-time surrender payout often reframes the conversation.'},
+      {text:'<strong>RPU comparison is extremely powerful here</strong> — because of the till-age-100 payout horizon, showing the customer the lifetime rupee difference between "stay invested," "go RPU," and "surrender" produces the starkest numbers of any product in the portfolio.'},
+    ],
+  },
+};
+
+let curProd = 'wu';
+
+function selectProduct(id, el){
+  curProd = id;
+  document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function render(){
+  const d = DOCS[curProd];
+  let h = '';
+
+  // SNAPSHOT
+  h += `<section id="sec-snapshot"><div class="sec-title">📋 Product Snapshot</div>`;
+  h += `<div class="snap-headline">${d.snapshot.headline}</div>`;
+  h += `<div class="snap-grid">`;
+  d.snapshot.grid.forEach(g=>{ h += `<div class="snap-item"><div class="snap-k">${g[0]}</div><div class="snap-v">${g[1]}</div></div>`; });
+  h += `</div>`;
+  h += `<div class="snap-note">${d.snapshot.note}</div>`;
+  h += `</section>`;
+
+  // JOURNEY
+  h += `<section id="sec-journey"><div class="sec-title">🗺️ Policy Journey — Year by Year</div>`;
+  h += `<div class="timeline">`;
+  d.journey.forEach((j,i)=>{
+    h += `<div class="tl-item"><div class="tl-dot">${i+1}</div><div class="tl-year">${j.year}</div>
+      <div class="tl-body"><div class="tl-title">${j.title}</div><div class="tl-desc">${j.desc}</div></div></div>`;
+  });
+  h += `</div></section>`;
+
+  // RENEWAL
+  h += `<section id="sec-renewal"><div class="sec-title">💬 Renewal &amp; Persistency Talking Points</div>`;
+  h += `<div class="renewal-cards">`;
+  d.renewal.forEach(r=>{
+    h += `<div class="rc"><div class="rc-hook">${r.hook}</div><div class="rc-body">${r.body}</div></div>`;
+  });
+  h += `</div></section>`;
+
+  // RPU REALITY CHECK
+  h += `<section id="sec-rpu"><div class="sec-title">⚠️ Reduced Paid-Up — Why It's Worse Than It Looks</div>`;
+  h += `<div class="rpu-formula"><span class="label">Formula</span>${d.rpu.formula.replace(/\n/g,'<br>')}</div>`;
+  h += `<div class="rpu-example"><div class="rpu-example-title">${d.rpu.example.title}</div>`;
+  h += `<div class="rpu-compare">`;
+  h += `<div class="rpu-col before"><div class="rpu-col-label">${d.rpu.example.before.label}</div>`;
+  d.rpu.example.before.rows.forEach(r=>{ h += `<div class="rpu-row"><span>${r[0]}</span><span class="rv">${r[1]}</span></div>`; });
+  h += `</div>`;
+  h += `<div class="rpu-col after"><div class="rpu-col-label">${d.rpu.example.after.label}</div>`;
+  d.rpu.example.after.rows.forEach(r=>{ h += `<div class="rpu-row"><span>${r[0]}</span><span class="rv">${r[1]}</span></div>`; });
+  h += `</div></div></div>`;
+  h += `<div class="rpu-stops"><div class="rpu-stops-title">What else silently stops</div>`;
+  d.rpu.stops.forEach(s=>{
+    h += `<div class="rpu-stop-item"><span class="si">✕</span><div>${s.text}${s.verify ? `<div class="verify">🔎 ${s.verify}</div>` : ''}</div></div>`;
+  });
+  h += `</div>`;
+  h += `<div class="rpu-compound">${d.rpu.compound}</div>`;
+  h += `</section>`;
+
+  // FAQ
+  h += `<section id="sec-faq"><div class="sec-title">❓ Customer FAQ Bank</div>`;
+  Object.keys(d.faq).forEach(cat=>{
+    h += `<div class="faq-cat"><div class="faq-cat-title">${cat}</div>`;
+    d.faq[cat].forEach((f,idx)=>{
+      const fid = `${curProd}-${cat.replace(/\W+/g,'')}-${idx}`;
+      h += `<div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq('${fid}')"><span>${f.q}</span><span class="fchev" id="chev-${fid}">▾</span></div>
+        <div class="faq-a" id="ans-${fid}">${f.a}${f.verify ? `<div class="verify">🔎 ${f.verify}</div>` : ''}</div>
+      </div>`;
+    });
+    h += `</div>`;
+  });
+  h += `</section>`;
+
+  // MILESTONES
+  h += `<section id="sec-milestones"><div class="sec-title">⏰ Milestone Alerts</div>`;
+  h += `<div class="milestone-list">`;
+  d.milestones.forEach(m=>{
+    h += `<div class="ms-row"><div class="ms-trigger">${m.trigger}</div><div class="ms-text">${m.text}</div></div>`;
+  });
+  h += `</div></section>`;
+
+  // SURRENDER BRIDGE
+  h += `<section id="sec-surrender"><div class="sec-title">🔁 If the Conversation Turns to Surrender</div>`;
+  h += `<div class="sb-box"><div class="snap-note">If a renewal call surfaces a surrender intent, these are the fastest angles for this product. For the full pitch library organised by surrender reason, refer to the Retention Pitchbook.</div>`;
+  h += `<div class="sb-list">`;
+  d.surrender.forEach(s=>{ h += `<div class="sb-item">${s.text}</div>`; });
+  h += `</div></div></section>`;
+
+  document.getElementById('docroot').innerHTML = h;
+}
+
+function toggleFaq(id){
+  const ans = document.getElementById('ans-'+id);
+  const chev = document.getElementById('chev-'+id);
+  const q = chev.closest('.faq-q');
+  const isOpen = ans.classList.contains('open');
+  if(isOpen){ ans.classList.remove('open'); q.classList.remove('open'); }
+  else { ans.classList.add('open'); q.classList.add('open'); }
+}
+
+render();
+</script>
+</body>
+</html>
