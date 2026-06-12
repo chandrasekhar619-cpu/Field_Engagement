@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { logOutcome } from '../../lib/logOutcome'
+import { supabase } from '../../lib/supabaseClient'
 
 const THEMES = {
   Festive: {
@@ -32,6 +33,7 @@ export default function CreativesDemo({
   linkId,
   rpmName,
   rpmDesignation,
+  shareToken,
 }) {
   const { user } = useAuth()
   const name        = rpmName        || user?.name        || 'Your Advisor'
@@ -39,9 +41,14 @@ export default function CreativesDemo({
 
   const theme = THEMES[item.category] || THEMES.default
 
-  // Log outcome when viewed in customer mode
+  // Viewing IS completion for creatives — log outcome and mark token used on render
   useEffect(() => {
-    if (isCustomerView && linkId) logOutcome(linkId, 'Viewed')
+    if (!isCustomerView) return
+    if (linkId) logOutcome(linkId, 'Viewed')
+    if (shareToken) {
+      supabase.from('share_tokens').update({ used: true }).eq('token', shareToken)
+        .then(({ error }) => { if (error) console.error('share_token mark-used failed:', error) })
+    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (

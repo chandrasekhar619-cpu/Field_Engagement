@@ -164,6 +164,7 @@ export default function LifeWordDemo({
   customerName,
   rpmName,
   customerId,
+  shareToken,
 }) {
   const { word: answer, note } = getTodaysWord()
 
@@ -207,6 +208,13 @@ export default function LifeWordDemo({
 
     return () => ro.disconnect()
   }, [])
+
+  // ── Mark token used when game ends ─────────────────────────────────────────
+  useEffect(() => {
+    if (status === 'playing' || !isCustomerView || !shareToken) return
+    supabase.from('share_tokens').update({ used: true }).eq('token', shareToken)
+      .then(({ error }) => { if (error) console.error('share_token mark-used failed:', error) })
+  }, [status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Auto-show How to Play for customers ────────────────────────────────────
   useEffect(() => {

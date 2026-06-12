@@ -6,6 +6,7 @@ import ProtectionGapDemo  from '../components/demos/ProtectionGapDemo'
 import PollDemo           from '../components/demos/PollDemo'
 import MoodDemo           from '../components/demos/MoodDemo'
 import LifeWordDemo       from '../components/demos/LifeWordDemo'
+import WordHuntDemo       from '../components/demos/WordHuntDemo'
 
 const DEMOS = {
   'quiz':             QuizDemo,
@@ -14,6 +15,7 @@ const DEMOS = {
   'poll':             PollDemo,
   'mood':             MoodDemo,
   'life-word':        LifeWordDemo,
+  'word-hunt':        WordHuntDemo,
 }
 
 export default function PreviewPage() {

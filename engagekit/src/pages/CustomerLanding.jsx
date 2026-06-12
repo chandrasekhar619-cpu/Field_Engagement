@@ -9,6 +9,7 @@ import PollDemo           from '../components/demos/PollDemo'
 import MoodDemo           from '../components/demos/MoodDemo'
 import LifeWordDemo       from '../components/demos/LifeWordDemo'
 import CreativesDemo      from '../components/demos/CreativesDemo'
+import WordHuntDemo       from '../components/demos/WordHuntDemo'
 
 function Disclaimer() {
   return (
@@ -28,6 +29,7 @@ const DEMOS = {
   'mood':            MoodDemo,
   'life-word':       LifeWordDemo,
   'creative':        CreativesDemo,
+  'word-hunt':       WordHuntDemo,
 }
 
 async function fetchIp() {
@@ -97,13 +99,6 @@ export default function CustomerLanding() {
           return
         }
         setCustomer(customerData)
-
-        // Mark token as used — single-use from first valid open, covers all content types
-        const { error: tokenMarkErr } = await supabase
-          .from('share_tokens')
-          .update({ used: true })
-          .eq('token', token)
-        if (tokenMarkErr) console.error('share_token mark-used failed:', tokenMarkErr)
 
         // 3. Look up the link record for content_id and RPM metadata
         const { data: linkRecord, error: linkErr } = await supabase
@@ -232,6 +227,7 @@ export default function CustomerLanding() {
           customerName={customer?.name ?? link.customer_name}
           rpmName={link.rpm_name}
           customerId={customer?.id}
+          shareToken={token}
         />
         <Disclaimer />
       </div>
@@ -263,6 +259,8 @@ export default function CustomerLanding() {
           customerName={customer?.name ?? link.customer_name}
           rpmName={link.rpm_name}
           customerId={customer?.id}
+          shareToken={token}
+          persona={customer?.persona}
         />
       </div>
 

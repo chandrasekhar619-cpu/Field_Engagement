@@ -49,6 +49,16 @@ export const contentItems = [
     languages: ['EN', 'HI', 'MR', 'TE'],
     demoType: 'creative',
   },
+  {
+    id: '13',
+    emoji: '🔍',
+    category: 'Game',
+    title: 'Word Hunt',
+    description: 'Find 3 hidden financial terms in the puzzle grid and unlock key insurance insights.',
+    personas: [],
+    languages: ['EN'],
+    demoType: 'word-hunt',
+  },
 ]
 
 export const customers = [

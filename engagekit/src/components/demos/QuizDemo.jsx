@@ -141,7 +141,7 @@ function WaIcon() {
   )
 }
 
-export default function QuizDemo({ onShare, onStep, isCustomerView = false, linkId, customerName, customerId: customerIdProp }) {
+export default function QuizDemo({ onShare, onStep, isCustomerView = false, linkId, customerName, customerId: customerIdProp, shareToken }) {
 
   const [currentQ,  setCurrentQ]  = useState(0)
   const [answers,   setAnswers]   = useState([])
@@ -185,6 +185,12 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
           .eq('customer_master_id', customerData.customer_master_id)
         if (masterErr) console.error('Persona propagation failed:', masterErr)
         else console.log('Persona propagated to all records with master_id:', customerData.customer_master_id)
+      }
+
+      if (shareToken) {
+        const { error: tokenErr } = await supabase
+          .from('share_tokens').update({ used: true }).eq('token', shareToken)
+        if (tokenErr) console.error('share_token mark-used failed:', tokenErr)
       }
     })()
   }, [phase]) // eslint-disable-line react-hooks/exhaustive-deps
