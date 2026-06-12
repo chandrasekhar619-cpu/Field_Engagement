@@ -1,25 +1,31 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabaseClient'
+import { logOutcome } from '../../lib/logOutcome'
+import FeedbackSection from '../FeedbackSection'
+
+// ── Grid data (FIX 2 — re-jumbled) ───────────────────────────────────────────
 
 const gridData = [
-  ['K','R','Q','X','A','M','P','Z','X','A'],
-  ['B','O','N','U','S','X','Y','R','L','S'],
-  ['F','J','S','Y','W','G','H','K','Q','S'],
+  ['K','R','Q','X','A','B','M','P','Z','X'],
+  ['F','J','N','Y','W','G','O','K','Q','S'],
   ['L','P','O','W','Q','V','B','N','M','E'],
-  ['N','O','M','I','N','E','E','X','F','T'],
-  ['X','W','E','V','M','U','I','O','P','R'],
-  ['A','S','D','F','G','H','J','K','L','Z'],
-  ['C','V','B','N','M','Q','W','E','R','T'],
-  ['Y','U','I','O','P','A','S','D','F','G'],
-  ['H','J','K','L','Z','X','C','V','B','N'],
+  ['C','V','M','F','G','H','J','K','U','T'],
+  ['Y','D','I','O','P','A','S','D','F','S'],
+  ['H','J','N','L','Z','X','C','V','B','N'],
+  ['Q','W','E','R','T','Y','U','I','O','P'],
+  ['A','S','E','D','F','G','H','J','K','L'],
+  ['Z','X','T','E','S','S','A','C','V','B'],
+  ['M','N','B','V','C','X','Z','L','K','J'],
 ]
 
+// BONUS: diagonal, NOMINEE: vertical, ASSET: reversed horizontal
 const WORD_PATHS = {
-  term1: [[1,0],[1,1],[1,2],[1,3],[1,4]],
-  term2: [[4,0],[4,1],[4,2],[4,3],[4,4],[4,5],[4,6]],
-  term3: [[0,9],[1,9],[2,9],[3,9],[4,9]],
+  term1: [[0,5],[1,6],[2,7],[3,8],[4,9]],
+  term2: [[1,2],[2,2],[3,2],[4,2],[5,2],[6,2],[7,2]],
+  term3: [[8,6],[8,5],[8,4],[8,3],[8,2]],
 }
 
+const TERM_ORDER = ['term1', 'term2', 'term3']
 const WORD_LABELS = { term1: 'BONUS', term2: 'NOMINEE', term3: 'ASSET' }
 
 const EXPLANATIONS = {
@@ -44,32 +50,22 @@ const PERSONA_CONTENT = {
   go_getter: {
     intro: "Ready to test your skills? Slide your finger or mouse across the grid to find these 3 hidden financial words:",
     subtitle: "Find the hidden words in the puzzle grid to unlock your custom financial insights below.",
-    completionTitle: "Crossword Completed!",
-    cta: "Loved this challenge? Can't wait for more alpha insights!",
   },
   caregiver: {
     intro: "The future feels more secure when you're prepared for it. Find the hidden terms and discover ideas that can help support your loved ones and their aspirations.",
     subtitle: "Find the hidden financial terms in the puzzle and unlock useful insights along the way.",
-    completionTitle: "Challenge Completed!",
-    cta: "Explore Ways to Support Your Family's Future",
   },
   protector: {
     intro: "Planning ahead is one of the best ways to protect what matters most. Find the hidden terms and learn concepts that can help strengthen your financial foundation.",
     subtitle: "Find the hidden financial terms in the puzzle and unlock useful insights along the way.",
-    completionTitle: "Challenge Completed!",
-    cta: "Strengthen Your Financial Protection Plan",
   },
   thinker: {
     intro: "The more you understand, the more confident your decisions become. Find the hidden terms and explore the concepts behind important financial planning decisions.",
     subtitle: "Find the hidden financial terms in the puzzle and unlock useful insights along the way.",
-    completionTitle: "Challenge Completed!",
-    cta: "Learn More About Financial Planning",
   },
   fallback: {
     intro: "Every great financial decision starts with understanding a few key terms. Find these 3 hidden words in the grid below, and unlock a short explanation for each one as you go.",
     subtitle: "Find the hidden financial terms in the puzzle and unlock useful insights along the way.",
-    completionTitle: "Challenge Completed!",
-    cta: "Explore Plans That Fit Your Goals",
   },
 }
 
@@ -93,14 +89,82 @@ async function markTokenUsed(shareToken) {
   if (!shareToken) return
   try {
     const { error } = await supabase
-      .from('share_tokens')
-      .update({ used: true })
-      .eq('token', shareToken)
+      .from('share_tokens').update({ used: true }).eq('token', shareToken)
     if (error) console.error('share_token mark-used failed:', error)
   } catch (e) {
     console.error('share_token mark-used exception:', e)
   }
 }
+
+// ── CSS keyframes (injected once) ─────────────────────────────────────────────
+
+const INJECTED_STYLES = `
+  @keyframes wh-confetti {
+    0%   { transform: translateY(0) rotate(0deg);    opacity: 1; }
+    100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+  }
+  @keyframes wh-cell-bounce {
+    0%, 100% { transform: scale(1); }
+    40%       { transform: scale(1.28); }
+    70%       { transform: scale(0.90); }
+  }
+  @keyframes wh-card-in {
+    from { transform: scale(0.92); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+  @keyframes wh-card-unlock {
+    0%   { box-shadow: 0 0 0 0   rgba(0,91,172,0.55); }
+    40%  { box-shadow: 0 0 0 10px rgba(0,91,172,0.25); }
+    100% { box-shadow: 0 0 0 0   rgba(0,91,172,0);    }
+  }
+  @keyframes wh-toast-in {
+    0%   { opacity: 0; transform: translateX(-50%) translateY(6px); }
+    15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+    75%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+  }
+  .wh-carousel::-webkit-scrollbar { display: none; }
+`
+
+// ── Confetti burst (FIX 7) ────────────────────────────────────────────────────
+
+const CONFETTI_COLORS = ['#005BAC','#2E7D32','#e8a020','#ef4444','#7c3aed','#0d9488']
+
+function ConfettiEffect() {
+  const piecesRef = useRef(null)
+  if (!piecesRef.current) {
+    piecesRef.current = Array.from({ length: 36 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+      size: 6 + Math.random() * 7,
+      delay: Math.random() * 0.45,
+      duration: 0.85 + Math.random() * 0.7,
+      round: i % 3 !== 0,
+    }))
+  }
+  return (
+    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 200, overflow: 'hidden' }}>
+      {piecesRef.current.map(p => (
+        <div
+          key={p.id}
+          style={{
+            position: 'absolute',
+            top: -16,
+            left: `${p.x}%`,
+            width: p.size,
+            height: p.size,
+            borderRadius: p.round ? '50%' : 2,
+            background: p.color,
+            animation: `wh-confetti ${p.duration}s ${p.delay}s ease-in forwards`,
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+// ── Intro modal (FIX 1 — no word badges, only instructions + Got it) ──────────
 
 function IntroModal({ persona, onClose }) {
   const pc = PERSONA_CONTENT[resolvePersonaKey(persona)]
@@ -110,7 +174,7 @@ function IntroModal({ persona, onClose }) {
       onClick={onClose}
     >
       <div
-        style={{ width: '100%', background: '#F5F8FC', borderRadius: '20px 20px 0 0', padding: '24px 20px', maxHeight: '82vh', overflowY: 'auto' }}
+        style={{ width: '100%', background: '#F5F8FC', borderRadius: '20px 20px 0 0', padding: '24px 20px', maxHeight: '78vh', overflowY: 'auto' }}
         onClick={e => e.stopPropagation()}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
@@ -120,19 +184,9 @@ function IntroModal({ persona, onClose }) {
             style={{ width: 32, height: 32, background: '#e8eef5', borderRadius: '50%', border: 'none', cursor: 'pointer', color: '#003366', fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >✕</button>
         </div>
-        <p style={{ fontSize: 14, lineHeight: 1.65, color: '#334155', marginBottom: 16 }}>
+        <p style={{ fontSize: 14, lineHeight: 1.7, color: '#334155', marginBottom: 20 }}>
           {pc.intro}
         </p>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-          {Object.values(WORD_LABELS).map(word => (
-            <div
-              key={word}
-              style={{ background: '#003366', color: 'white', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 700, letterSpacing: '0.08em' }}
-            >
-              {word}
-            </div>
-          ))}
-        </div>
         <button
           onClick={onClose}
           style={{ width: '100%', padding: '13px 0', background: '#005BAC', border: 'none', borderRadius: 12, color: 'white', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
@@ -144,38 +198,63 @@ function IntroModal({ persona, onClose }) {
   )
 }
 
-const GRID_GAP = 4
+// ── Cell styles ───────────────────────────────────────────────────────────────
 
 const CELL_STYLES = {
   found:     { background: '#2E7D32', color: 'white',   borderColor: '#2E7D32' },
+  bouncing:  { background: '#2E7D32', color: 'white',   borderColor: '#2E7D32' },
   selecting: { background: '#005BAC', color: 'white',   borderColor: '#005BAC' },
   default:   { background: 'white',   color: '#003366', borderColor: '#cdd8e8' },
 }
 
+// ── Main component ────────────────────────────────────────────────────────────
+
 export default function WordHuntDemo({
   onShare, onStep,
   isCustomerView = false,
+  linkId,
   persona,
   shareToken,
 }) {
+  // Selection state
   const [selectedCells,   setSelectedCells]   = useState([])
   const [discoveredWords, setDiscoveredWords] = useState(new Set())
   const [discoveredCells, setDiscoveredCells] = useState({})
-  const [showIntro,       setShowIntro]       = useState(false)
-  const [cellSize,        setCellSize]        = useState(32)
-  const [revealOrder,     setRevealOrder]     = useState([])
 
+  // UI state
+  const [showIntro,         setShowIntro]         = useState(false)
+  const [wordsRevealed,     setWordsRevealed]     = useState(!isCustomerView) // FIX 1
+  const [cellSize,          setCellSize]          = useState(32)
+  const [gridGap,           setGridGap]           = useState(4)               // FIX 3
+  const [unlockToast,       setUnlockToast]       = useState(false)           // FIX 5
+  const [justUnlockedTerm,  setJustUnlockedTerm]  = useState(null)            // FIX 5
+  const [activeCardIdx,     setActiveCardIdx]     = useState(0)               // FIX 5
+
+  // Celebration state (FIX 7)
+  const [bouncingTerm,      setBouncingTerm]      = useState(null)
+  const [showConfetti,      setShowConfetti]      = useState(false)
+  const [showCompletionCard,setShowCompletionCard]= useState(false)
+
+  // Refs
   const isSelectingRef     = useRef(false)
   const selectedCellsRef   = useRef([])
   const discoveredWordsRef = useRef(new Set())
   const markedUsedRef      = useRef(false)
   const outerRef           = useRef(null)
   const gridRef            = useRef(null)
+  const carouselRef        = useRef(null)
+  const cardRefs           = useRef([])
   const finalizeRef        = useRef(null)
+  const unlockTimerRef     = useRef(null)
+  const toastTimerRef      = useRef(null)
+  const celebTimerRef      = useRef(null)
 
   const pc       = PERSONA_CONTENT[resolvePersonaKey(persona)]
   const allFound = discoveredWords.size === 3
 
+  // ── Effects ────────────────────────────────────────────────────────────────
+
+  // Auto-show intro for customers
   useEffect(() => {
     if (!isCustomerView) return
     const t = setTimeout(() => setShowIntro(true), 300)
@@ -186,21 +265,37 @@ export default function WordHuntDemo({
     onStep?.({ step: 'viewed', timestamp: new Date().toISOString() })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Completion: mark token + log outcome (FIX 6)
   useEffect(() => {
-    if (!allFound || !isCustomerView || !shareToken || markedUsedRef.current) return
+    if (!allFound || !isCustomerView || markedUsedRef.current) return
     markedUsedRef.current = true
     markTokenUsed(shareToken)
+    if (linkId) logOutcome(linkId, 'Completed')
     onStep?.({ step: 'completed', timestamp: new Date().toISOString() })
   }, [allFound]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Dynamic cell sizing: measure outer container width
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      clearTimeout(unlockTimerRef.current)
+      clearTimeout(toastTimerRef.current)
+      clearTimeout(celebTimerRef.current)
+    }
+  }, [])
+
+  // Dynamic cell sizing with padding subtraction (FIX 3)
   useEffect(() => {
     const el = outerRef.current
     if (!el) return
     function measure(target) {
-      const w = target.clientWidth
+      const style = window.getComputedStyle(target)
+      const padL = parseFloat(style.paddingLeft)  || 0
+      const padR = parseFloat(style.paddingRight) || 0
+      const w    = target.clientWidth - padL - padR
       if (!w) return
-      setCellSize(Math.max(24, Math.min(Math.floor((w - 9 * GRID_GAP) / 10), 48)))
+      const gap = window.innerWidth < 400 ? 3 : 4
+      setGridGap(gap)
+      setCellSize(Math.max(24, Math.min(Math.floor((w - 9 * gap) / 10), 48)))
     }
     const ro = new ResizeObserver(entries => { for (const e of entries) measure(e.target) })
     ro.observe(el)
@@ -208,7 +303,7 @@ export default function WordHuntDemo({
     return () => ro.disconnect()
   }, [])
 
-  // Global pointerup safety net in case pointer leaves window
+  // Global pointerup safety net
   useEffect(() => {
     const onUp = () => { if (isSelectingRef.current) finalizeRef.current?.() }
     window.addEventListener('pointerup', onUp)
@@ -218,6 +313,8 @@ export default function WordHuntDemo({
       window.removeEventListener('pointercancel', onUp)
     }
   }, [])
+
+  // ── Drag / selection logic ─────────────────────────────────────────────────
 
   function getCellFromEvent(e) {
     const el = document.elementFromPoint(e.clientX, e.clientY)
@@ -246,15 +343,54 @@ export default function WordHuntDemo({
     isSelectingRef.current = false
     const cells = selectedCellsRef.current
     const found = checkSelection(cells)
+
     if (found) {
       const newCellMap = {}
       cells.forEach(([r, c]) => { newCellMap[`${r}-${c}`] = found })
       setDiscoveredCells(dc => ({ ...dc, ...newCellMap }))
       discoveredWordsRef.current.add(found)
       setDiscoveredWords(new Set(discoveredWordsRef.current))
-      setRevealOrder(ro => [...ro, found])
       onStep?.({ step: 'found', word: WORD_LABELS[found], timestamp: new Date().toISOString() })
+
+      // FIX 5: toast + card unlock animation + carousel scroll
+      setJustUnlockedTerm(found)
+      clearTimeout(unlockTimerRef.current)
+      unlockTimerRef.current = setTimeout(() => setJustUnlockedTerm(null), 700)
+
+      setUnlockToast(true)
+      clearTimeout(toastTimerRef.current)
+      toastTimerRef.current = setTimeout(() => setUnlockToast(false), 1500)
+
+      // Scroll carousel to unlocked card (slight delay for render)
+      const cardIdx = TERM_ORDER.indexOf(found)
+      setTimeout(() => {
+        const card = cardRefs.current[cardIdx]
+        if (card && carouselRef.current) {
+          carouselRef.current.scrollTo({ left: card.offsetLeft - 16, behavior: 'smooth' })
+        }
+      }, 60)
+
+      // FIX 7: celebration on 3rd word
+      const newSize = discoveredWordsRef.current.size
+      if (newSize === 3) {
+        if (isCustomerView) {
+          setBouncingTerm(found)
+          clearTimeout(celebTimerRef.current)
+          celebTimerRef.current = setTimeout(() => {
+            setBouncingTerm(null)
+            setShowConfetti(true)
+            clearTimeout(celebTimerRef.current)
+            celebTimerRef.current = setTimeout(() => {
+              setShowConfetti(false)
+              setShowCompletionCard(true)
+            }, 1200)
+          }, 400)
+        } else {
+          setShowCompletionCard(true)
+        }
+      }
     }
+
     selectedCellsRef.current = []
     setSelectedCells([])
   }
@@ -282,23 +418,96 @@ export default function WordHuntDemo({
   }
 
   function getCellVisual(r, c) {
-    if (discoveredCells[`${r}-${c}`]) return 'found'
+    const key = `${r}-${c}`
+    const termKey = discoveredCells[key]
+    if (termKey) return termKey === bouncingTerm ? 'bouncing' : 'found'
     if (selectedCells.some(([sr, sc]) => sr === r && sc === c)) return 'selecting'
     return 'default'
   }
 
+  // ── Carousel dot tracking ─────────────────────────────────────────────────
+
+  function handleCarouselScroll() {
+    const carousel = carouselRef.current
+    if (!carousel) return
+    const scrollCenter = carousel.scrollLeft + carousel.clientWidth / 2
+    let closest = 0, minDist = Infinity
+    cardRefs.current.forEach((card, i) => {
+      if (!card) return
+      const dist = Math.abs(card.offsetLeft + card.offsetWidth / 2 - scrollCenter)
+      if (dist < minDist) { minDist = dist; closest = i }
+    })
+    setActiveCardIdx(closest)
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+
   return (
     <>
-      {showIntro && <IntroModal persona={persona} onClose={() => setShowIntro(false)} />}
+      <style>{INJECTED_STYLES}</style>
+      {showConfetti && <ConfettiEffect />}
+      {showIntro && (
+        <IntroModal
+          persona={persona}
+          onClose={() => { setShowIntro(false); setWordsRevealed(true) }}
+        />
+      )}
+
+      {/* Unlock toast (FIX 5) */}
+      {unlockToast && (
+        <div style={{
+          position: 'fixed',
+          bottom: 80,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: '#1a3060',
+          color: 'white',
+          padding: '9px 18px',
+          borderRadius: 20,
+          fontSize: 13,
+          fontWeight: 600,
+          zIndex: 100,
+          whiteSpace: 'nowrap',
+          animation: 'wh-toast-in 1.5s ease-out forwards',
+        }}>
+          🔓 New insight unlocked!
+        </div>
+      )}
 
       <div style={{ background: '#F5F8FC', paddingBottom: 32 }}>
 
         {/* Subtitle */}
-        <div style={{ padding: '14px 16px 6px' }}>
+        <div style={{ padding: '14px 16px 8px' }}>
           <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.55, margin: 0 }}>
             {pc.subtitle}
           </p>
         </div>
+
+        {/* Word chips — visible after intro modal closes (FIX 1) */}
+        {wordsRevealed && (
+          <div style={{ padding: '0 16px 8px', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {TERM_ORDER.map(key => {
+              const found = discoveredWords.has(key)
+              return (
+                <div
+                  key={key}
+                  style={{
+                    padding: '5px 13px', borderRadius: 20,
+                    fontSize: 12, fontWeight: 700, letterSpacing: '0.06em',
+                    background: found ? '#2E7D32' : '#003366',
+                    color: 'white',
+                    textDecoration: found ? 'line-through' : 'none',
+                    opacity: found ? 0.8 : 1,
+                    display: 'flex', alignItems: 'center', gap: 4,
+                    transition: 'background 0.2s',
+                  }}
+                >
+                  {found && '✓ '}{WORD_LABELS[key]}
+                </div>
+              )
+            })}
+          </div>
+        )}
 
         {/* Progress counter */}
         <div style={{ padding: '0 16px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -313,14 +522,15 @@ export default function WordHuntDemo({
           ))}
         </div>
 
-        {/* Grid */}
-        <div ref={outerRef} style={{ padding: '0 16px' }}>
+        {/* Grid (FIX 3 — correct sizing) */}
+        <div ref={outerRef} style={{ padding: '0 16px', boxSizing: 'border-box', overflow: 'hidden' }}>
           <div
             ref={gridRef}
             style={{
               display: 'grid',
               gridTemplateColumns: `repeat(10, ${cellSize}px)`,
-              gap: `${GRID_GAP}px`,
+              gap: `${gridGap}px`,
+              boxSizing: 'border-box',
               touchAction: allFound ? 'auto' : 'none',
               userSelect: 'none',
               WebkitUserSelect: 'none',
@@ -333,7 +543,8 @@ export default function WordHuntDemo({
           >
             {gridData.map((row, r) =>
               row.map((letter, c) => {
-                const cs = CELL_STYLES[getCellVisual(r, c)]
+                const vis = getCellVisual(r, c)
+                const cs  = CELL_STYLES[vis]
                 return (
                   <div
                     key={`${r}-${c}`}
@@ -348,7 +559,9 @@ export default function WordHuntDemo({
                       border: `1.5px solid ${cs.borderColor}`,
                       background: cs.background,
                       color: cs.color,
+                      boxSizing: 'border-box',
                       transition: 'background 0.12s, border-color 0.12s',
+                      animation: vis === 'bouncing' ? 'wh-cell-bounce 0.4s ease-out' : 'none',
                     }}
                   >
                     {letter}
@@ -359,72 +572,114 @@ export default function WordHuntDemo({
           </div>
         </div>
 
-        {/* Word target chips */}
-        <div style={{ padding: '10px 16px 2px', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {Object.entries(WORD_LABELS).map(([key, word]) => {
-            const found = discoveredWords.has(key)
-            return (
+        {/* Explanation carousel (FIX 5) */}
+        <div style={{ marginTop: 14 }}>
+          <div
+            ref={carouselRef}
+            onScroll={handleCarouselScroll}
+            className="wh-carousel"
+            style={{
+              display: 'flex',
+              overflowX: 'auto',
+              scrollSnapType: 'x mandatory',
+              scrollPaddingLeft: '16px',
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              gap: 12,
+              padding: '4px 16px 8px',
+            }}
+          >
+            {TERM_ORDER.map((termKey, idx) => {
+              const unlocked = discoveredWords.has(termKey)
+              const isNew    = justUnlockedTerm === termKey
+              const exp      = EXPLANATIONS[termKey]
+              const label    = WORD_LABELS[termKey]
+
+              return (
+                <div
+                  key={termKey}
+                  ref={el => { cardRefs.current[idx] = el }}
+                  style={{
+                    flexShrink: 0,
+                    width: 'clamp(280px, 85vw, 340px)',
+                    scrollSnapAlign: 'start',
+                    borderRadius: 14,
+                    padding: 16,
+                    background: unlocked ? 'white' : '#eef2f7',
+                    border: `2px solid ${isNew ? '#005BAC' : unlocked ? '#e2e8f0' : '#dde4ed'}`,
+                    transition: 'background 0.3s, border-color 0.3s',
+                    animation: isNew ? 'wh-card-unlock 0.6s ease-out' : 'none',
+                  }}
+                >
+                  {unlocked ? (
+                    <>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#2E7D32', flexShrink: 0 }} />
+                        <p style={{ fontWeight: 700, fontSize: 12, color: '#2E7D32', letterSpacing: '0.08em', margin: 0, textTransform: 'uppercase' }}>
+                          {exp.title}
+                        </p>
+                      </div>
+                      <p style={{ fontSize: 13, lineHeight: 1.65, color: '#334155', margin: '0 0 10px' }}>
+                        {renderBold(exp.body)}
+                      </p>
+                      <p style={{ fontSize: 12, color: '#64748b', lineHeight: 1.55, margin: 0, borderTop: '1px solid #f0f4f8', paddingTop: 10, fontStyle: 'italic' }}>
+                        {exp.cta}
+                      </p>
+                    </>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 0', gap: 10 }}>
+                      <span style={{ fontSize: 28, opacity: 0.5 }}>🔒</span>
+                      <div style={{ background: '#003366', color: 'white', borderRadius: 8, padding: '5px 12px', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', opacity: 0.6 }}>
+                        {label}
+                      </div>
+                      <p style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center', margin: 0, lineHeight: 1.4 }}>
+                        Find <strong style={{ color: '#475569' }}>{label}</strong> to unlock this insight
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Dot indicators */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 6, padding: '2px 0 4px' }}>
+            {[0, 1, 2].map(i => (
               <div
-                key={key}
+                key={i}
                 style={{
-                  padding: '5px 13px', borderRadius: 20,
-                  fontSize: 12, fontWeight: 700, letterSpacing: '0.06em',
-                  background: found ? '#2E7D32' : '#003366',
-                  color: 'white',
-                  textDecoration: found ? 'line-through' : 'none',
-                  opacity: found ? 0.8 : 1,
-                  display: 'flex', alignItems: 'center', gap: 4,
+                  width: 6, height: 6, borderRadius: '50%',
+                  background: i === activeCardIdx ? '#003366' : '#cdd8e8',
                   transition: 'background 0.2s',
                 }}
-              >
-                {found && '✓ '}{word}
-              </div>
-            )
-          })}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* Explanation cards — revealed in order found */}
-        {revealOrder.map(termKey => {
-          const exp = EXPLANATIONS[termKey]
-          return (
-            <div
-              key={termKey}
-              style={{ margin: '12px 16px 0', background: 'white', borderRadius: 12, padding: 16, border: '1px solid #e2e8f0', boxShadow: '0 1px 4px rgba(0,51,102,0.06)' }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#2E7D32', flexShrink: 0 }} />
-                <p style={{ fontWeight: 700, fontSize: 12, color: '#2E7D32', letterSpacing: '0.08em', margin: 0, textTransform: 'uppercase' }}>
-                  {exp.title}
-                </p>
-              </div>
-              <p style={{ fontSize: 13, lineHeight: 1.65, color: '#334155', margin: '0 0 10px' }}>
-                {renderBold(exp.body)}
-              </p>
-              <p style={{ fontSize: 12, color: '#64748b', lineHeight: 1.55, margin: 0, borderTop: '1px solid #f0f4f8', paddingTop: 10, fontStyle: 'italic' }}>
-                {exp.cta}
-              </p>
-            </div>
-          )
-        })}
-
-        {/* Completion card */}
-        {allFound && (
-          <div style={{ margin: '12px 16px 0', background: '#003366', borderRadius: 16, padding: '20px 16px', textAlign: 'center' }}>
-            <span style={{ fontSize: 36 }}>🎉</span>
-            <h2 style={{ color: 'white', fontWeight: 700, fontSize: 18, margin: '8px 0 8px', lineHeight: 1.3 }}>
-              {pc.completionTitle}
-            </h2>
-            <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 13, margin: '0 0 16px', lineHeight: 1.55 }}>
-              You've found all 3 hidden words and unlocked important insights about your policy.
+        {/* Completion card — scales in after confetti (FIX 4 + FIX 7) */}
+        {showCompletionCard && (
+          <div
+            style={{
+              margin: '12px 16px 0',
+              background: 'white',
+              borderRadius: 16,
+              padding: 16,
+              border: '1px solid #e2e8f0',
+              boxShadow: '0 2px 12px rgba(0,51,102,0.08)',
+              animation: 'wh-card-in 0.4s ease-out',
+            }}
+          >
+            <p style={{ textAlign: 'center', fontSize: 16, fontWeight: 700, color: '#003366', margin: '0 0 4px' }}>
+              🎉 You found all 3 words!
             </p>
-            {isCustomerView && (
-              <button
-                onClick={onShare}
-                style={{ width: '100%', padding: '13px 0', background: '#e8a020', border: 'none', borderRadius: 12, color: 'white', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
-              >
-                {pc.cta}
-              </button>
-            )}
+            {isCustomerView
+              ? <FeedbackSection linkId={linkId} onDone={onShare} />
+              : <p style={{ textAlign: 'center', fontSize: 13, color: '#64748b', margin: '8px 0 0' }}>
+                  All 3 hidden words found.
+                </p>
+            }
           </div>
         )}
 
