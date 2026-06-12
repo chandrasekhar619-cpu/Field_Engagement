@@ -13,32 +13,25 @@ export default function ReferencePage() {
   if (!user) return <Navigate to="/" replace />
 
   return (
-    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <>
       <Navbar activeView="reference" />
-
-      {/* Content area sits below the fixed 60px navbar */}
-      <div style={{ paddingTop: 60, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-
-        {/* Internal-use banner */}
-        <div style={{
-          flexShrink: 0,
-          background: '#0f1f3d',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '6px 16px',
-        }}>
-          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', margin: 0, textAlign: 'center' }}>
-            📘 Reference Guide — Internal Use Only, Not for Customer Sharing
-          </p>
-        </div>
-
-        {/* Handbook iframe — fills all remaining space */}
-        <iframe
-          src="/reference/spoc-handbook.html"
-          title="SPOC Handbook"
-          style={{ flex: 1, width: '100%', border: 'none', display: 'block' }}
-        />
-      </div>
-    </div>
+      {/* Fixed iframe fills the full viewport below the 60px navbar.
+          Explicit top/bottom gives the iframe a guaranteed pixel height so
+          the document inside creates its own scroll viewport — required for
+          the handbook's sticky header and section-nav to work correctly. */}
+      <iframe
+        src="/reference/spoc-handbook.html"
+        title="SPOC Handbook"
+        style={{
+          position: 'fixed',
+          top: 60,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          border: 'none',
+        }}
+      />
+    </>
   )
 }
