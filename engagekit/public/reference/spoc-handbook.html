@@ -15,15 +15,6 @@
   html{height:100%;overflow:hidden;}
   body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100%;overflow-y:auto;scroll-behavior:smooth;}
 
-  header{
-    background:rgba(13,15,20,0.97); border-bottom:1px solid var(--border);
-    padding:0 24px; display:flex; align-items:center; justify-content:space-between;
-    height:54px; position:sticky; top:0; z-index:300;
-  }
-  .logo{font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:var(--accent);}
-  .logo span{color:var(--muted); font-size:0.78rem; font-family:'DM Sans',sans-serif; font-weight:400; margin-left:8px;}
-  .hbadge{font-size:0.65rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; background:rgba(63,201,160,0.1); border:1px solid rgba(63,201,160,0.25); color:var(--accent2); padding:3px 10px; border-radius:20px;}
-
   /* product tabs */
   .ptabs{
     max-width:1000px; margin:0 auto; padding:20px 20px 0;
@@ -40,7 +31,7 @@
   .ptab-sub{font-size:0.68rem; color:var(--muted); margin-top:2px;}
 
   /* section nav */
-  .snav-wrap{ position:sticky; top:54px; z-index:250; background:rgba(13,15,20,0.97); border-bottom:1px solid var(--border);}
+  .snav-wrap{ position:sticky; top:0; z-index:250; background:rgba(13,15,20,0.97); border-bottom:1px solid var(--border);}
   .snav{
     max-width:1000px; margin:0 auto; padding:10px 20px;
     display:flex; gap:6px; overflow-x:auto; scrollbar-width:none;
@@ -57,7 +48,7 @@
   .product-doc{ display:none; }
   .product-doc.active{ display:block; }
 
-  section{ margin-bottom: 44px; scroll-margin-top: 110px; }
+  section{ margin-bottom: 44px; scroll-margin-top: 52px; }
 
   .sec-title{
     font-size:0.7rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase;
@@ -207,11 +198,6 @@
 </style>
 </head>
 <body>
-
-<header>
-  <div class="logo">Edelweiss Life <span>SPOC Reference Handbook</span></div>
-  <div class="hbadge">Renewal &amp; Engagement</div>
-</header>
 
 <div class="ptabs">
   <div class="ptab active" onclick="selectProduct('wu',this)">
