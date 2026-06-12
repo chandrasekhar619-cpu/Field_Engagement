@@ -6,7 +6,7 @@ import ContentCard from './ContentCard'
 import CreativesModal from './CreativesModal'
 import ShareFlow from './ShareFlow'
 
-const CATEGORIES = ['All', 'Quiz', 'Calculator', 'Game', 'Mood', 'Festive', 'Occasion']
+const CATEGORIES = ['All', 'Quiz', 'Calculator', 'Game', 'Mood', 'Festive', 'Occasion', 'Interactive Game', 'Read', 'Reminder']
 const LANGUAGES = ['EN', 'HI', 'MR', 'TE', 'TA', 'ML']
 
 export default function ContentView() {

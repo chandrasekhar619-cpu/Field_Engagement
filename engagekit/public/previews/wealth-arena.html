@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ULIP Time Machine</title>
+    <style>
+        :root {
+            --bg-color: #0a0f24;
+            --card-color: #131c38;
+            --primary-green: #00e676;
+            --primary-coral: #ff5252;
+            --text-main: #ffffff;
+            --text-muted: #8fa0dd;
+            --accent-blue: #2979ff;
+            --accent-gold: #e8a020;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .phone-container {
+            width: 100%;
+            max-width: 400px;
+            background-color: var(--card-color);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            min-height: 660px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            flex-grow: 1;
+            animation: fadeIn 0.4s ease-in-out forwards;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 { font-size: 22px; font-weight: 700; margin-bottom: 12px; line-height: 1.3; text-align: center; }
+        p { font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; text-align: center; }
+        
+        .btn {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-top: auto;
+            text-align: center;
+        }
+
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-green { background-color: var(--primary-green); color: #000; }
+        .btn-coral { background-color: var(--primary-coral); color: white; }
+        .btn-secondary { background-color: #202b54; color: var(--text-main); margin-top: 10px; }
+
+        .time-machine-graphic {
+            width: 110px;
+            height: 110px;
+            margin: 20px auto;
+            border: 6px dashed var(--accent-blue);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            animation: spin 20s linear infinite;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .timeline-bar {
+            background-color: #202b54;
+            height: 6px;
+            border-radius: 3px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .timeline-progress {
+            background-color: var(--accent-blue);
+            height: 100%;
+            width: 33%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .ticker-box {
+            background: rgba(255,255,255,0.04);
+            border-radius: 14px;
+            padding: 14px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .ticker-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .ticker-value { font-size: 26px; font-weight: 700; color: var(--primary-green); margin-top: 4px; }
+
+        .chart-area {
+            flex-grow: 1;
+            border-bottom: 2px solid #202b54;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-end;
+            min-height: 110px;
+        }
+
+        .choice-box {
+            background: #1a244d;
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .story-text { font-size: 13px; color: #b4c3f0; line-height: 1.5; margin-bottom: 14px; text-align: left; border-left: 2px solid var(--accent-blue); padding-left: 10px; }
+        .choice-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; text-align: left; line-height: 1.4; color: var(--text-main); }
+
+        .feedback-text { font-size: 14px; color: #e0e6ff; line-height: 1.5; text-align: center; margin-bottom: 15px; }
+        .feedback-highlight { color: var(--primary-green); font-weight: bold; }
+        .feedback-alert { color: var(--primary-coral); font-weight: bold; }
+
+        .badge-display {
+            background: linear-gradient(135deg, #1e295d 0%, #111a42 100%);
+            border: 2px solid var(--accent-gold);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .badge-icon { font-size: 50px; margin-bottom: 10px; }
+        .badge-title { font-size: 18px; font-weight: 800; color: var(--accent-gold); text-transform: uppercase; }
+        .badge-desc { font-size: 13px; color: #e0e6ff; margin-top: 10px; line-height: 1.5; }
+
+        .teaser-box {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px dashed #303f7a;
+            border-radius: 14px;
+            padding: 14px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .rm-card {
+            background: rgba(41, 121, 255, 0.08);
+            border: 1px solid rgba(41, 121, 255, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin: auto 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="phone-container">
+
+    <div id="screen1" class="screen active">
+        <div class="time-machine-graphic">🔮</div>
+        <h1>The Wealth Arena</h1>
+        <p>A single policy decision can completely alter your financial future. Put your strategic instincts to the test against a real, historic 12-month market crash and recovery cycle.<br><br>Learn the ultimate secret to building bulletproof wealth in under 60 seconds.</p>
+        <button class="btn btn-green" onclick="nextScreen(2)">🚀 Start Wealth Test</button>
+    </div>
+
+    <div id="screen2" class="screen">
+        <div class="timeline-bar"><div class="timeline-progress" id="progress-bar"></div></div>
+        <div class="ticker-box">
+            <div class="ticker-label" id="phase-label">Months 1-4: Steady Market</div>
+            <div class="ticker-value" id="portfolio-value">₹1,00,000</div>
+        </div>
+        
+        <div class="chart-area">
+            <svg width="100%" height="100%" viewBox="0 0 100 50" preserveAspectRatio="none">
+                <path id="graph-path" d="M0 45 L25 40 L40 38 L50 35" fill="none" stroke="#00e676" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <div class="choice-box" id="interactive-card">
+            <div class="story-text">💬 <b>The Situation:</b> It's Month 4. The market looks incredibly green and healthy. Your annual policy premium is due tomorrow, but your close friends just proposed booking an unplanned luxury holiday together. You have the cash, but it means choosing between instant fun or long-term safety.</div>
+            <div class="choice-title">What strategy do you deploy?</div>
+            <div id="action-buttons">
+                <button class="btn" onclick="processPhase1('invested')">🟢 Stay Invested in Equity</button>
+                <button class="btn btn-secondary" onclick="processPhase1('switched')">🔵 Switch to Safe Debt Funds</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen3" class="screen">
+        <h1>Simulated Rank Achieved</h1>
+        
+        <div class="badge-display">
+            <div class="badge-icon" id="earned-icon">👑</div>
+            <div class="badge-title" id="earned-title">Grandmaster of Zen Investing</div>
+            <div class="badge-desc" id="earned-desc">-</div>
+        </div>
+
+        <div class="teaser-box">
+            <h4 style="font-size: 12px; color: var(--primary-coral); text-transform: uppercase; margin-bottom: 4px; margin-top: 12px;">🔒 Next Level Locked</h4>
+            <p style="font-size: 13px; color: var(--text-main); font-weight: 600; margin-bottom: 0;">Challenge 2: The Nominee Relay</p>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px; margin-bottom: 12px;">Keep your policy status active and automated to clear the next operational rank quiz when it drops!</p>
+        </div>
+
+        <button class="btn btn-green" onclick="nextScreen(4)">Proceed ➡️</button>
+    </div>
+
+    <div id="screen4" class="screen">
+        <h1>Market Guidance</h1>
+        
+        <div class="rm-card">
+            <div style="font-size:44px; margin-bottom:12px;">🤝</div>
+            <h3 style="font-size: 18px; color: var(--text-main); margin-bottom: 8px;">Confused about today's real market scenario?</h3>
+            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 0; text-align: center;">
+                Don't let short-term market noise cloud your long-term wealth strategy. 
+                <br><br>
+                For any doubts or personalized updates related to your active policy, simply connect directly with your dedicated <b>Relationship Manager (RM)</b>. We've got your back!
+            </p>
+        </div>
+
+        <button class="btn btn-green" onclick="finishGame()">Finish & Exit</button>
+    </div>
+
+</div>
+
+<script>
+    let userChoices = { phase1: '', phase2: '' };
+
+    function nextScreen(screenNum) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('screen' + screenNum).classList.add('active');
+    }
+
+    function processPhase1(choice) {
+        userChoices.phase1 = choice;
+        const card = document.getElementById('interactive-card');
+        
+        let feedbackHTML = '';
+        if(choice === 'invested') {
+            feedbackHTML = `<div class="feedback-text"><span class="feedback-highlight">Growth Mode Active!</span> Excellent discipline. You chose to prioritize your financial foundation over temporary spending waves. Your capital remains positioned to capture core momentum.</div>`;
+        } else {
+            feedbackHTML = `<div class="feedback-text"><span class="feedback-highlight">Safety Plan Locked!</span> You chose tactical caution to lock your initial cash. However, the most critical test of wealth preservation lies ahead...</div>`;
+        }
+        
+        feedbackHTML += `<button class="btn btn-green" onclick="loadPhase2()">Advance to Next Quarter ➡️</button>`;
+        card.innerHTML = feedbackHTML;
+    }
+
+    function loadPhase2() {
+        document.getElementById('progress-bar').style.width = '66%';
+        document.getElementById('phase-label').innerText = "Months 5-8: Severe Crash";
+        
+        const valueTicker = document.getElementById('portfolio-value');
+        const graphPath = document.getElementById('graph-path');
+        
+        if(userChoices.phase1 === 'invested') {
+            valueTicker.innerText = "₹88,000";
+            valueTicker.style.color = "var(--primary-coral)";
+            graphPath.setAttribute('d', 'M0 45 L25 40 L40 38 L50 35 L75 48');
+            graphPath.setAttribute('stroke', 'var(--primary-coral)');
+        } else {
+            valueTicker.innerText = "₹1,02,000";
+            valueTicker.style.color = "var(--accent-blue)";
+            graphPath.setAttribute('d', 'M0 45 L25 40 L40 38 L50 35 L75 35');
+            graphPath.setAttribute('stroke', 'var(--accent-blue)');
+        }
+
+        const card = document.getElementById('interactive-card');
+        card.innerHTML = `
+            <div class="story-text">🚨 <b>The Crisis:</b> It's Month 8. Sudden macroeconomic shocks hit the headlines and indexes plunge 12%. Social media is panic-selling, and your upcoming renewal premium auto-debits tomorrow morning. Fear tells you to pull the plug and halt the payment.</div>
+            <div class="choice-title">What action do you execute?</div>
+            <button class="btn btn-green" onclick="processPhase2('autopilot')">⚡ Keep Paying via Auto-Pilot</button>
+            <button class="btn btn-coral" style="margin-top:10px;" onclick="processPhase2('paused')">🛑 Pause My Premium</button>
+        `;
+    }
+
+    function processPhase2(choice) {
+        userChoices.phase2 = choice;
+        const card = document.getElementById('interactive-card');
+        const valueTicker = document.getElementById('portfolio-value');
+        const graphPath = document.getElementById('graph-path');
+        document.getElementById('progress-bar').style.width = '100%';
+        document.getElementById('phase-label').innerText = "Months 9-12: Full Recovery";
+
+        let feedbackHTML = '';
+
+        if(choice === 'autopilot') {
+            valueTicker.innerText = "₹1,32,000";
+            valueTicker.style.color = "var(--primary-green)";
+            graphPath.setAttribute('d', 'M0 45 L25 40 L40 38 L50 35 L75 48 L100 15');
+            graphPath.setAttribute('stroke', 'var(--primary-green)');
+
+            feedbackHTML = `
+                <div class="feedback-text"><span class="feedback-highlight">💎 ABSOLUTE MASTERSTROKE!</span><br><br>By letting your premium auto-debit clear during the crash, you unlocked <span class="feedback-highlight">Rupee Cost Averaging</span>. Your money silently bought investment units at a heavy discount. When the market recovered, those cheap assets exploded in value!<br><br><b>Conclusion: Continuing payments turns volatility into profit.</b></div>
+            `;
+        } else {
+            valueTicker.innerText = "₹1,04,000";
+            valueTicker.style.color = "var(--text-muted)";
+            graphPath.setAttribute('d', 'M0 45 L25 40 L40 38 L50 35 L75 48 L100 38');
+            graphPath.setAttribute('stroke', 'var(--text-muted)');
+
+            feedbackHTML = `
+                <div class="feedback-text"><span class="feedback-alert">⚠️ RECOVERY MISSED!</span><br><br>Pausing your payment felt safe, but you froze right when the market was having a massive clearance sale! You missed out on cheap units. When the recovery hit, your balance barely crawled because you didn't buy assets during the storm.<br><br><b>Conclusion: Pausing payments completely halts your wealth compounding.</b></div>
+            `;
+        }
+
+        feedbackHTML += `<button class="btn" onclick="revealTitle()">View My Strategy Rank 🎖️</button>`;
+        card.innerHTML = feedbackHTML;
+    }
+
+    function revealTitle() {
+        let icon = ""; let title = ""; let description = "";
+
+        if (userChoices.phase2 === 'autopilot') {
+            icon = "👑";
+            title = "Grandmaster of Zen Investing";
+            description = "Unshakable asset logic. You capitalized perfectly on macro volatility by ensuring your premiums ran on complete auto-pilot. Your discipline is the gold-standard of wealth building.";
+        } else {
+            icon = "⏳";
+            title = "The Hesitant Watcher";
+            description = "A safe approach, but fear during the dip cost you massive upside growth. In real life, letting your premium auto-debit consistently is your ultimate defense mechanism.";
+        }
+
+        document.getElementById('earned-icon').innerText = icon;
+        document.getElementById('earned-title').innerText = title;
+        document.getElementById('earned-desc').innerText = description;
+
+        nextScreen(3);
+    }
+
+    function finishGame() {
+        alert("Thank you for playing! Your strategy rank has been securely logged.");
+    }
+</script>
+
+</body>
+</html>

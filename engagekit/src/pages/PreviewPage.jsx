@@ -1,5 +1,6 @@
 import { useParams, Navigate } from 'react-router-dom'
 import { contentItems } from '../data/mockData'
+import { useAuth } from '../context/AuthContext'
 import QuizDemo           from '../components/demos/QuizDemo'
 import FIRECalculatorDemo from '../components/demos/FIRECalculatorDemo'
 import ProtectionGapDemo  from '../components/demos/ProtectionGapDemo'
@@ -18,9 +19,65 @@ const DEMOS = {
   'word-hunt':        WordHuntDemo,
 }
 
+function Disclaimer() {
+  return (
+    <div className="border-t border-[#e4e7f0] bg-white px-6 py-4 flex-shrink-0">
+      <p className="text-gray-400 text-[11px] leading-relaxed text-center">
+        This communication is for awareness purposes only and does not constitute a solicitation or offer of any insurance product. © Edelweiss Life Insurance Co. Ltd.
+      </p>
+    </div>
+  )
+}
+
+// Rendered in a new tab for TRIAL-only cards — shows realistic customer view
+function TrialPreview({ item }) {
+  const { user } = useAuth()
+  const rpmName = user?.name || 'Your Advisor'
+
+  return (
+    <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#f9fafb' }}>
+      {/* Trial preview banner */}
+      <div className="sticky top-0 z-50 bg-[#0f1f3d] flex items-center justify-between px-4 py-2">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#e8a020] animate-pulse" />
+          <span className="text-white/70 text-xs">Trial preview — not yet shareable</span>
+        </div>
+        <button
+          onClick={() => window.close()}
+          className="text-[#e8a020] text-xs font-semibold hover:text-amber-300 transition-colors"
+        >
+          Close ✕
+        </button>
+      </div>
+
+      {/* Customer header — realistic simulation with fixed sample name */}
+      <div className="bg-[#0f1f3d] px-5 pt-5 pb-4 flex-shrink-0">
+        <h1 className="text-white text-2xl font-bold leading-snug">Hi Aadhya! 👋</h1>
+        <p className="text-white/50 text-xs mt-1">
+          Sent by {rpmName} · <span className="text-[#e8a020]">Edelweiss Life</span>
+        </p>
+      </div>
+
+      {/* Iframe filling all remaining space */}
+      <iframe
+        src={item.previewSrc}
+        title={item.title}
+        style={{ flex: 1, width: '100%', border: 'none', display: 'block', overflow: 'auto' }}
+      />
+
+      <Disclaimer />
+    </div>
+  )
+}
+
 export default function PreviewPage() {
   const { contentId } = useParams()
   const item = contentItems.find(c => c.id === contentId)
+
+  // Trial-only cards get the customer-simulation preview
+  if (item?.demoType === 'trial') {
+    return <TrialPreview item={item} />
+  }
 
   // Creatives are shown in a modal in the main app, not in a preview tab
   if (!item || item.demoType === 'creative' || !DEMOS[item.demoType]) {

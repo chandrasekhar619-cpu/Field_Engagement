@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renewal Portfolio Update</title>
+    <style>
+        :root {
+            --bg-color: #060a17;
+            --card-color: #0f162e;
+            --primary-green: #00e676;
+            --text-main: #ffffff;
+            --text-muted: #7e8ebc;
+            --accent-blue: #2979ff;
+            --border-glow: #1e295d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .reminder-card {
+            width: 100%;
+            max-width: 360px;
+            background-color: var(--card-color);
+            border: 1px solid var(--border-glow);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .streak-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 230, 118, 0.08);
+            border: 1px solid rgba(0, 230, 118, 0.2);
+            padding: 10px 14px;
+            border-radius: 12px;
+        }
+
+        .streak-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary-green);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .streak-badge {
+            background-color: var(--primary-green);
+            color: #000000;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .progress-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 4px 0;
+            position: relative;
+        }
+
+        .progress-line {
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: #202b54;
+            z-index: 1;
+            transform: translateY(-50%);
+        }
+
+        .progress-line-fill {
+            height: 100%;
+            width: 50%;
+            background: var(--primary-green);
+            transition: width 0.5s ease;
+        }
+
+        .step {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: #202b54;
+            border: 2px solid #202b54;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            position: relative;
+            z-index: 2;
+        }
+
+        .step.completed {
+            background-color: var(--primary-green);
+            border-color: var(--primary-green);
+            color: #000000;
+        }
+
+        .step.active {
+            background-color: var(--card-color);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+            box-shadow: 0 0 10px rgba(41, 121, 255, 0.4);
+        }
+
+        .step-label {
+            position: absolute;
+            top: 32px;
+            font-size: 10px;
+            white-space: nowrap;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .step.completed .step-label { color: var(--primary-green); }
+        .step.active .step-label { color: var(--accent-blue); font-weight: 700; }
+
+        .portfolio-block {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+            margin-top: 14px;
+        }
+
+        .metric-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .metric-value { font-size: 28px; font-weight: 800; color: var(--text-main); margin-top: 4px; }
+        .divider { height: 1px; background: rgba(255, 255, 255, 0.05); margin: 12px 0; }
+
+        .details-grid { display: flex; justify-content: space-between; font-size: 13px; }
+        .details-item { display: flex; flex-direction: column; gap: 2px; }
+        .details-item.left { text-align: left; }
+        .details-item.right { text-align: right; }
+        .details-val { font-weight: 600; color: var(--text-main); }
+
+        .hook-text { font-size: 13px; color: #b4c3f0; line-height: 1.5; text-align: center; padding: 0 4px; }
+        .nominee-highlight { color: var(--accent-gold); font-weight: 700; }
+        
+        .btn-action {
+            background-color: var(--accent-blue);
+            color: #ffffff;
+            border: none;
+            padding: 16px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(41, 121, 255, 0.3);
+        }
+
+        .rm-footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="reminder-card">
+    
+    <div class="streak-header">
+        <div class="streak-title">🔥 Perfect Streak Alert</div>
+        <div class="streak-badge">Year 2 Locked</div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-line">
+            <div class="progress-line-fill"></div>
+        </div>
+        <div class="step completed">1<div class="step-label">Paid</div></div>
+        <div class="step completed">2<div class="step-label">Paid</div></div>
+        <div class="step active">3<div class="step-label">Due</div></div>
+        <div class="step">4<div class="step-label">Locked</div></div>
+        <div class="step">5<div class="step-label">Locked</div></div>
+    </div>
+
+    <div class="portfolio-block">
+        <div class="metric-label">Sum Assured</div>
+        <div class="metric-value" id="ui-fund-value">₹4,10,000</div>
+        <div class="divider"></div>
+        <div class="details-grid">
+            <div class="details-item left">
+                <span class="metric-label">Premium Due</span>
+                <span class="details-val" id="ui-premium-due" style="color: var(--primary-green);">₹30,000</span>
+            </div>
+            <div class="details-item right">
+                <span class="metric-label">Due Date Is</span>
+                <span class="details-val" id="ui-due-date">June 30, 2026</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="hook-text" id="ui-hook-text">
+        Loading secure portfolio parameters...
+    </div>
+
+    <button class="btn-action" onclick="alert('Redirecting straight to secure transaction portal...')">⚡ Payment Made Simple — Click & Pay Securely</button>
+
+    <a href="#" class="rm-footer" onclick="alert('Opening secure chat window with your Relationship Manager...')">🤝 Need a market vibe-check? Chat with your RM</a>
+
+</div>
+
+<script>
+    // URL Query Reading Logic
+    function getUrlParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
+
+    // Dynamic Variables 
+    const custName = getUrlParam('name') || 'Valued Investor';
+    const fundValue = getUrlParam('value') || '4,10,000';
+    const premiumDue = getUrlParam('premium') || '30,000';
+    const dueDate = getUrlParam('date') || 'June 30, 2026';
+    const nomineeName = getUrlParam('nominee') || '[nominee name]';
+
+    // UI Updates
+    document.getElementById('ui-fund-value').innerText = '₹' + fundValue;
+    document.getElementById('ui-premium-due').innerText = '₹' + premiumDue;
+    document.getElementById('ui-due-date').innerText = dueDate;
+    
+    document.getElementById('ui-hook-text').innerHTML = `
+        <b>${custName}</b>, you've maintained flawless financial discipline for 2 consecutive years, keeping your compounding engine at full throttle. 
+        <br><br>
+        Lock in your next milestone today to keep this shield securely growing for <span class="nominee-highlight">(${nomineeName})</span>!
+    `;
+</script>
+
+</body>
+</html>
