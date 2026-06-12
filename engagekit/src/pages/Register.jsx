@@ -12,7 +12,7 @@ export default function Register() {
   const [error, setError] = useState('')
   const fileRef = useRef()
   const navigate = useNavigate()
-  const { whitelistEntry, setUser } = useAuth()
+  const { whitelistEntry, setPendingUserRecord } = useAuth()
 
   if (!whitelistEntry) {
     return <Navigate to="/" replace />
@@ -66,8 +66,8 @@ export default function Register() {
 
       if (insertError) throw insertError
 
-      setUser(newUser)
-      navigate('/app')
+      setPendingUserRecord(newUser)
+      navigate('/pin')
     } catch {
       setError('Could not complete registration. Please try again.')
     } finally {

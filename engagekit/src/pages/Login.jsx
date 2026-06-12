@@ -35,29 +35,19 @@ export default function Login() {
 
       setWhitelistEntry(entry)
 
-      if (entry.role === 'admin' || entry.role === 'national_manager') {
-        const { data: existingAdmin } = await supabase
-          .from('users')
-          .select('*')
-          .eq('phone', cleaned)
-          .single()
-        setPendingUserRecord(existingAdmin ?? null)
-        navigate('/pin')
-        return
-      }
-
-      // rpm — check if already registered
+      // All roles: check for an existing user record, then route to
+      // /register (no record), /pin set mode (no pin_hash), or /pin verify mode.
       const { data: existingUser } = await supabase
         .from('users')
         .select('*')
         .eq('phone', cleaned)
         .single()
 
-      if (existingUser) {
-        setUser(existingUser)
-        navigate('/app')
-      } else {
+      if (!existingUser) {
         navigate('/register')
+      } else {
+        setPendingUserRecord(existingUser)
+        navigate('/pin')
       }
     } catch {
       setError('Something went wrong. Please try again.')
