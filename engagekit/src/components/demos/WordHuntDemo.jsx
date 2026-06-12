@@ -3,8 +3,6 @@ import { supabase } from '../../lib/supabaseClient'
 import { logOutcome } from '../../lib/logOutcome'
 import FeedbackSection from '../FeedbackSection'
 
-// ── Grid data (FIX 2 — re-jumbled) ───────────────────────────────────────────
-
 const gridData = [
   ['K','R','Q','X','A','B','M','P','Z','X'],
   ['F','J','N','Y','W','G','O','K','Q','S'],
@@ -18,7 +16,7 @@ const gridData = [
   ['M','N','B','V','C','X','Z','L','K','J'],
 ]
 
-// BONUS: diagonal, NOMINEE: vertical, ASSET: reversed horizontal
+// BONUS: diagonal (1,1), NOMINEE: vertical (1,0), ASSET: reversed horizontal (0,-1)
 const WORD_PATHS = {
   term1: [[0,5],[1,6],[2,7],[3,8],[4,9]],
   term2: [[1,2],[2,2],[3,2],[4,2],[5,2],[6,2],[7,2]],
@@ -47,38 +45,15 @@ const EXPLANATIONS = {
 }
 
 const PERSONA_CONTENT = {
-  go_getter: {
-    intro: "Ready to test your skills? Slide your finger or mouse across the grid to find these 3 hidden financial words:",
-    subtitle: "Find the hidden words in the puzzle grid to unlock your custom financial insights below.",
-  },
-  caregiver: {
-    intro: "The future feels more secure when you're prepared for it. Find the hidden terms and discover ideas that can help support your loved ones and their aspirations.",
-    subtitle: "Find the hidden financial terms in the puzzle and unlock useful insights along the way.",
-  },
-  protector: {
-    intro: "Planning ahead is one of the best ways to protect what matters most. Find the hidden terms and learn concepts that can help strengthen your financial foundation.",
-    subtitle: "Find the hidden financial terms in the puzzle and unlock useful insights along the way.",
-  },
-  thinker: {
-    intro: "The more you understand, the more confident your decisions become. Find the hidden terms and explore the concepts behind important financial planning decisions.",
-    subtitle: "Find the hidden financial terms in the puzzle and unlock useful insights along the way.",
-  },
-  fallback: {
-    intro: "Every great financial decision starts with understanding a few key terms. Find these 3 hidden words in the grid below, and unlock a short explanation for each one as you go.",
-    subtitle: "Find the hidden financial terms in the puzzle and unlock useful insights along the way.",
-  },
+  go_getter:  { intro: "Ready to test your skills? Slide your finger or mouse across the grid to find these 3 hidden financial words:",                                                                               subtitle: "Find the hidden words in the puzzle grid to unlock your custom financial insights below." },
+  caregiver:  { intro: "The future feels more secure when you're prepared for it. Find the hidden terms and discover ideas that can help support your loved ones and their aspirations.",                             subtitle: "Find the hidden financial terms in the puzzle and unlock useful insights along the way." },
+  protector:  { intro: "Planning ahead is one of the best ways to protect what matters most. Find the hidden terms and learn concepts that can help strengthen your financial foundation.",                          subtitle: "Find the hidden financial terms in the puzzle and unlock useful insights along the way." },
+  thinker:    { intro: "The more you understand, the more confident your decisions become. Find the hidden terms and explore the concepts behind important financial planning decisions.",                            subtitle: "Find the hidden financial terms in the puzzle and unlock useful insights along the way." },
+  fallback:   { intro: "Every great financial decision starts with understanding a few key terms. Find these 3 hidden words in the grid below, and unlock a short explanation for each one as you go.",             subtitle: "Find the hidden financial terms in the puzzle and unlock useful insights along the way." },
 }
 
-const PERSONA_MAP = {
-  'Go-Getter': 'go_getter',
-  'Protector':  'protector',
-  'Caregiver':  'caregiver',
-  'Thinker':    'thinker',
-}
-
-function resolvePersonaKey(persona) {
-  return PERSONA_MAP[persona] ?? 'fallback'
-}
+const PERSONA_MAP = { 'Go-Getter': 'go_getter', 'Protector': 'protector', 'Caregiver': 'caregiver', 'Thinker': 'thinker' }
+function resolvePersonaKey(persona) { return PERSONA_MAP[persona] ?? 'fallback' }
 
 function renderBold(text) {
   const parts = text.split(/\*\*(.*?)\*\*/g)
@@ -88,45 +63,49 @@ function renderBold(text) {
 async function markTokenUsed(shareToken) {
   if (!shareToken) return
   try {
-    const { error } = await supabase
-      .from('share_tokens').update({ used: true }).eq('token', shareToken)
+    const { error } = await supabase.from('share_tokens').update({ used: true }).eq('token', shareToken)
     if (error) console.error('share_token mark-used failed:', error)
-  } catch (e) {
-    console.error('share_token mark-used exception:', e)
-  }
+  } catch (e) { console.error('share_token mark-used exception:', e) }
 }
 
-// ── CSS keyframes (injected once) ─────────────────────────────────────────────
+// ── CSS (injected once) ───────────────────────────────────────────────────────
 
 const INJECTED_STYLES = `
   @keyframes wh-confetti {
-    0%   { transform: translateY(0) rotate(0deg);    opacity: 1; }
+    0%   { transform: translateY(0) rotate(0deg);      opacity: 1; }
     100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
   }
   @keyframes wh-cell-bounce {
-    0%, 100% { transform: scale(1); }
+    0%, 100% { transform: scale(1);    }
     40%       { transform: scale(1.28); }
     70%       { transform: scale(0.90); }
   }
   @keyframes wh-card-in {
     from { transform: scale(0.92); opacity: 0; }
-    to   { transform: scale(1);   opacity: 1; }
+    to   { transform: scale(1);    opacity: 1; }
   }
   @keyframes wh-card-unlock {
-    0%   { box-shadow: 0 0 0 0   rgba(0,91,172,0.55); }
+    0%   { box-shadow: 0 0 0 0    rgba(0,91,172,0.55); }
     40%  { box-shadow: 0 0 0 10px rgba(0,91,172,0.25); }
-    100% { box-shadow: 0 0 0 0   rgba(0,91,172,0);    }
+    100% { box-shadow: 0 0 0 0    rgba(0,91,172,0);    }
   }
   @keyframes wh-toast-in {
-    0%   { opacity: 0; transform: translateX(-50%) translateY(6px); }
-    15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
-    75%  { opacity: 1; transform: translateX(-50%) translateY(0); }
-    100% { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+    0%   { opacity: 0; transform: translateX(-50%) translateY(6px);  }
+    15%  { opacity: 1; transform: translateX(-50%) translateY(0);     }
+    75%  { opacity: 1; transform: translateX(-50%) translateY(0);     }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-4px);  }
+  }
+  @keyframes wh-dir-line {
+    0%   { stroke-dashoffset: 60; opacity: 0; }
+    12%  { stroke-dashoffset: 60; opacity: 1; }
+    55%  { stroke-dashoffset: 0;  opacity: 1; }
+    82%  { stroke-dashoffset: 0;  opacity: 1; }
+    100% { stroke-dashoffset: 0;  opacity: 0; }
   }
   .wh-carousel::-webkit-scrollbar { display: none; }
 `
 
-// ── Confetti burst (FIX 7) ────────────────────────────────────────────────────
+// ── Confetti ──────────────────────────────────────────────────────────────────
 
 const CONFETTI_COLORS = ['#005BAC','#2E7D32','#e8a020','#ef4444','#7c3aed','#0d9488']
 
@@ -134,8 +113,7 @@ function ConfettiEffect() {
   const piecesRef = useRef(null)
   if (!piecesRef.current) {
     piecesRef.current = Array.from({ length: 36 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
+      id: i, x: Math.random() * 100,
       color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
       size: 6 + Math.random() * 7,
       delay: Math.random() * 0.45,
@@ -146,25 +124,102 @@ function ConfettiEffect() {
   return (
     <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 200, overflow: 'hidden' }}>
       {piecesRef.current.map(p => (
-        <div
-          key={p.id}
-          style={{
-            position: 'absolute',
-            top: -16,
-            left: `${p.x}%`,
-            width: p.size,
-            height: p.size,
-            borderRadius: p.round ? '50%' : 2,
-            background: p.color,
-            animation: `wh-confetti ${p.duration}s ${p.delay}s ease-in forwards`,
-          }}
-        />
+        <div key={p.id} style={{
+          position: 'absolute', top: -16, left: `${p.x}%`,
+          width: p.size, height: p.size,
+          borderRadius: p.round ? '50%' : 2,
+          background: p.color,
+          animation: `wh-confetti ${p.duration}s ${p.delay}s ease-in forwards`,
+        }} />
       ))}
     </div>
   )
 }
 
-// ── Intro modal (FIX 1 — no word badges, only instructions + Got it) ──────────
+// ── Directions demo for How to Play (FIX 3) ───────────────────────────────────
+
+// 8 directions: right, down-right, down, down-left, left, up-left, up, up-right
+const DEMO_DIRS = [
+  [0,1],[1,1],[1,0],[1,-1],[0,-1],[-1,-1],[-1,0],[-1,1],
+]
+const DEMO_LETTERS = [['B','O','N'],['U','M','S'],['E','A','T']]
+const DEMO_CELL = 34, DEMO_GAP = 3
+const DEMO_SIZE = 3 * DEMO_CELL + 2 * DEMO_GAP  // 108
+
+function DirectionsDemo() {
+  const [dirIdx, setDirIdx] = useState(0)
+  const lineRef = useRef(null)
+
+  useEffect(() => {
+    const t = setInterval(() => setDirIdx(d => (d + 1) % 8), 900)
+    return () => clearInterval(t)
+  }, [])
+
+  // Restart SVG animation when direction changes
+  useEffect(() => {
+    const el = lineRef.current
+    if (!el) return
+    el.style.animation = 'none'
+    el.getBoundingClientRect() // force reflow
+    el.style.animation = 'wh-dir-line 0.9s ease-out forwards'
+  }, [dirIdx])
+
+  const [dr, dc] = DEMO_DIRS[dirIdx]
+  const step = DEMO_CELL + DEMO_GAP  // 37px per cell
+  const cx = step + DEMO_CELL / 2    // center of [1,1] = 37 + 17 = 54
+  const cy = step + DEMO_CELL / 2
+  const tx = cx + dc * step
+  const ty = cy + dr * step
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: '4px 0 2px' }}>
+      <p style={{ fontSize: 13, color: '#334155', lineHeight: 1.6, margin: 0, textAlign: 'center' }}>
+        Words can run left to right, right to left, top to bottom, bottom to top, or diagonally in any direction.
+      </p>
+      <div style={{ position: 'relative', width: DEMO_SIZE, height: DEMO_SIZE }}>
+        {/* 3×3 static grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(3, ${DEMO_CELL}px)`, gap: DEMO_GAP }}>
+          {DEMO_LETTERS.map((row, r) => row.map((letter, c) => {
+            const isCenter = r === 1 && c === 1
+            const isTarget = r === 1 + dr && c === 1 + dc
+            return (
+              <div key={`${r}-${c}`} style={{
+                width: DEMO_CELL, height: DEMO_CELL,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontWeight: 700, fontSize: 13, borderRadius: 4,
+                background: isCenter ? '#003366' : isTarget ? '#e3ecf7' : 'white',
+                color: isCenter ? 'white' : '#003366',
+                border: `1.5px solid ${isCenter ? '#003366' : isTarget ? '#005BAC' : '#cdd8e8'}`,
+                transition: 'background 0.15s, border-color 0.15s',
+              }}>
+                {isCenter ? '★' : letter}
+              </div>
+            )
+          }))}
+        </div>
+
+        {/* Animated SVG arrow */}
+        <svg width={DEMO_SIZE} height={DEMO_SIZE}
+          style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', overflow: 'visible' }}>
+          <defs>
+            <marker id="wh-da" markerWidth="7" markerHeight="7" refX="5.5" refY="3.5" orient="auto">
+              <polygon points="0 0, 7 3.5, 0 7" fill="#005BAC" />
+            </marker>
+          </defs>
+          <line
+            ref={lineRef}
+            x1={cx} y1={cy} x2={tx} y2={ty}
+            stroke="#005BAC" strokeWidth="2.5" strokeLinecap="round"
+            markerEnd="url(#wh-da)"
+            style={{ strokeDasharray: 60, strokeDashoffset: 60, opacity: 0 }}
+          />
+        </svg>
+      </div>
+    </div>
+  )
+}
+
+// ── Intro modal (no word badges; directions demo added) ───────────────────────
 
 function IntroModal({ persona, onClose }) {
   const pc = PERSONA_CONTENT[resolvePersonaKey(persona)]
@@ -174,23 +229,24 @@ function IntroModal({ persona, onClose }) {
       onClick={onClose}
     >
       <div
-        style={{ width: '100%', background: '#F5F8FC', borderRadius: '20px 20px 0 0', padding: '24px 20px', maxHeight: '78vh', overflowY: 'auto' }}
+        style={{ width: '100%', background: '#F5F8FC', borderRadius: '20px 20px 0 0', padding: '24px 20px', maxHeight: '82vh', overflowY: 'auto' }}
         onClick={e => e.stopPropagation()}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
           <h2 style={{ fontWeight: 700, fontSize: 18, color: '#003366', margin: 0 }}>🔍 Word Hunt</h2>
-          <button
-            onClick={onClose}
-            style={{ width: 32, height: 32, background: '#e8eef5', borderRadius: '50%', border: 'none', cursor: 'pointer', color: '#003366', fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >✕</button>
+          <button onClick={onClose} style={{ width: 32, height: 32, background: '#e8eef5', borderRadius: '50%', border: 'none', cursor: 'pointer', color: '#003366', fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
         </div>
-        <p style={{ fontSize: 14, lineHeight: 1.7, color: '#334155', marginBottom: 20 }}>
+
+        <p style={{ fontSize: 14, lineHeight: 1.7, color: '#334155', marginBottom: 18 }}>
           {pc.intro}
         </p>
-        <button
-          onClick={onClose}
-          style={{ width: '100%', padding: '13px 0', background: '#005BAC', border: 'none', borderRadius: 12, color: 'white', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
-        >
+
+        {/* Directions explainer (FIX 3) */}
+        <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 16, marginBottom: 20 }}>
+          <DirectionsDemo />
+        </div>
+
+        <button onClick={onClose} style={{ width: '100%', padding: '13px 0', background: '#005BAC', border: 'none', borderRadius: 12, color: 'white', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
           Got it →
         </button>
       </div>
@@ -207,6 +263,27 @@ const CELL_STYLES = {
   default:   { background: 'white',   color: '#003366', borderColor: '#cdd8e8' },
 }
 
+// ── Direction-lock helpers (FIX 2) ────────────────────────────────────────────
+
+// Returns step-count n if [r,c] lies exactly on the ray anchor+(n*dr, n*dc), n>0.
+// Returns -1 if off the ray.
+function getStepOnRay(ar, ac, r, c, dr, dc) {
+  const dRow = r - ar
+  const dCol = c - ac
+  // Must move in the correct sign for non-zero axis
+  if (dr !== 0 && Math.sign(dRow) !== dr) return -1
+  if (dc !== 0 && Math.sign(dCol) !== dc) return -1
+  // Non-zero axis must not drift on zero-axis
+  if (dr === 0 && dRow !== 0) return -1
+  if (dc === 0 && dCol !== 0) return -1
+  // Compute n
+  const n = dr !== 0 ? dRow / dr : dCol / dc
+  if (!Number.isInteger(n) || n <= 0) return -1
+  // Diagonal cross-check
+  if (dr !== 0 && dc !== 0 && dCol !== dc * n) return -1
+  return n
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function WordHuntDemo({
@@ -216,29 +293,24 @@ export default function WordHuntDemo({
   persona,
   shareToken,
 }) {
-  // Selection state
-  const [selectedCells,   setSelectedCells]   = useState([])
-  const [discoveredWords, setDiscoveredWords] = useState(new Set())
-  const [discoveredCells, setDiscoveredCells] = useState({})
+  const [selectedCells,    setSelectedCells]    = useState([])
+  const [discoveredWords,  setDiscoveredWords]  = useState(new Set())
+  const [discoveredCells,  setDiscoveredCells]  = useState({})
+  const [showIntro,        setShowIntro]        = useState(false)
+  const [wordsRevealed,    setWordsRevealed]    = useState(!isCustomerView)
+  const [cellSize,         setCellSize]         = useState(32)
+  const [unlockToast,      setUnlockToast]      = useState(false)
+  const [justUnlockedTerm, setJustUnlockedTerm] = useState(null)
+  const [activeCardIdx,    setActiveCardIdx]    = useState(0)
+  const [bouncingTerm,     setBouncingTerm]     = useState(null)
+  const [showConfetti,     setShowConfetti]     = useState(false)
+  const [showCompletionCard, setShowCompletionCard] = useState(false)
 
-  // UI state
-  const [showIntro,         setShowIntro]         = useState(false)
-  const [wordsRevealed,     setWordsRevealed]     = useState(!isCustomerView) // FIX 1
-  const [cellSize,          setCellSize]          = useState(32)
-  const [gridGap,           setGridGap]           = useState(4)               // FIX 3
-  const [unlockToast,       setUnlockToast]       = useState(false)           // FIX 5
-  const [justUnlockedTerm,  setJustUnlockedTerm]  = useState(null)            // FIX 5
-  const [activeCardIdx,     setActiveCardIdx]     = useState(0)               // FIX 5
-
-  // Celebration state (FIX 7)
-  const [bouncingTerm,      setBouncingTerm]      = useState(null)
-  const [showConfetti,      setShowConfetti]      = useState(false)
-  const [showCompletionCard,setShowCompletionCard]= useState(false)
-
-  // Refs
   const isSelectingRef     = useRef(false)
   const selectedCellsRef   = useRef([])
   const discoveredWordsRef = useRef(new Set())
+  const anchorRef          = useRef(null)   // FIX 2: anchor cell
+  const dirRef             = useRef(null)   // FIX 2: locked direction {dr,dc}
   const markedUsedRef      = useRef(false)
   const outerRef           = useRef(null)
   const gridRef            = useRef(null)
@@ -254,7 +326,6 @@ export default function WordHuntDemo({
 
   // ── Effects ────────────────────────────────────────────────────────────────
 
-  // Auto-show intro for customers
   useEffect(() => {
     if (!isCustomerView) return
     const t = setTimeout(() => setShowIntro(true), 300)
@@ -265,7 +336,6 @@ export default function WordHuntDemo({
     onStep?.({ step: 'viewed', timestamp: new Date().toISOString() })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Completion: mark token + log outcome (FIX 6)
   useEffect(() => {
     if (!allFound || !isCustomerView || markedUsedRef.current) return
     markedUsedRef.current = true
@@ -274,7 +344,6 @@ export default function WordHuntDemo({
     onStep?.({ step: 'completed', timestamp: new Date().toISOString() })
   }, [allFound]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Cleanup timers on unmount
   useEffect(() => {
     return () => {
       clearTimeout(unlockTimerRef.current)
@@ -283,7 +352,7 @@ export default function WordHuntDemo({
     }
   }, [])
 
-  // Dynamic cell sizing with padding subtraction (FIX 3)
+  // FIX 1 — cell sizing: 8px side padding, gap always 3, cap raised to 52px
   useEffect(() => {
     const el = outerRef.current
     if (!el) return
@@ -293,9 +362,7 @@ export default function WordHuntDemo({
       const padR = parseFloat(style.paddingRight) || 0
       const w    = target.clientWidth - padL - padR
       if (!w) return
-      const gap = window.innerWidth < 400 ? 3 : 4
-      setGridGap(gap)
-      setCellSize(Math.max(24, Math.min(Math.floor((w - 9 * gap) / 10), 48)))
+      setCellSize(Math.max(24, Math.min(Math.floor((w - 9 * 3) / 10), 52)))
     }
     const ro = new ResizeObserver(entries => { for (const e of entries) measure(e.target) })
     ro.observe(el)
@@ -303,7 +370,6 @@ export default function WordHuntDemo({
     return () => ro.disconnect()
   }, [])
 
-  // Global pointerup safety net
   useEffect(() => {
     const onUp = () => { if (isSelectingRef.current) finalizeRef.current?.() }
     window.addEventListener('pointerup', onUp)
@@ -314,7 +380,7 @@ export default function WordHuntDemo({
     }
   }, [])
 
-  // ── Drag / selection logic ─────────────────────────────────────────────────
+  // ── Selection logic ────────────────────────────────────────────────────────
 
   function getCellFromEvent(e) {
     const el = document.elementFromPoint(e.clientX, e.clientY)
@@ -352,7 +418,6 @@ export default function WordHuntDemo({
       setDiscoveredWords(new Set(discoveredWordsRef.current))
       onStep?.({ step: 'found', word: WORD_LABELS[found], timestamp: new Date().toISOString() })
 
-      // FIX 5: toast + card unlock animation + carousel scroll
       setJustUnlockedTerm(found)
       clearTimeout(unlockTimerRef.current)
       unlockTimerRef.current = setTimeout(() => setJustUnlockedTerm(null), 700)
@@ -361,7 +426,6 @@ export default function WordHuntDemo({
       clearTimeout(toastTimerRef.current)
       toastTimerRef.current = setTimeout(() => setUnlockToast(false), 1500)
 
-      // Scroll carousel to unlocked card (slight delay for render)
       const cardIdx = TERM_ORDER.indexOf(found)
       setTimeout(() => {
         const card = cardRefs.current[cardIdx]
@@ -370,9 +434,7 @@ export default function WordHuntDemo({
         }
       }, 60)
 
-      // FIX 7: celebration on 3rd word
-      const newSize = discoveredWordsRef.current.size
-      if (newSize === 3) {
+      if (discoveredWordsRef.current.size === 3) {
         if (isCustomerView) {
           setBouncingTerm(found)
           clearTimeout(celebTimerRef.current)
@@ -393,6 +455,8 @@ export default function WordHuntDemo({
 
     selectedCellsRef.current = []
     setSelectedCells([])
+    anchorRef.current = null
+    dirRef.current = null
   }
 
   finalizeRef.current = finalizeSelect
@@ -401,20 +465,75 @@ export default function WordHuntDemo({
     e.preventDefault()
     const cell = getCellFromEvent(e)
     if (!cell) return
+    const [r, c] = cell
     isSelectingRef.current = true
-    selectedCellsRef.current = [cell]
-    setSelectedCells([cell])
+    anchorRef.current = [r, c]
+    dirRef.current = null
+    selectedCellsRef.current = [[r, c]]
+    setSelectedCells([[r, c]])
     try { e.currentTarget.setPointerCapture(e.pointerId) } catch (_) {}
   }
 
+  // FIX 2 — direction-locked pointer move
   function handleGridPointerMove(e) {
     if (!isSelectingRef.current) return
     const cell = getCellFromEvent(e)
     if (!cell) return
     const [r, c] = cell
-    if (selectedCellsRef.current.some(([pr, pc]) => pr === r && pc === c)) return
-    selectedCellsRef.current = [...selectedCellsRef.current, cell]
-    setSelectedCells([...selectedCellsRef.current])
+    const cells  = selectedCellsRef.current
+    const [ar, ac] = anchorRef.current
+
+    // Skip if same as last selected
+    if (cells.length > 0) {
+      const [lr, lc] = cells[cells.length - 1]
+      if (lr === r && lc === c) return
+    }
+
+    if (dirRef.current === null) {
+      // ── Lock direction from anchor to this cell ──────────────────────────
+      const dRow = r - ar
+      const dCol = c - ac
+      if (dRow === 0 && dCol === 0) return  // same as anchor, ignore
+
+      const dr = Math.sign(dRow)
+      const dc = Math.sign(dCol)
+      dirRef.current = { dr, dc }
+
+      // Fill cells from anchor+1 to as far as [r,c] lies on this ray
+      const n = getStepOnRay(ar, ac, r, c, dr, dc)
+      const fillTo = n > 0 ? n : 1  // at minimum add the first step
+      const newCells = [[ar, ac]]
+      for (let i = 1; i <= fillTo; i++) {
+        const nr = ar + i * dr
+        const nc = ac + i * dc
+        if (nr < 0 || nr >= 10 || nc < 0 || nc >= 10) break
+        newCells.push([nr, nc])
+      }
+      selectedCellsRef.current = newCells
+      setSelectedCells(newCells)
+
+    } else {
+      // ── Direction locked: only accept cells on the ray ───────────────────
+      const { dr, dc } = dirRef.current
+      const n = getStepOnRay(ar, ac, r, c, dr, dc)
+      if (n < 0) return  // off the locked direction line
+
+      const lastN = cells.length - 1
+      if (n <= lastN) return  // going backward or duplicate
+
+      // Fill any skipped cells (handles fast swipes)
+      const newCells = [...cells]
+      for (let i = lastN + 1; i <= n; i++) {
+        const nr = ar + i * dr
+        const nc = ac + i * dc
+        if (nr < 0 || nr >= 10 || nc < 0 || nc >= 10) break
+        newCells.push([nr, nc])
+      }
+      if (newCells.length > cells.length) {
+        selectedCellsRef.current = newCells
+        setSelectedCells(newCells)
+      }
+    }
   }
 
   function getCellVisual(r, c) {
@@ -453,21 +572,13 @@ export default function WordHuntDemo({
         />
       )}
 
-      {/* Unlock toast (FIX 5) */}
       {unlockToast && (
         <div style={{
-          position: 'fixed',
-          bottom: 80,
-          left: '50%',
+          position: 'fixed', bottom: 80, left: '50%',
           transform: 'translateX(-50%)',
-          background: '#1a3060',
-          color: 'white',
-          padding: '9px 18px',
-          borderRadius: 20,
-          fontSize: 13,
-          fontWeight: 600,
-          zIndex: 100,
-          whiteSpace: 'nowrap',
+          background: '#1a3060', color: 'white',
+          padding: '9px 18px', borderRadius: 20,
+          fontSize: 13, fontWeight: 600, zIndex: 100, whiteSpace: 'nowrap',
           animation: 'wh-toast-in 1.5s ease-out forwards',
         }}>
           🔓 New insight unlocked!
@@ -478,30 +589,25 @@ export default function WordHuntDemo({
 
         {/* Subtitle */}
         <div style={{ padding: '14px 16px 8px' }}>
-          <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.55, margin: 0 }}>
-            {pc.subtitle}
-          </p>
+          <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.55, margin: 0 }}>{pc.subtitle}</p>
         </div>
 
-        {/* Word chips — visible after intro modal closes (FIX 1) */}
+        {/* Word chips — revealed after intro modal closes */}
         {wordsRevealed && (
           <div style={{ padding: '0 16px 8px', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {TERM_ORDER.map(key => {
               const found = discoveredWords.has(key)
               return (
-                <div
-                  key={key}
-                  style={{
-                    padding: '5px 13px', borderRadius: 20,
-                    fontSize: 12, fontWeight: 700, letterSpacing: '0.06em',
-                    background: found ? '#2E7D32' : '#003366',
-                    color: 'white',
-                    textDecoration: found ? 'line-through' : 'none',
-                    opacity: found ? 0.8 : 1,
-                    display: 'flex', alignItems: 'center', gap: 4,
-                    transition: 'background 0.2s',
-                  }}
-                >
+                <div key={key} style={{
+                  padding: '5px 13px', borderRadius: 20,
+                  fontSize: 12, fontWeight: 700, letterSpacing: '0.06em',
+                  background: found ? '#2E7D32' : '#003366',
+                  color: 'white',
+                  textDecoration: found ? 'line-through' : 'none',
+                  opacity: found ? 0.8 : 1,
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  transition: 'background 0.2s',
+                }}>
                   {found && '✓ '}{WORD_LABELS[key]}
                 </div>
               )
@@ -515,25 +621,21 @@ export default function WordHuntDemo({
             {discoveredWords.size} / 3 Words Found
           </span>
           {Array.from({ length: 3 }, (_, i) => (
-            <div
-              key={i}
-              style={{ width: 8, height: 8, borderRadius: '50%', background: i < discoveredWords.size ? '#2E7D32' : '#cdd8e8' }}
-            />
+            <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: i < discoveredWords.size ? '#2E7D32' : '#cdd8e8' }} />
           ))}
         </div>
 
-        {/* Grid (FIX 3 — correct sizing) */}
-        <div ref={outerRef} style={{ padding: '0 16px', boxSizing: 'border-box', overflow: 'hidden' }}>
+        {/* Grid — FIX 1: padding 0 8px, gap 3px always, cap 52px */}
+        <div ref={outerRef} style={{ padding: '0 8px', boxSizing: 'border-box', overflow: 'hidden' }}>
           <div
             ref={gridRef}
             style={{
               display: 'grid',
               gridTemplateColumns: `repeat(10, ${cellSize}px)`,
-              gap: `${gridGap}px`,
+              gap: '3px',
               boxSizing: 'border-box',
               touchAction: allFound ? 'auto' : 'none',
-              userSelect: 'none',
-              WebkitUserSelect: 'none',
+              userSelect: 'none', WebkitUserSelect: 'none',
               cursor: allFound ? 'default' : 'crosshair',
             }}
             onPointerDown={handleGridPointerDown}
@@ -546,24 +648,17 @@ export default function WordHuntDemo({
                 const vis = getCellVisual(r, c)
                 const cs  = CELL_STYLES[vis]
                 return (
-                  <div
-                    key={`${r}-${c}`}
-                    data-row={r}
-                    data-col={c}
-                    style={{
-                      width: cellSize, height: cellSize,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontWeight: 700,
-                      fontSize: Math.max(10, Math.round(cellSize * 0.38)),
-                      borderRadius: 4,
-                      border: `1.5px solid ${cs.borderColor}`,
-                      background: cs.background,
-                      color: cs.color,
-                      boxSizing: 'border-box',
-                      transition: 'background 0.12s, border-color 0.12s',
-                      animation: vis === 'bouncing' ? 'wh-cell-bounce 0.4s ease-out' : 'none',
-                    }}
-                  >
+                  <div key={`${r}-${c}`} data-row={r} data-col={c} style={{
+                    width: cellSize, height: cellSize,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontWeight: 700, fontSize: Math.max(10, Math.round(cellSize * 0.38)),
+                    borderRadius: 4,
+                    border: `1.5px solid ${cs.borderColor}`,
+                    background: cs.background, color: cs.color,
+                    boxSizing: 'border-box',
+                    transition: 'background 0.12s, border-color 0.12s',
+                    animation: vis === 'bouncing' ? 'wh-cell-bounce 0.4s ease-out' : 'none',
+                  }}>
                     {letter}
                   </div>
                 )
@@ -572,22 +667,18 @@ export default function WordHuntDemo({
           </div>
         </div>
 
-        {/* Explanation carousel (FIX 5) */}
+        {/* Explanation carousel */}
         <div style={{ marginTop: 14 }}>
           <div
             ref={carouselRef}
             onScroll={handleCarouselScroll}
             className="wh-carousel"
             style={{
-              display: 'flex',
-              overflowX: 'auto',
-              scrollSnapType: 'x mandatory',
-              scrollPaddingLeft: '16px',
+              display: 'flex', overflowX: 'auto',
+              scrollSnapType: 'x mandatory', scrollPaddingLeft: '16px',
               WebkitOverflowScrolling: 'touch',
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-              gap: 12,
-              padding: '4px 16px 8px',
+              scrollbarWidth: 'none', msOverflowStyle: 'none',
+              gap: 12, padding: '4px 16px 8px',
             }}
           >
             {TERM_ORDER.map((termKey, idx) => {
@@ -595,17 +686,13 @@ export default function WordHuntDemo({
               const isNew    = justUnlockedTerm === termKey
               const exp      = EXPLANATIONS[termKey]
               const label    = WORD_LABELS[termKey]
-
               return (
                 <div
                   key={termKey}
                   ref={el => { cardRefs.current[idx] = el }}
                   style={{
-                    flexShrink: 0,
-                    width: 'clamp(280px, 85vw, 340px)',
-                    scrollSnapAlign: 'start',
-                    borderRadius: 14,
-                    padding: 16,
+                    flexShrink: 0, width: 'clamp(280px, 85vw, 340px)',
+                    scrollSnapAlign: 'start', borderRadius: 14, padding: 16,
                     background: unlocked ? 'white' : '#eef2f7',
                     border: `2px solid ${isNew ? '#005BAC' : unlocked ? '#e2e8f0' : '#dde4ed'}`,
                     transition: 'background 0.3s, border-color 0.3s',
@@ -616,26 +703,16 @@ export default function WordHuntDemo({
                     <>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
                         <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#2E7D32', flexShrink: 0 }} />
-                        <p style={{ fontWeight: 700, fontSize: 12, color: '#2E7D32', letterSpacing: '0.08em', margin: 0, textTransform: 'uppercase' }}>
-                          {exp.title}
-                        </p>
+                        <p style={{ fontWeight: 700, fontSize: 12, color: '#2E7D32', letterSpacing: '0.08em', margin: 0, textTransform: 'uppercase' }}>{exp.title}</p>
                       </div>
-                      <p style={{ fontSize: 13, lineHeight: 1.65, color: '#334155', margin: '0 0 10px' }}>
-                        {renderBold(exp.body)}
-                      </p>
-                      <p style={{ fontSize: 12, color: '#64748b', lineHeight: 1.55, margin: 0, borderTop: '1px solid #f0f4f8', paddingTop: 10, fontStyle: 'italic' }}>
-                        {exp.cta}
-                      </p>
+                      <p style={{ fontSize: 13, lineHeight: 1.65, color: '#334155', margin: '0 0 10px' }}>{renderBold(exp.body)}</p>
+                      <p style={{ fontSize: 12, color: '#64748b', lineHeight: 1.55, margin: 0, borderTop: '1px solid #f0f4f8', paddingTop: 10, fontStyle: 'italic' }}>{exp.cta}</p>
                     </>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 0', gap: 10 }}>
                       <span style={{ fontSize: 28, opacity: 0.5 }}>🔒</span>
-                      <div style={{ background: '#003366', color: 'white', borderRadius: 8, padding: '5px 12px', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', opacity: 0.6 }}>
-                        {label}
-                      </div>
-                      <p style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center', margin: 0, lineHeight: 1.4 }}>
-                        Find <strong style={{ color: '#475569' }}>{label}</strong> to unlock this insight
-                      </p>
+                      <div style={{ background: '#003366', color: 'white', borderRadius: 8, padding: '5px 12px', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', opacity: 0.6 }}>{label}</div>
+                      <p style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center', margin: 0, lineHeight: 1.4 }}>Find <strong style={{ color: '#475569' }}>{label}</strong> to unlock this insight</p>
                     </div>
                   )}
                 </div>
@@ -643,42 +720,26 @@ export default function WordHuntDemo({
             })}
           </div>
 
-          {/* Dot indicators */}
           <div style={{ display: 'flex', justifyContent: 'center', gap: 6, padding: '2px 0 4px' }}>
             {[0, 1, 2].map(i => (
-              <div
-                key={i}
-                style={{
-                  width: 6, height: 6, borderRadius: '50%',
-                  background: i === activeCardIdx ? '#003366' : '#cdd8e8',
-                  transition: 'background 0.2s',
-                }}
-              />
+              <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: i === activeCardIdx ? '#003366' : '#cdd8e8', transition: 'background 0.2s' }} />
             ))}
           </div>
         </div>
 
-        {/* Completion card — scales in after confetti (FIX 4 + FIX 7) */}
+        {/* Completion card */}
         {showCompletionCard && (
-          <div
-            style={{
-              margin: '12px 16px 0',
-              background: 'white',
-              borderRadius: 16,
-              padding: 16,
-              border: '1px solid #e2e8f0',
-              boxShadow: '0 2px 12px rgba(0,51,102,0.08)',
-              animation: 'wh-card-in 0.4s ease-out',
-            }}
-          >
+          <div style={{
+            margin: '12px 16px 0', background: 'white', borderRadius: 16, padding: 16,
+            border: '1px solid #e2e8f0', boxShadow: '0 2px 12px rgba(0,51,102,0.08)',
+            animation: 'wh-card-in 0.4s ease-out',
+          }}>
             <p style={{ textAlign: 'center', fontSize: 16, fontWeight: 700, color: '#003366', margin: '0 0 4px' }}>
               🎉 You found all 3 words!
             </p>
             {isCustomerView
               ? <FeedbackSection linkId={linkId} onDone={onShare} />
-              : <p style={{ textAlign: 'center', fontSize: 13, color: '#64748b', margin: '8px 0 0' }}>
-                  All 3 hidden words found.
-                </p>
+              : <p style={{ textAlign: 'center', fontSize: 13, color: '#64748b', margin: '8px 0 0' }}>All 3 hidden words found.</p>
             }
           </div>
         )}
@@ -686,10 +747,7 @@ export default function WordHuntDemo({
         {/* RPM preview: share CTA */}
         {!isCustomerView && (
           <div style={{ padding: '16px 16px 0' }}>
-            <button
-              onClick={onShare}
-              style={{ width: '100%', padding: '14px 0', background: '#003366', border: 'none', borderRadius: 12, color: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
-            >
+            <button onClick={onShare} style={{ width: '100%', padding: '14px 0', background: '#003366', border: 'none', borderRadius: 12, color: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
               Share with a customer →
             </button>
           </div>
