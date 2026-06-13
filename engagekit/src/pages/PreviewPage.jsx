@@ -23,7 +23,7 @@ function Disclaimer() {
   return (
     <div className="border-t border-[#e4e7f0] bg-white px-6 py-4 flex-shrink-0">
       <p className="text-gray-400 text-[11px] leading-relaxed text-center">
-        This communication is for awareness purposes only and does not constitute a solicitation or offer of any insurance product. © Edelweiss Life Insurance Co. Ltd.
+        This communication is for awareness purposes only and does not constitute a solicitation or offer of any insurance product.
       </p>
     </div>
   )
@@ -54,7 +54,7 @@ function TrialPreview({ item }) {
       <div className="bg-[#0f1f3d] px-5 pt-5 pb-4 flex-shrink-0">
         <h1 className="text-white text-2xl font-bold leading-snug">Hi Aadhya! 👋</h1>
         <p className="text-white/50 text-xs mt-1">
-          Sent by {rpmName} · <span className="text-[#e8a020]">Edelweiss Life</span>
+          Sent by {rpmName}
         </p>
       </div>
 

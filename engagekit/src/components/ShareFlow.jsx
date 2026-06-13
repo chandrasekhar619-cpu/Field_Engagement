@@ -80,8 +80,6 @@ function InteractivePreview({ item, name }) {
       <div className="bg-[#0f1f3d] px-5 py-3 flex items-center gap-2">
         <span className="text-white/50 text-xs">Shared by</span>
         <span className="text-white text-xs font-semibold truncate">{name}</span>
-        <span className="text-white/30 text-xs">·</span>
-        <span className="text-[#e8a020] text-xs font-medium flex-shrink-0">Edelweiss Life</span>
       </div>
     </div>
   )

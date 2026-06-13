@@ -282,9 +282,7 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
               <p className="text-white/80 text-sm mt-3 leading-relaxed max-w-[220px] mx-auto relative z-10">
                 {p.tagline}
               </p>
-              <div className="border-t border-white/20 mt-5 pt-3 relative z-10">
-                <p className="text-white/30 text-[9px] uppercase tracking-[0.2em]">Edelweiss Life</p>
-              </div>
+              <div className="border-t border-white/20 mt-5 pt-3 relative z-10" />
             </div>
 
             {/* Persona description */}

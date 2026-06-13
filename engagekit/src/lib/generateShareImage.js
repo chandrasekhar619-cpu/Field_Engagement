@@ -138,7 +138,7 @@ function drawEngagementCard(item, rpmName) {
     // Bottom attribution
     ctx.font      = '400 15px system-ui, sans-serif'
     ctx.fillStyle = 'rgba(255,255,255,0.45)'
-    ctx.fillText(`Shared by ${rpmName} · Edelweiss Life`, W / 2, 565)
+    ctx.fillText(`Shared by ${rpmName}`, W / 2, 565)
 
     canvas.toBlob(
       blob => resolve(blob ? new File([blob], 'share.png', { type: 'image/png' }) : null),

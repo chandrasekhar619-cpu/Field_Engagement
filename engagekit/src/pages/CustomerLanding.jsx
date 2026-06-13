@@ -15,7 +15,7 @@ function Disclaimer() {
   return (
     <div className="border-t border-[#e4e7f0] bg-white px-6 py-4">
       <p className="text-gray-400 text-[11px] leading-relaxed text-center">
-        This communication is for awareness purposes only and does not constitute a solicitation or offer of any insurance product. © Edelweiss Life Insurance Co. Ltd.
+        This communication is for awareness purposes only and does not constitute a solicitation or offer of any insurance product.
       </p>
     </div>
   )
@@ -203,7 +203,7 @@ export default function CustomerLanding() {
           </p>
           {link?.rpm_name && (
             <p className="text-gray-400 text-xs mt-5">
-              Sent by <span className="font-medium">{link.rpm_name}</span> · Edelweiss Life
+              Sent by <span className="font-medium">{link.rpm_name}</span>
             </p>
           )}
         </div>
@@ -243,8 +243,7 @@ export default function CustomerLanding() {
         </h1>
         {link?.rpm_name && (
           <p className="text-white/50 text-xs mt-1">
-            Sent by {link.rpm_name} ·{' '}
-            <span className="text-[#e8a020]">Edelweiss Life</span>
+            Sent by {link.rpm_name}
           </p>
         )}
       </div>

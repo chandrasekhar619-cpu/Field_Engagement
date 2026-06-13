@@ -145,11 +145,6 @@ export function drawCreativeCard(item, rpmName, rpmDesignation) {
     const titleY = 235 - ((titleLines.length - 1) * 58) / 2
     titleLines.forEach((line, i) => ctx.fillText(line, W / 2, titleY + i * 58))
 
-    // "Edelweiss Life Insurance" subtitle
-    ctx.font = '400 18px system-ui, sans-serif'
-    ctx.fillStyle = 'rgba(255,255,255,0.55)'
-    ctx.fillText('Edelweiss Life Insurance', W / 2, titleY + (titleLines.length - 1) * 58 + 54)
-
     // Bottom strip
     const stripY = 505
     ctx.fillStyle = 'rgba(0,0,0,0.65)'
@@ -178,12 +173,6 @@ export function drawCreativeCard(item, rpmName, rpmDesignation) {
     ctx.font = '400 14px system-ui, sans-serif'
     ctx.fillStyle = 'rgba(255,255,255,0.45)'
     ctx.fillText(rpmDesignation || 'Relationship Portfolio Manager', 92, stripY + 59)
-
-    // "Edelweiss Life" watermark (right)
-    ctx.textAlign = 'right'
-    ctx.font = '400 13px system-ui, sans-serif'
-    ctx.fillStyle = 'rgba(255,255,255,0.25)'
-    ctx.fillText('Edelweiss Life', W - 28, stripY + 47)
 
     canvas.toBlob(
       blob => resolve(blob ? new File([blob], 'result.png', { type: 'image/png' }) : null),
