@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import { AuthProvider } from './context/AuthContext'
 import Login from './pages/Login'
 import Pin from './pages/Pin'
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="/admin/upload" element={<AdminUpload />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <SpeedInsights />
       </BrowserRouter>
     </AuthProvider>
   )
