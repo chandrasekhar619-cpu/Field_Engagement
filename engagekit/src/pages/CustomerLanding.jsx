@@ -10,6 +10,7 @@ import MoodDemo           from '../components/demos/MoodDemo'
 import LifeWordDemo       from '../components/demos/LifeWordDemo'
 import CreativesDemo      from '../components/demos/CreativesDemo'
 import WordHuntDemo       from '../components/demos/WordHuntDemo'
+import RenewalCard        from '../components/RenewalCard'
 
 function Disclaimer() {
   return (
@@ -99,6 +100,33 @@ export default function CustomerLanding() {
           return
         }
         setCustomer(customerData)
+
+        // 3a. Renewal card — handled separately (no contentItems lookup needed)
+        if (shareToken.engagement_type === 'renewal_card') {
+          const { data: linkRecord } = await supabase
+            .from('links').select('*').eq('token', token).single()
+          if (cancelled) return
+          if (linkRecord) setLink(linkRecord)
+          setContent({ demoType: 'renewal-card', metadata: shareToken.metadata })
+
+          const ip = await fetchIp()
+          if (cancelled) return
+          setCustomerIp(ip)
+
+          if (!openedRecordedRef.current && linkRecord) {
+            openedRecordedRef.current = true
+            await supabase.from('interactions').insert({
+              link_id:         linkRecord.id,
+              customer_id:     shareToken.customer_id ?? null,
+              rpm_id:          linkRecord.rpm_id ?? null,
+              action:          'opened',
+              customer_ip:     ip,
+              customer_device: navigator.userAgent,
+              steps:           [],
+            })
+          }
+          return
+        }
 
         // 3. Look up the link record for content_id and RPM metadata
         const { data: linkRecord, error: linkErr } = await supabase
@@ -211,6 +239,20 @@ export default function CustomerLanding() {
       <Disclaimer />
     </div>
   )
+
+  // Renewal card — full-screen iframe, no demo component
+  if (content?.demoType === 'renewal-card') {
+    return (
+      <RenewalCard
+        customer={customer}
+        metadata={content.metadata}
+        rpmName={link?.rpm_name}
+        token={token}
+        linkId={link?.id}
+        customerIp={customerIp}
+      />
+    )
+  }
 
   const Demo = DEMOS[content?.demoType]
 

@@ -60,6 +60,19 @@ export const contentItems = [
     demoType: 'word-hunt',
   },
 
+  // ── Renewal Reminder — share only, Try it disabled ───────────────────────────
+  {
+    id: 'renewal-reminder',
+    emoji: '🔔',
+    category: 'Reminder',
+    title: 'Renewal Reminder',
+    description: 'Personalised renewal nudge — timed to your customer\'s due date',
+    personas: [],
+    languages: ['EN'],
+    demoType: 'renewal-card',
+    renewalOnly: true,
+  },
+
   // ── TRIAL-only cards — preview only, no share ──────────────────────────────
   {
     id: 'wealth-arena',

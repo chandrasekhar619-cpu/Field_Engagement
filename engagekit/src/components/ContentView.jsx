@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabaseClient'
 import ContentCard from './ContentCard'
 import CreativesModal from './CreativesModal'
 import ShareFlow from './ShareFlow'
+import RenewalShareFlow from './RenewalShareFlow'
 
 const CATEGORIES = ['All', 'Quiz', 'Calculator', 'Game', 'Mood', 'Festive', 'Occasion', 'Interactive Game', 'Read', 'Reminder']
 const LANGUAGES = ['EN', 'HI', 'MR', 'TE', 'TA', 'ML']
@@ -14,6 +15,7 @@ export default function ContentView() {
   const [activeLanguage, setActiveLanguage] = useState(null)
   const [creativeItem, setCreativeItem] = useState(null)
   const [shareItem, setShareItem] = useState(null)
+  const [renewalShareItem, setRenewalShareItem] = useState(null)
   const [activeCustomer, setActiveCustomer] = useState(null)
   const [searchParams, setSearchParams] = useSearchParams()
 
@@ -111,7 +113,12 @@ export default function ContentView() {
         {filtered.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
             {filtered.map(item => (
-              <ContentCard key={item.id} item={item} onTryIt={handleTryIt} onShare={setShareItem} />
+              <ContentCard
+                key={item.id}
+                item={item}
+                onTryIt={handleTryIt}
+                onShare={item.demoType === 'renewal-card' ? setRenewalShareItem : setShareItem}
+              />
             ))}
           </div>
         ) : (
@@ -140,6 +147,13 @@ export default function ContentView() {
           item={shareItem}
           onClose={() => setShareItem(null)}
           preselectedCustomer={activeCustomer}
+        />
+      )}
+
+      {renewalShareItem && (
+        <RenewalShareFlow
+          item={renewalShareItem}
+          onClose={() => setRenewalShareItem(null)}
         />
       )}
     </>

@@ -53,6 +53,24 @@ export default function ContentCard({ item, onTryIt, onShare }) {
             Try it now →
           </button>
         </div>
+      ) : item.renewalOnly ? (
+        /* Renewal-only: Try it disabled, Share enabled */
+        <div className="border-t border-[#e4e7f0] flex">
+          <button
+            disabled
+            title="Select a customer to preview"
+            className="flex-1 py-2.5 text-xs font-semibold text-gray-300 cursor-not-allowed rounded-bl-xl"
+          >
+            Try it
+          </button>
+          <div className="w-px bg-[#e4e7f0]" />
+          <button
+            onClick={() => onShare(item)}
+            className="flex-1 py-2.5 text-xs font-semibold text-[#e8a020] hover:bg-amber-50 transition-colors rounded-br-xl active:bg-amber-100"
+          >
+            Share
+          </button>
+        </div>
       ) : (
         /* Standard: Try it + Share */
         <div className="border-t border-[#e4e7f0] flex">

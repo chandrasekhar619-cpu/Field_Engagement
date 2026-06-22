@@ -41,6 +41,13 @@ const MESSAGES = {
     'Thinker':   (name, link) => `Hi ${name}! Today's Life Word — a financial term, Wordle-style. Worth knowing. ${link}`,
     generic:     (name, link) => `Hi ${name}! Here's today's Life Word — a financial term explained simply through a quick game. ${link}`,
   },
+  'renewal-card': {
+    'Go-Getter': (name, link) => `Hi ${name} 👋 Your policy renewal is coming up — here's a quick update put together just for you. ${link}`,
+    'Thinker':   (name, link) => `Hi ${name} 👋 Your renewal details are ready for review. Take a look when you get a moment. ${link}`,
+    'Protector': (name, link) => `Hi ${name} 👋 Wanted to make sure your family's cover stays uninterrupted. Here's your renewal update. ${link}`,
+    'Caregiver': (name, link) => `Hi ${name} 👋 Just checking in — your renewal is coming up and I've put this together for you. ${link}`,
+    generic:     (name, link) => `Hi ${name} 👋 Your policy renewal is coming up. Here's a quick update for you. ${link}`,
+  },
   creative: {
     'Go-Getter': (name, link) => `Hi ${name}! Sharing this with you — keep winning. ${link}`,
     'Protector': (name, link) => `Hi ${name}! Sharing this with you and your family. ${link}`,
