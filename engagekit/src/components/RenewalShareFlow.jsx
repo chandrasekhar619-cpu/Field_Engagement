@@ -102,7 +102,10 @@ export default function RenewalShareFlow({ item, onClose }) {
         })
         .select('token')
         .single()
-      if (tokenErr || !tokenData?.token) throw tokenErr ?? new Error('No token returned')
+      if (tokenErr || !tokenData?.token) {
+        console.error('share_tokens insert failed:', tokenErr)
+        throw tokenErr ?? new Error('No token returned')
+      }
 
       const uuid = tokenData.token
 
@@ -129,7 +132,8 @@ export default function RenewalShareFlow({ item, onClose }) {
       setToken(uuid)
       setStep('link')
     } catch (err) {
-      setLinkError('Could not generate link. Please try again.')
+      const msg = err?.message || err?.details || 'Unknown error'
+      setLinkError(`Could not generate link: ${msg}`)
       console.error('Renewal link error:', err)
     } finally {
       setGenerating(false)

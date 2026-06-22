@@ -6,6 +6,7 @@ import ContentCard from './ContentCard'
 import CreativesModal from './CreativesModal'
 import ShareFlow from './ShareFlow'
 import RenewalShareFlow from './RenewalShareFlow'
+import RenewalPreviewModal from './RenewalPreviewModal'
 
 const CATEGORIES = ['All', 'Quiz', 'Calculator', 'Game', 'Mood', 'Festive', 'Occasion', 'Interactive Game', 'Read', 'Reminder']
 const LANGUAGES = ['EN', 'HI', 'MR', 'TE', 'TA', 'ML']
@@ -16,6 +17,7 @@ export default function ContentView() {
   const [creativeItem, setCreativeItem] = useState(null)
   const [shareItem, setShareItem] = useState(null)
   const [renewalShareItem, setRenewalShareItem] = useState(null)
+  const [renewalPreviewOpen, setRenewalPreviewOpen] = useState(false)
   const [activeCustomer, setActiveCustomer] = useState(null)
   const [firstCustomer, setFirstCustomer] = useState(null)
   const [searchParams, setSearchParams] = useSearchParams()
@@ -49,18 +51,7 @@ export default function ContentView() {
     if (item.demoType === 'creative') {
       setCreativeItem(item)
     } else if (item.demoType === 'renewal-card') {
-      // Card 2 (30-Day Reminder) with first available customer + placeholder values
-      const params = new URLSearchParams({
-        name:        firstCustomer?.name          ?? 'Sample Customer',
-        policy:      firstCustomer?.policy_number ?? '--',
-        due_date:    firstCustomer?.due_date      ?? '',
-        rcd:         firstCustomer?.issue_date    ?? '',
-        ppt:         '10',
-        premium:     '25000',
-        sum_assured: '500000',
-        maturity:    '850000',
-      })
-      window.open(`/renewalcardshtml/renewalcard2.html?${params}`, '_blank')
+      setRenewalPreviewOpen(true)
     } else {
       window.open(`/preview/${item.id}`, '_blank')
     }
@@ -178,6 +169,13 @@ export default function ContentView() {
         <RenewalShareFlow
           item={renewalShareItem}
           onClose={() => setRenewalShareItem(null)}
+        />
+      )}
+
+      {renewalPreviewOpen && (
+        <RenewalPreviewModal
+          customer={firstCustomer}
+          onClose={() => setRenewalPreviewOpen(false)}
         />
       )}
     </>
