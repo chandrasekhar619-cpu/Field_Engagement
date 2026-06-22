@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caregiver Nominee Card</title>
+    <style>
+        :root {
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --comfort-teal: #0d9488;
+            --light-teal-bg: #f0fdfa;
+            --border-color: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: #fafaf9;
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+            line-height: 1.5;
+        }
+
+        .safari-card {
+            width: 100%;
+            max-width: 400px;
+            background-color: var(--bg-card);
+            border: 1px solid #ccfbf1;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(13, 148, 136, 0.04);
+        }
+
+        .card-header {
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: var(--light-teal-bg);
+            color: var(--comfort-teal);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid #b2f5ea;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 19px;
+            font-weight: 700;
+            color: #115e59;
+            letter-spacing: -0.3px;
+            line-height: 1.3;
+        }
+
+        .card-description {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .data-block {
+            background-color: #fdfffe;
+            border: 1px dashed #b2f5ea;
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .value {
+            font-size: 18px;
+            font-weight: 800;
+            color: #115e59;
+        }
+
+        .card-footer {
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .rm-highlight {
+            color: var(--comfort-teal);
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+<div class="safari-card">
+    <div class="card-header">
+        <div class="badge" id="ui-badge">Safe Circle Active</div>
+        <h2 class="card-title" id="ui-headline">Your Nominee: The Heart of Your Plan</h2>
+    </div>
+
+    <p class="card-description" id="ui-body">
+        Your greatest joy is knowing your loved ones are looked after. Make sure your nominee details are up to date — it's the quiet work that keeps your circle safe.
+    </p>
+
+    <div class="data-grid">
+        <div class="data-block">
+            <span class="label">Annual Premium</span>
+            <span class="value" id="ui-annual-premium">--</span>
+        </div>
+        <div class="data-block">
+            <span class="label">Maturity Amount</span>
+            <span class="value" id="ui-maturity">--</span>
+        </div>
+        <div class="data-block">
+            <span class="label">Sum Assured</span>
+            <span class="value" id="ui-sum-assured">--</span>
+        </div>
+    </div>
+
+    <div class="card-footer" id="ui-rm-nudge">
+        Want to talk through your family protection details or confirm your plan? Reach out to your <span class="rm-highlight">Relationship Manager</span> for a friendly chat.
+    </div>
+</div>
+
+<script>
+    (function(){
+        var p=new URLSearchParams(window.location.search);
+        function g(k){ return p.get(k); }
+        function fmtRupee(v){ var n=parseInt(v); return isNaN(n)?'--':'₹'+n.toLocaleString('en-IN'); }
+
+        document.getElementById('ui-annual-premium').innerText=fmtRupee(g('premium'));
+        document.getElementById('ui-maturity').innerText=fmtRupee(g('maturity'));
+        document.getElementById('ui-sum-assured').innerText=fmtRupee(g('sum_assured'));
+    })();
+</script>
+
+</body>
+</html>

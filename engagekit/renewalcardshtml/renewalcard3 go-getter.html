@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go-Getter Payment Card</title>
+    <style>
+        :root {
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --premium-blue: #1d4ed8;
+            --hover-blue: #1e40af;
+            --light-blue-bg: #eff6ff;
+            --border-color: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: #fafafa;
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+            line-height: 1.5;
+        }
+
+        .action-card {
+            width: 100%;
+            max-width: 400px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 28px;
+            box-shadow: 0 10px 25px rgba(29, 78, 216, 0.06);
+        }
+
+        .card-header {
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: var(--light-blue-bg);
+            color: var(--premium-blue);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1e1b4b;
+            letter-spacing: -0.5px;
+        }
+
+        .card-description {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 22px;
+            line-height: 1.6;
+        }
+
+        .info-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .info-row {
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .value {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1e1b4b;
+        }
+
+        .value.highlighted {
+            color: var(--premium-blue);
+            font-size: 18px;
+        }
+
+        .payment-modes-section {
+            background-color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .payment-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .payment-icons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .icon-badge {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e1b4b;
+        }
+
+        .primary-button {
+            display: block;
+            background-color: var(--premium-blue);
+            color: #ffffff;
+            text-align: center;
+            padding: 14px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .primary-button:hover {
+            background-color: var(--hover-blue);
+        }
+
+        .card-footer {
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .rm-highlight {
+            color: var(--premium-blue);
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+<div class="action-card">
+    <div class="card-header">
+        <div class="badge" id="ui-badge">Final Step</div>
+        <h2 class="card-title" id="ui-headline">One Step to Stay Ahead</h2>
+    </div>
+
+    <p class="card-description" id="ui-body">
+        You don't leave things unfinished. Clear your premium now and keep your plan running at full strength.
+    </p>
+
+    <div class="info-grid">
+        <div class="info-row">
+            <span class="label">Policy Name</span>
+            <span class="value" id="ui-plan-name">--</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Due Date</span>
+            <span class="value" id="ui-due-date">--</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Premium Amount</span>
+            <span class="value highlighted" id="ui-premium-amount">--</span>
+        </div>
+    </div>
+
+    <div class="payment-modes-section">
+        <div class="payment-title">Preferred Checkout Options</div>
+        <div class="payment-icons">
+            <div class="icon-badge">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M7 14.5l5-5 5 5"/></svg>
+                <span class="icon-text">UPI</span>
+            </div>
+            <div class="icon-badge">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                <span class="icon-text">Debit / Credit Card</span>
+            </div>
+            <div class="icon-badge">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22h18M6 18v-7M10 18v-7M14 18v-7M18 18v-7M12 2L2 7v2h20V7L12 2z"/></svg>
+                <span class="icon-text">Net Banking</span>
+            </div>
+            <div class="icon-badge">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm3 8H9V7a3 3 0 0 1 6 0z"/></svg>
+                <span class="icon-text">Portal</span>
+            </div>
+        </div>
+    </div>
+
+    <a href="https://www.edelweisslife.in/login" class="primary-button" id="ui-portal-link">Pay Now</a>
+
+    <div class="card-footer" id="ui-rm-nudge">
+        Need a customised payment link or alternative options? Reach out to your <span class="rm-highlight">Relationship Manager</span>.
+    </div>
+</div>
+
+<script>
+    (function(){
+        var p=new URLSearchParams(window.location.search);
+        function g(k){ return p.get(k); }
+        function fmtRupee(v){ var n=parseInt(v); return isNaN(n)?'--':'₹'+n.toLocaleString('en-IN'); }
+        function fmtDate(s){
+            if(!s)return'--'; var d=new Date(s); if(isNaN(d.getTime()))return'--';
+            var m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return ('0'+d.getDate()).slice(-2)+' '+m[d.getMonth()]+' '+d.getFullYear();
+        }
+
+        document.getElementById('ui-plan-name').innerText=g('policy')||'--';
+        document.getElementById('ui-due-date').innerText=fmtDate(g('due_date'));
+        document.getElementById('ui-premium-amount').innerText=fmtRupee(g('premium'));
+    })();
+</script>
+
+</body>
+</html>

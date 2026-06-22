@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thinker Nominee Card</title>
+    <style>
+        :root {
+            --bg-card: #0f172a;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --go-green: #10b981;
+            --panel-bg: #1e293b;
+            --border-color: #334155;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: #020617;
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+            line-height: 1.5;
+        }
+
+        .safari-card {
+            width: 100%;
+            max-width: 400px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+        }
+
+        .card-header {
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: rgba(16, 185, 129, 0.12);
+            color: var(--go-green);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            line-height: 1.3;
+        }
+
+        .card-description {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .data-block {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .data-block.highlighted {
+            border-color: var(--go-green);
+            background: rgba(16, 185, 129, 0.02);
+        }
+
+        .label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .value.primary {
+            color: var(--go-green);
+        }
+
+        .card-footer {
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .rm-highlight {
+            color: var(--go-green);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<div class="safari-card">
+    <div class="card-header">
+        <div class="badge" id="ui-badge">Details Confirmed</div>
+        <h2 class="card-title" id="ui-headline">Your Nominee: Everything in Order</h2>
+    </div>
+
+    <p class="card-description" id="ui-body">
+        You build plans that hold up under scrutiny. Confirm your nominee details are current — it's the logical step to ensure your policy does exactly what it's supposed to.
+    </p>
+
+    <div class="data-grid">
+        <div class="data-block highlighted">
+            <span class="label">Annual Premium</span>
+            <span class="value primary" id="ui-annual-premium">--</span>
+        </div>
+        <div class="data-block">
+            <span class="label">Maturity Amount</span>
+            <span class="value" id="ui-maturity">--</span>
+        </div>
+        <div class="data-block">
+            <span class="label">Sum Assured</span>
+            <span class="value" id="ui-sum-assured">--</span>
+        </div>
+    </div>
+
+    <div class="card-footer" id="ui-rm-nudge">
+        Want to verify your coverage numbers or review payment records? Connect with your <span class="rm-highlight">Relationship Manager</span> for a clear, accurate overview.
+    </div>
+</div>
+
+<script>
+    (function(){
+        var p=new URLSearchParams(window.location.search);
+        function g(k){ return p.get(k); }
+        function fmtRupee(v){ var n=parseInt(v); return isNaN(n)?'--':'₹'+n.toLocaleString('en-IN'); }
+
+        document.getElementById('ui-annual-premium').innerText=fmtRupee(g('premium'));
+        document.getElementById('ui-maturity').innerText=fmtRupee(g('maturity'));
+        document.getElementById('ui-sum-assured').innerText=fmtRupee(g('sum_assured'));
+    })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renewal Payment Card</title>
+    <style>
+        :root {
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --electric-blue: #2563eb;
+            --hover-blue: #1d4ed8;
+            --light-blue-bg: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+            line-height: 1.5;
+        }
+
+        .action-card {
+            width: 100%;
+            max-width: 380px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .status-badge {
+            align-self: flex-start;
+            background: rgba(37, 99, 235, 0.08);
+            color: var(--electric-blue);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+            line-height: 1.25;
+        }
+
+        p {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .invoice-box {
+            background: var(--light-blue-bg);
+            border: 1px solid #edf2f7;
+            border-radius: 18px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .invoice-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .invoice-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-top: 4px;
+        }
+
+        .row-label {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .row-value {
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .invoice-row.total .row-label {
+            color: var(--electric-blue);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        .invoice-row.total .row-value {
+            color: var(--electric-blue);
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .payment-channels-box {
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .channels-title {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+
+        .channels-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            text-align: center;
+        }
+
+        .channel-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .channel-icon {
+            font-size: 18px;
+            background: rgba(37, 99, 235, 0.05);
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 1px solid rgba(37, 99, 235, 0.1);
+        }
+
+        .channel-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-main);
+            white-space: nowrap;
+        }
+
+        .gateway-btn {
+            display: block;
+            text-align: center;
+            background: var(--electric-blue);
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 700;
+            padding: 14px;
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+            transition: background 0.2s ease;
+        }
+
+        .gateway-btn:hover {
+            background: var(--hover-blue);
+        }
+
+        .card-footer {
+            border-top: 1px solid #f1f5f9;
+            padding-top: 14px;
+            font-size: 12.5px;
+            color: var(--text-muted);
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .rm-highlight {
+            color: var(--electric-blue);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<div class="action-card">
+
+    <div class="status-badge" id="ui-badge">Renewal Due Soon</div>
+
+    <h1 id="ui-headline">Your Premium Is Due</h1>
+
+    <p id="ui-body">Your policy premium is coming up for renewal. Pay now to keep your policy active and your cover uninterrupted.</p>
+
+    <div class="invoice-box">
+        <div class="invoice-row">
+            <span class="row-label">Policy Name</span>
+            <span class="row-value" id="ui-plan-name">--</span>
+        </div>
+        <div class="invoice-row">
+            <span class="row-label">Due Date</span>
+            <span class="row-value" id="ui-due-date">--</span>
+        </div>
+        <div class="invoice-row total">
+            <span class="row-label">Premium Due</span>
+            <span class="row-value" id="ui-premium-amount">--</span>
+        </div>
+    </div>
+
+    <div class="payment-channels-box">
+        <span class="channels-title">Supported Payment Modes</span>
+        <div class="channels-grid">
+            <div class="channel-item">
+                <div class="channel-icon">📱</div>
+                <span class="channel-label">UPI</span>
+            </div>
+            <div class="channel-item">
+                <div class="channel-icon">💳</div>
+                <span class="channel-label">Debit / Credit Card</span>
+            </div>
+            <div class="channel-item">
+                <div class="channel-icon">🏦</div>
+                <span class="channel-label">Net Banking</span>
+            </div>
+            <div class="channel-item">
+                <div class="channel-icon">🌐</div>
+                <span class="channel-label">Portal</span>
+            </div>
+        </div>
+    </div>
+
+    <a href="https://www.edelweisslife.in/login" class="gateway-btn" id="ui-portal-link">Pay Now</a>
+
+    <div class="card-footer" id="ui-rm-nudge">
+        Need help with payment or have questions? Contact your <span class="rm-highlight">Relationship Manager</span>.
+    </div>
+
+</div>
+
+<script>
+    (function(){
+        var p=new URLSearchParams(window.location.search);
+        function g(k){ return p.get(k); }
+        function fmtRupee(v){ var n=parseInt(v); return isNaN(n)?'--':'₹'+n.toLocaleString('en-IN'); }
+        function fmtDate(s){
+            if(!s)return'--'; var d=new Date(s); if(isNaN(d.getTime()))return'--';
+            var m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return ('0'+d.getDate()).slice(-2)+' '+m[d.getMonth()]+' '+d.getFullYear();
+        }
+
+        document.getElementById('ui-plan-name').innerText=g('policy')||'--';
+        document.getElementById('ui-due-date').innerText=fmtDate(g('due_date'));
+        document.getElementById('ui-premium-amount').innerText=fmtRupee(g('premium'));
+    })();
+</script>
+
+</body>
+</html>

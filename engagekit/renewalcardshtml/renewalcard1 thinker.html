@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thinker Renewal Reminder</title>
+    <style>
+        :root {
+            --bg-card: #0f172a;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --go-green: #10b981;
+            --glow-green: rgba(16, 185, 129, 0.15);
+            --track-bg: #1e293b;
+            --accent-amber: #f59e0b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #020617; color: var(--text-main); font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 16px; }
+        .streak-card { width: 100%; max-width: 380px; background: var(--bg-card); border: 1px solid #334155; border-radius: 24px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 20px; }
+        .meta-badge { align-self: flex-start; background: rgba(16, 185, 129, 0.12); color: var(--go-green); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 4px 12px; border-radius: 20px; }
+        h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.25; }
+        p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+        .info-container { background: #1e293b; border: 1px solid #334155; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+        .status-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+        .status-title { color: var(--text-main); }
+        .status-count { color: var(--go-green); }
+        .progress-wrapper { display: flex; flex-direction: column; gap: 6px; }
+        .bar-track { width: 100%; height: 8px; background: var(--track-bg); border-radius: 10px; overflow: hidden; position: relative; }
+        .bar-filled { height: 100%; background: var(--go-green); width: 0%; transition: width 1s ease-in-out; border-radius: 10px; }
+        .bar-labels { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-muted); }
+        .current-marker { color: var(--go-green); font-weight: 700; }
+        .premium-breakdown-box { background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 14px; padding: 14px; display: flex; justify-content: space-between; align-items: center; }
+        .amount-display { font-size: 20px; font-weight: 800; color: var(--text-main); }
+        .due-date-subtext { font-size: 12px; color: var(--text-muted); text-align: right; }
+        .action-button { background: var(--go-green); color: #ffffff; text-align: center; padding: 14px; border-radius: 16px; font-size: 15px; font-weight: 700; text-decoration: none; box-shadow: 0 4px 12px var(--glow-green); transition: all 0.2s ease; }
+        .warning-banner { font-size: 12px; color: var(--accent-amber); font-weight: 600; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="streak-card">
+        <div class="meta-badge" id="ui-badge">Payment Due</div>
+        <h1 id="ui-headline">Your Next Payment Is Due</h1>
+        <p id="ui-body">Your premium is coming up. Stay on schedule to keep your policy performing exactly as planned.</p>
+        <div class="info-container">
+            <div class="status-row">
+                <span class="status-title">Years Paid</span>
+                <span class="status-count" id="ui-text-years">--</span>
+            </div>
+            <div class="progress-wrapper">
+                <div class="bar-track"><div class="bar-filled" id="ui-bar-fill"></div></div>
+                <div class="bar-labels">
+                    <span id="ui-status-count">--</span>
+                    <span class="current-marker" id="ui-progress-ratio">--</span>
+                    <span id="ui-total-term">--</span>
+                </div>
+            </div>
+        </div>
+        <div class="premium-breakdown-box">
+            <div class="amount-display" id="ui-premium-amount">--</div>
+            <div class="due-date-subtext" id="ui-due-date">--</div>
+        </div>
+        <div class="warning-banner" id="ui-warning-days" style="display:none;"></div>
+        <a href="https://www.edelweisslife.in/login" class="action-button" id="ui-cta">Confirm Payment</a>
+    </div>
+    <script>
+        (function(){
+            var p = new URLSearchParams(window.location.search);
+            function g(k){ return p.get(k); }
+            function fmtRupee(v){ var n=parseInt(v); return isNaN(n)?'--':'₹'+n.toLocaleString('en-IN'); }
+            function fmtDate(s){
+                if(!s)return'--'; var d=new Date(s); if(isNaN(d.getTime()))return'--';
+                var m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                return ('0'+d.getDate()).slice(-2)+' '+m[d.getMonth()]+' '+d.getFullYear();
+            }
+
+            var rcdStr=g('rcd'), rcd=rcdStr?new Date(rcdStr):null;
+            var today=new Date();
+            var yearsPaid=(rcd&&!isNaN(rcd.getTime()))?Math.floor((today-rcd)/(365.25*24*60*60*1000)):0;
+
+            var dueDateStr=g('due_date'), dueDate=dueDateStr?new Date(dueDateStr):null;
+            var isPostDue=dueDate&&!isNaN(dueDate.getTime())?today>dueDate:false;
+
+            var ppt=parseInt(g('ppt'))||0;
+
+            var badge,headline,body;
+            if(isPostDue){
+                badge='Past Due';
+                headline='Immediate Action Required';
+                body='Your premium is overdue and your policy is in its grace period. Clear it now — every day of delay increases the risk of a lapse.';
+            } else {
+                badge='Payment Due';
+                headline='Your Next Payment Is Due';
+                body='Your premium is coming up. Stay on schedule to keep your policy performing exactly as planned.';
+            }
+
+            document.getElementById('ui-badge').innerText=badge;
+            document.getElementById('ui-headline').innerText=headline;
+            document.getElementById('ui-body').innerText=body;
+
+            var pct=ppt>0?Math.min(100,(yearsPaid/ppt)*100):0;
+            document.getElementById('ui-bar-fill').style.width=pct+'%';
+            document.getElementById('ui-text-years').innerText=yearsPaid+' year'+(yearsPaid!==1?'s':'')+' paid';
+            document.getElementById('ui-status-count').innerText='Year '+(yearsPaid+1);
+            document.getElementById('ui-progress-ratio').innerText='Paid '+yearsPaid+' of '+(ppt||'--')+' Years';
+            document.getElementById('ui-total-term').innerText=ppt?ppt+' Yrs':'--';
+            document.getElementById('ui-premium-amount').innerText=fmtRupee(g('premium'));
+            document.getElementById('ui-due-date').innerText='Due: '+fmtDate(dueDateStr);
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nominee Reminder Card</title>
+    <style>
+        :root {
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --electric-blue: #2563eb;
+            --light-blue-bg: #f8fafc;
+            --border-color: #e2e8f0;
+            --accent-gold: #b45309;
+            --gold-bg: rgba(217, 119, 6, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+            line-height: 1.5;
+        }
+
+        .emotional-card {
+            width: 100%;
+            max-width: 380px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .status-badge {
+            align-self: flex-start;
+            background: rgba(37, 99, 235, 0.08);
+            color: var(--electric-blue);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+            line-height: 1.25;
+        }
+
+        .story-box {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid #edf2f7;
+        }
+
+        .comparison-container {
+            background: var(--light-blue-bg);
+            border: 1px solid #edf2f7;
+            border-radius: 18px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .split-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .split-box {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 4px;
+        }
+
+        .split-box.right {
+            border-left: 1px solid var(--border-color);
+            padding-left: 16px;
+        }
+
+        .box-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .box-value {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .shield-highlight-box {
+            background: var(--gold-bg);
+            border: 1px solid rgba(217, 119, 6, 0.15);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            margin-top: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .shield-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1.4;
+        }
+
+        .shield-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent-gold);
+        }
+
+        .card-footer {
+            border-top: 1px solid #f1f5f9;
+            padding-top: 14px;
+            font-size: 12.5px;
+            color: var(--text-muted);
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .rm-highlight {
+            color: var(--electric-blue);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<div class="emotional-card">
+
+    <div class="status-badge" id="ui-badge">Policy Active</div>
+
+    <h1 id="ui-headline">Your Nominee: Keep the Details Current</h1>
+
+    <div class="story-box" id="ui-body">
+        Your policy is active and your renewal is coming up. Make sure your nominee details are up to date — it's a simple step that keeps your cover complete.
+    </div>
+
+    <div class="comparison-container">
+        <div class="split-grid">
+            <div class="split-box">
+                <span class="box-label">Annual Premium</span>
+                <span class="box-value" id="ui-annual-premium">--</span>
+            </div>
+
+            <div class="split-box right">
+                <span class="box-label">Maturity Amount</span>
+                <span class="box-value" id="ui-maturity">--</span>
+            </div>
+        </div>
+
+        <div class="shield-highlight-box">
+            <span class="shield-label">Sum Assured</span>
+            <span class="shield-value" id="ui-sum-assured">--</span>
+        </div>
+    </div>
+
+    <div class="card-footer" id="ui-rm-nudge">
+        Have questions about your policy or nominee details? Reach out to your <span class="rm-highlight">Relationship Manager</span> for assistance.
+    </div>
+
+</div>
+
+<script>
+    (function(){
+        var p=new URLSearchParams(window.location.search);
+        function g(k){ return p.get(k); }
+        function fmtRupee(v){ var n=parseInt(v); return isNaN(n)?'--':'₹'+n.toLocaleString('en-IN'); }
+
+        document.getElementById('ui-annual-premium').innerText=fmtRupee(g('premium'));
+        document.getElementById('ui-maturity').innerText=fmtRupee(g('maturity'));
+        document.getElementById('ui-sum-assured').innerText=fmtRupee(g('sum_assured'));
+    })();
+</script>
+
+</body>
+</html>

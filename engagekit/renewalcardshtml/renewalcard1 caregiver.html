@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caregiver Renewal Reminder</title>
+    <style>
+        :root {
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --comfort-teal: #0d9488;
+            --light-teal-bg: #f0fdfa;
+            --track-bg: #f1f5f9;
+            --soft-amber: #d97706;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #fafaf9; color: var(--text-main); font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 16px; }
+        .streak-card { width: 100%; max-width: 380px; background: var(--bg-card); border: 1px solid #ccfbf1; border-radius: 24px; padding: 24px; box-shadow: 0 10px 30px rgba(13, 148, 136, 0.04); display: flex; flex-direction: column; gap: 20px; }
+        .meta-badge { align-self: flex-start; background: #f0fdfa; color: var(--comfort-teal); font-size: 11px; font-weight: 700; padding: 6px 14px; border-radius: 20px; border: 1px solid #b2f5ea; }
+        h1 { font-size: 21px; font-weight: 700; color: #115e59; letter-spacing: -0.3px; }
+        p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+        .info-container { background: #fdfdfd; border: 1px solid #f3f4f6; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+        .status-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; color: #115e59; }
+        .progress-wrapper { display: flex; flex-direction: column; gap: 6px; }
+        .bar-track { width: 100%; height: 8px; background: var(--track-bg); border-radius: 10px; overflow: hidden; }
+        .bar-filled { height: 100%; background: linear-gradient(90deg, #2dd4bf, var(--comfort-teal)); width: 0%; transition: width 1s ease-in-out; border-radius: 10px; }
+        .bar-labels { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-muted); }
+        .current-marker { color: var(--comfort-teal); font-weight: 700; }
+        .premium-breakdown-box { background: #fdfffe; border: 1px dashed #b2f5ea; border-radius: 14px; padding: 14px; display: flex; justify-content: space-between; align-items: center; }
+        .amount-display { font-size: 20px; font-weight: 800; color: #115e59; }
+        .due-date-subtext { font-size: 12px; color: var(--text-muted); }
+        .action-button { background: var(--comfort-teal); color: #ffffff; text-align: center; padding: 14px; border-radius: 16px; font-size: 15px; font-weight: 700; text-decoration: none; box-shadow: 0 4px 14px rgba(13, 148, 136, 0.1); }
+        .warning-banner { font-size: 12px; color: var(--soft-amber); font-weight: 600; text-align: center; background: #fffbeb; padding: 8px; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="streak-card">
+        <div class="meta-badge" id="ui-badge">Due Soon</div>
+        <h1 id="ui-headline">Keep Your Circle of Care Going</h1>
+        <p id="ui-body">Your premium is due. A simple payment now keeps your loved ones protected without any break in cover.</p>
+        <div class="info-container">
+            <div class="status-row">
+                <span>Years Paid</span>
+                <span id="ui-text-years">--</span>
+            </div>
+            <div class="progress-wrapper">
+                <div class="bar-track"><div class="bar-filled" id="ui-bar-fill"></div></div>
+                <div class="bar-labels">
+                    <span id="ui-status-count">--</span>
+                    <span class="current-marker" id="ui-progress-ratio">--</span>
+                    <span id="ui-total-term">--</span>
+                </div>
+            </div>
+        </div>
+        <div class="premium-breakdown-box">
+            <div class="amount-display" id="ui-premium-amount">--</div>
+            <div class="due-date-subtext" id="ui-due-date">--</div>
+        </div>
+        <div class="warning-banner" id="ui-warning-days" style="display:none;"></div>
+        <a href="https://www.edelweisslife.in/login" class="action-button" id="ui-cta">Complete Renewal</a>
+    </div>
+    <script>
+        (function(){
+            var p=new URLSearchParams(window.location.search);
+            function g(k){ return p.get(k); }
+            function fmtRupee(v){ var n=parseInt(v); return isNaN(n)?'--':'₹'+n.toLocaleString('en-IN'); }
+            function fmtDate(s){
+                if(!s)return'--'; var d=new Date(s); if(isNaN(d.getTime()))return'--';
+                var m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                return ('0'+d.getDate()).slice(-2)+' '+m[d.getMonth()]+' '+d.getFullYear();
+            }
+
+            var rcdStr=g('rcd'), rcd=rcdStr?new Date(rcdStr):null;
+            var today=new Date();
+            var yearsPaid=(rcd&&!isNaN(rcd.getTime()))?Math.floor((today-rcd)/(365.25*24*60*60*1000)):0;
+
+            var dueDateStr=g('due_date'), dueDate=dueDateStr?new Date(dueDateStr):null;
+            var isPostDue=dueDate&&!isNaN(dueDate.getTime())?today>dueDate:false;
+
+            var ppt=parseInt(g('ppt'))||0;
+
+            var badge,headline,body;
+            if(isPostDue){
+                badge='Past Due';
+                headline='Don\'t Leave Your Loved Ones Unprotected';
+                body='Your premium is past due and your policy is in its grace period. Take care of it now so your family stays fully covered.';
+            } else {
+                badge='Due Soon';
+                headline='Keep Your Circle of Care Going';
+                body='Your premium is due. A simple payment now keeps your loved ones protected without any break in cover.';
+            }
+
+            document.getElementById('ui-badge').innerText=badge;
+            document.getElementById('ui-headline').innerText=headline;
+            document.getElementById('ui-body').innerText=body;
+
+            var pct=ppt>0?Math.min(100,(yearsPaid/ppt)*100):0;
+            document.getElementById('ui-bar-fill').style.width=pct+'%';
+            document.getElementById('ui-text-years').innerText=yearsPaid+' year'+(yearsPaid!==1?'s':'')+' paid';
+            document.getElementById('ui-status-count').innerText='Year '+(yearsPaid+1)+' running';
+            document.getElementById('ui-progress-ratio').innerText=yearsPaid+' of '+(ppt||'--')+' years';
+            document.getElementById('ui-total-term').innerText=ppt?ppt+' Yrs':'--';
+            document.getElementById('ui-premium-amount').innerText=fmtRupee(g('premium'));
+            document.getElementById('ui-due-date').innerText='Due: '+fmtDate(dueDateStr);
+        })();
+    </script>
+</body>
+</html>
