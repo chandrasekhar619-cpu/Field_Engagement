@@ -17,6 +17,7 @@ export default function ContentView() {
   const [shareItem, setShareItem] = useState(null)
   const [renewalShareItem, setRenewalShareItem] = useState(null)
   const [activeCustomer, setActiveCustomer] = useState(null)
+  const [firstCustomer, setFirstCustomer] = useState(null)
   const [searchParams, setSearchParams] = useSearchParams()
 
   const customerId = searchParams.get('customerId')
@@ -32,11 +33,34 @@ export default function ContentView() {
       .then(({ data }) => setActiveCustomer(data ?? null))
   }, [customerId])
 
+  // Preload first available customer for the Renewal Reminder "Try it" preview
+  useEffect(() => {
+    supabase
+      .from('customers')
+      .select('id, name, policy_number, issue_date, due_date')
+      .limit(1)
+      .single()
+      .then(({ data }) => setFirstCustomer(data ?? null))
+  }, [])
+
   function clearCustomerContext() { setSearchParams({}) }
 
   function handleTryIt(item) {
     if (item.demoType === 'creative') {
       setCreativeItem(item)
+    } else if (item.demoType === 'renewal-card') {
+      // Card 2 (30-Day Reminder) with first available customer + placeholder values
+      const params = new URLSearchParams({
+        name:        firstCustomer?.name          ?? 'Sample Customer',
+        policy:      firstCustomer?.policy_number ?? '--',
+        due_date:    firstCustomer?.due_date      ?? '',
+        rcd:         firstCustomer?.issue_date    ?? '',
+        ppt:         '10',
+        premium:     '25000',
+        sum_assured: '500000',
+        maturity:    '850000',
+      })
+      window.open(`/renewalcardshtml/renewalcard2.html?${params}`, '_blank')
     } else {
       window.open(`/preview/${item.id}`, '_blank')
     }

@@ -24,7 +24,7 @@ const CARD_OPTIONS = [
   { label: 'Final Reminder',   desc: 'Send in the last few days before and during grace period', cardNumber: 1 },
 ]
 
-const EMPTY_DETAILS = { due_date: '', premium: '', ppt: '', sum_assured: '', maturity: '' }
+const EMPTY_DETAILS = { premium: '', ppt: '', sum_assured: '', maturity: '' }
 
 export default function RenewalShareFlow({ item, onClose }) {
   const { user } = useAuth()
@@ -71,11 +71,10 @@ export default function RenewalShareFlow({ item, onClose }) {
 
   function validateDetails() {
     const errs = {}
-    if (!details.due_date)   errs.due_date   = 'Required'
-    if (!details.premium)    errs.premium    = 'Required'
-    if (!details.ppt)        errs.ppt        = 'Required'
+    if (!details.premium)     errs.premium     = 'Required'
+    if (!details.ppt)         errs.ppt         = 'Required'
     if (!details.sum_assured) errs.sum_assured = 'Required'
-    if (!details.maturity)   errs.maturity   = 'Required'
+    if (!details.maturity)    errs.maturity    = 'Required'
     setDetailErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -98,7 +97,6 @@ export default function RenewalShareFlow({ item, onClose }) {
             ppt:          parseInt(details.ppt),
             sum_assured:  parseInt(details.sum_assured),
             maturity:     parseInt(details.maturity),
-            due_date:     details.due_date,
             premium:      parseInt(details.premium),
           },
         })
@@ -329,11 +327,10 @@ export default function RenewalShareFlow({ item, onClose }) {
 
             <div className="overflow-y-auto flex-1 p-4 flex flex-col gap-4">
               {[
-                { field: 'due_date',    label: 'Renewal Due Date',         type: 'date',   placeholder: '' },
-                { field: 'premium',     label: 'Annual Premium (₹)',        type: 'number', placeholder: 'e.g. 24,500' },
+                { field: 'premium',     label: 'Annual Premium (₹)',         type: 'number', placeholder: 'e.g. 24,500' },
                 { field: 'ppt',         label: 'Premium Payment Term (yrs)', type: 'number', placeholder: 'e.g. 10' },
-                { field: 'sum_assured', label: 'Sum Assured (₹)',            type: 'number', placeholder: 'e.g. 5,00,000' },
-                { field: 'maturity',    label: 'Maturity Amount (₹)',        type: 'number', placeholder: 'e.g. 8,50,000' },
+                { field: 'sum_assured', label: 'Sum Assured (₹)',             type: 'number', placeholder: 'e.g. 5,00,000' },
+                { field: 'maturity',    label: 'Maturity Amount (₹)',         type: 'number', placeholder: 'e.g. 8,50,000' },
               ].map(({ field, label, type, placeholder }) => (
                 <div key={field}>
                   <label className="text-[#0f1f3d] text-xs font-semibold block mb-1.5">
