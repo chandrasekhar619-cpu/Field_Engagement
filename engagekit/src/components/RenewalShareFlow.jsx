@@ -125,7 +125,7 @@ export default function RenewalShareFlow({ item, onClose }) {
         rpm_device:    navigator.userAgent,
         rpm_name:      user?.name    ?? null,
         customer_name: selected.name ?? null,
-        card_number:   selectedCard,
+        reminder_type: { 1: 'Final Reminder', 2: '30-Day Reminder', 3: '2-Week Reminder' }[selectedCard],
       })
       if (linkErr) throw linkErr
 
