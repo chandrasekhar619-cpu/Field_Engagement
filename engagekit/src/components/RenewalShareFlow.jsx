@@ -125,6 +125,7 @@ export default function RenewalShareFlow({ item, onClose }) {
         rpm_device:    navigator.userAgent,
         rpm_name:      user?.name    ?? null,
         customer_name: selected.name ?? null,
+        card_number:   selectedCard,
       })
       if (linkErr) throw linkErr
 
