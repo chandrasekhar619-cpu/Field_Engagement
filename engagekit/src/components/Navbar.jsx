@@ -6,12 +6,15 @@ function getInitials(name) {
   return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
 }
 
+const ADMIN_PHONES = ['8320978236', '9404557489']
+
 export default function Navbar({ activeView }) {
   const navigate = useNavigate()
   const { user } = useAuth()
 
   const firstName = user?.name?.split(' ')[0] || 'User'
-  const initials = getInitials(user?.name)
+  const initials  = getInitials(user?.name)
+  const isAdmin   = ADMIN_PHONES.includes(user?.phone)
 
   return (
     <nav className="fixed top-0 left-0 right-0 h-[60px] bg-[#0f1f3d] flex items-center px-4 md:px-6 z-50 shadow-md">
@@ -56,6 +59,18 @@ export default function Navbar({ activeView }) {
         >
           📘
         </button>
+        {isAdmin && (
+          <button
+            onClick={() => navigate('/app/admin')}
+            className={`px-3 md:px-4 py-1.5 rounded-full text-xs md:text-sm font-medium transition-all ${
+              activeView === 'admin'
+                ? 'bg-white text-[#0f1f3d] shadow-sm'
+                : 'text-white/60 hover:text-white'
+            }`}
+          >
+            Dashboard
+          </button>
+        )}
       </div>
 
       {/* Right — admin shortcut + user */}

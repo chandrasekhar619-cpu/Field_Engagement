@@ -10,6 +10,7 @@ import PreviewPage from './pages/PreviewPage'
 import CustomerLanding from './pages/CustomerLanding'
 import AdminUpload from './pages/AdminUpload'
 import ReferencePage from './pages/ReferencePage'
+import AdminDashboard from './pages/AdminDashboard'
 import './index.css'
 
 export default function App() {
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/preview/:contentId" element={<PreviewPage />} />
           <Route path="/c" element={<CustomerLanding />} />
           <Route path="/app/reference" element={<ReferencePage />} />
+          <Route path="/app/admin" element={<AdminDashboard />} />
           <Route path="/admin/upload" element={<AdminUpload />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
