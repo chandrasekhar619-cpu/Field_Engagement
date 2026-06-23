@@ -42,6 +42,7 @@ export default function RenewalShareFlow({ item, onClose }) {
   const [copied,          setCopied]          = useState(false)
   const [shareImageFile,  setShareImageFile]  = useState(null)
   const [imageGenerating, setImageGenerating] = useState(false)
+  const [prefilled,       setPrefilled]       = useState(false)
 
   const [allCustomers,     setAllCustomers]     = useState([])
   const [customersLoading, setCustomersLoading] = useState(false)
@@ -99,6 +100,27 @@ export default function RenewalShareFlow({ item, onClose }) {
       )
     }))
   }, [step]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function handleSelectCustomer(c) {
+    setSelected(c)
+    setPrefilled(false)
+    setDetails(EMPTY_DETAILS)
+    if (!c.policy_number) return
+    const { data } = await supabase
+      .from('policy_metadata')
+      .select('premium, ppt, sum_assured, maturity')
+      .eq('policy_number', c.policy_number)
+      .single()
+    if (data) {
+      setDetails({
+        premium:     data.premium     != null ? String(data.premium)     : '',
+        ppt:         data.ppt         != null ? String(data.ppt)         : '',
+        sum_assured: data.sum_assured != null ? String(data.sum_assured) : '',
+        maturity:    data.maturity    != null ? String(data.maturity)    : '',
+      })
+      setPrefilled(true)
+    }
+  }
 
   function validateDetails() {
     const errs = {}
@@ -159,6 +181,17 @@ export default function RenewalShareFlow({ item, onClose }) {
         reminder_type: { 1: 'Final Reminder', 2: '30-Day Reminder', 3: '2-Week Reminder' }[selectedCard],
       })
       if (linkErr) throw linkErr
+
+      // Fire-and-forget — store values so the next share for this policy auto-fills
+      supabase.from('policy_metadata').upsert({
+        policy_number: selected.policy_number,
+        premium:       parseInt(details.premium),
+        ppt:           parseInt(details.ppt),
+        sum_assured:   parseInt(details.sum_assured),
+        maturity:      parseInt(details.maturity),
+        updated_at:    new Date().toISOString(),
+      }, { onConflict: 'policy_number' })
+        .then(({ error }) => { if (error) console.error('policy_metadata upsert failed:', error) })
 
       setToken(uuid)
       setStep('link')
@@ -321,7 +354,7 @@ export default function RenewalShareFlow({ item, onClose }) {
                   return (
                     <button
                       key={c.id}
-                      onClick={() => setSelected(c)}
+                      onClick={() => handleSelectCustomer(c)}
                       className={`w-full flex items-center gap-3 px-4 py-3.5 border-b border-[#e4e7f0] text-left transition-all ${
                         isSelected ? 'bg-[#0f1f3d]/[0.04] border-l-[3px] border-l-[#0f1f3d]' : 'hover:bg-gray-50'
                       }`}
@@ -414,6 +447,9 @@ export default function RenewalShareFlow({ item, onClose }) {
             </div>
 
             <div className="p-4 border-t border-[#e4e7f0] flex-shrink-0">
+              {prefilled && (
+                <p className="text-gray-400 text-xs mb-2">Pre-filled from last entry</p>
+              )}
               {linkError && <p className="text-red-400 text-xs mb-2">{linkError}</p>}
               <button
                 onClick={generateLink}
