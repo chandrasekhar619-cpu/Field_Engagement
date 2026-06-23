@@ -101,33 +101,6 @@ export default function CustomerLanding() {
         }
         setCustomer(customerData)
 
-        // 3a. Renewal card — handled separately (no contentItems lookup needed)
-        if (shareToken.engagement_type === 'renewal_card') {
-          const { data: linkRecord } = await supabase
-            .from('links').select('*').eq('token', token).single()
-          if (cancelled) return
-          if (linkRecord) setLink(linkRecord)
-          setContent({ demoType: 'renewal-card', metadata: shareToken.metadata })
-
-          const ip = await fetchIp()
-          if (cancelled) return
-          setCustomerIp(ip)
-
-          if (!openedRecordedRef.current && linkRecord) {
-            openedRecordedRef.current = true
-            await supabase.from('interactions').insert({
-              link_id:         linkRecord.id,
-              customer_id:     shareToken.customer_id ?? null,
-              rpm_id:          linkRecord.rpm_id ?? null,
-              action:          'opened',
-              customer_ip:     ip,
-              customer_device: navigator.userAgent,
-              steps:           [],
-            })
-          }
-          return
-        }
-
         // 3. Look up the link record for content_id and RPM metadata
         const { data: linkRecord, error: linkErr } = await supabase
           .from('links')
@@ -144,11 +117,21 @@ export default function CustomerLanding() {
 
         // 4. Resolve content from local mock (content_id is the item id string)
         const item = contentItems.find(c => c.id === linkRecord.content_id)
-        if (!item || !DEMOS[item.demoType]) {
+        if (!item) {
           setError('The content for this link could not be loaded.')
           return
         }
-        setContent(item)
+
+        if (item.demoType === 'renewal-card') {
+          // Renewal cards route via links.content_id like all other engagements.
+          // Metadata (card_number, ppt, etc.) is read from share_tokens.metadata.
+          setContent({ demoType: 'renewal-card', metadata: shareToken.metadata })
+        } else if (!DEMOS[item.demoType]) {
+          setError('The content for this link could not be loaded.')
+          return
+        } else {
+          setContent(item)
+        }
 
         // 5. Capture customer IP
         const ip = await fetchIp()

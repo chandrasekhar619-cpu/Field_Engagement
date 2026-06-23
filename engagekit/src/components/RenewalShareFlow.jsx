@@ -89,9 +89,8 @@ export default function RenewalShareFlow({ item, onClose }) {
       const { data: tokenData, error: tokenErr } = await supabase
         .from('share_tokens')
         .insert({
-          customer_id:     selected.id,
-          created_by:      authUser?.id ?? null,
-          engagement_type: 'renewal_card',
+          customer_id: selected.id,
+          created_by:  authUser?.id ?? null,
           metadata: {
             card_number:  selectedCard,
             ppt:          parseInt(details.ppt),
