@@ -31,7 +31,6 @@ const HEADLINES = {
   },
 }
 
-const CARD_LABEL = { 1: 'Final Reminder', 2: '30-Day Reminder', 3: '2-Week Reminder' }
 
 // premium_due_date is stored as DD-MM-YYYY
 function parseDDMMYYYY(str) {
@@ -70,7 +69,6 @@ const RenewalShareCard = forwardRef(function RenewalShareCard(
   const headlineKey = cardNumber === 1 ? (isPostDue ? '1_post' : '1_pre') : cardNumber
   const bucket      = HEADLINES[headlineKey] ?? HEADLINES[3]
   const headline    = bucket[persona] ?? bucket.generic
-  const cardLabel   = CARD_LABEL[cardNumber] ?? 'Renewal Reminder'
   const formattedDate = formatDate(dueDate)
 
   return (
@@ -91,20 +89,6 @@ const RenewalShareCard = forwardRef(function RenewalShareCard(
 
       {/* Headline section */}
       <div style={{ padding: '28px 32px 26px', flexShrink: 0 }}>
-        <div style={{
-          display:       'inline-block',
-          fontSize:      10,
-          fontWeight:    700,
-          color:         '#64748b',
-          textTransform: 'uppercase',
-          letterSpacing: '0.09em',
-          background:    '#f1f5f9',
-          borderRadius:  4,
-          padding:       '4px 8px',
-          marginBottom:  16,
-        }}>
-          {cardLabel}
-        </div>
         <p style={{ margin: 0, fontSize: 22, fontWeight: 700, color: '#0f1f3d', lineHeight: 1.38 }}>
           {headline}
         </p>
