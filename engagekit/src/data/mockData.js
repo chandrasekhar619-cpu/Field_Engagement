@@ -110,18 +110,6 @@ export const contentItems = [
     trialOnly: true,
     previewSrc: '/previews/book-insight.html',
   },
-  {
-    id: 'renewal-streak',
-    emoji: '🔥',
-    category: 'Reminder',
-    title: 'Renewal Streak',
-    description: "A gamified renewal reminder showing the customer's payment streak and premium due details.",
-    personas: [],
-    languages: ['EN'],
-    demoType: 'trial',
-    trialOnly: true,
-    previewSrc: '/previews/renewal-streak.html',
-  },
 ]
 
 export const customers = [
