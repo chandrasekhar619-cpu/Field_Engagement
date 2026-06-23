@@ -33,9 +33,17 @@ const HEADLINES = {
 
 const CARD_LABEL = { 1: 'Final Reminder', 2: '30-Day Reminder', 3: '2-Week Reminder' }
 
+// premium_due_date is stored as DD-MM-YYYY
+function parseDDMMYYYY(str) {
+  if (!str) return null
+  const [day, month, year] = str.split('-')
+  if (!day || !month || !year) return null
+  return new Date(`${year}-${month}-${day}T00:00:00`)
+}
+
 function formatDate(dateStr) {
-  if (!dateStr) return null
-  const d = new Date(dateStr + 'T00:00:00')
+  const d = parseDDMMYYYY(dateStr)
+  if (!d || isNaN(d)) return null
   return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
@@ -57,7 +65,8 @@ const RenewalShareCard = forwardRef(function RenewalShareCard(
   { cardNumber, persona, customerName, policyName, dueDate },
   ref
 ) {
-  const isPostDue = dueDate ? new Date() > new Date(dueDate + 'T00:00:00') : false
+  const parsedDue = parseDDMMYYYY(dueDate)
+  const isPostDue = parsedDue ? new Date() > parsedDue : false
   const headlineKey = cardNumber === 1 ? (isPostDue ? '1_post' : '1_pre') : cardNumber
   const bucket      = HEADLINES[headlineKey] ?? HEADLINES[3]
   const headline    = bucket[persona] ?? bucket.generic

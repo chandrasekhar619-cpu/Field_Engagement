@@ -57,7 +57,7 @@ export default function RenewalShareFlow({ item, onClose }) {
     debounceRef.current = setTimeout(() => {
       supabase
         .from('customers')
-        .select('id, name, policy_number, policy_type, persona, due_date')
+        .select('id, name, policy_number, policy_type, persona, premium_due_date')
         .or(`name.ilike.%${term}%,policy_number.ilike.%${term}%`)
         .order('name', { ascending: true })
         .limit(20)
@@ -210,7 +210,7 @@ export default function RenewalShareFlow({ item, onClose }) {
             persona={selected?.persona}
             customerName={selected?.name}
             policyName={selected?.policyNumber}
-            dueDate={selected?.due_date}
+            dueDate={selected?.premium_due_date}
           />
         </div>
       )}
