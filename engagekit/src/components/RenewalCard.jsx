@@ -41,13 +41,25 @@ export default function RenewalCard({ customer, metadata, rpmName, token, linkId
 
   const src = `/renewalcardshtml/${encodeURIComponent(fileName)}?${params.toString()}`
 
-  function handleLoad() {
+  async function handleLoad() {
     if (markedUsedRef.current || !token) return
     markedUsedRef.current = true
 
-    // Mark token used — viewing the renewal card is the completion event
-    supabase.from('share_tokens').update({ used: true }).eq('token', token)
-      .then(({ error }) => { if (error) console.error('renewal mark-used failed:', error) })
+    // Renewal tokens allow up to 3 customer opens before expiring.
+    // Count existing 'opened' interactions for this link; the current open
+    // was already recorded in CustomerLanding before this component mounts.
+    if (linkId) {
+      const { count } = await supabase
+        .from('interactions')
+        .select('id', { count: 'exact', head: true })
+        .eq('link_id', linkId)
+        .eq('action', 'opened')
+
+      if ((count ?? 0) >= 3) {
+        supabase.from('share_tokens').update({ used: true }).eq('token', token)
+          .then(({ error }) => { if (error) console.error('renewal mark-used failed:', error) })
+      }
+    }
 
     // Record completed interaction
     if (linkId) {

@@ -109,10 +109,11 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
   const [generating,      setGenerating]      = useState(false)
   const [linkError,       setLinkError]       = useState('')
   const [token,           setToken]           = useState(null)
-  const [copied,          setCopied]          = useState(false)
+  const [copied,           setCopied]           = useState(false)
   const [shareImageFile,   setShareImageFile]   = useState(null)
   const [imageGenerating,  setImageGenerating]  = useState(false)
   const [usePersonaMessage, setUsePersonaMessage] = useState(true)
+  const [waPhone,          setWaPhone]          = useState('')
 
   const isCreative = item.demoType === 'creative'
   const name        = user?.name        || 'Your Advisor'
@@ -226,7 +227,7 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
   }
 
   async function copyLink() {
-    await navigator.clipboard.writeText(linkUrl(token))
+    await navigator.clipboard.writeText(activeMsg)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -242,6 +243,11 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
     : ''
 
   function openWhatsApp() {
+    const num = waPhone.trim().replace(/\D/g, '')
+    if (num) {
+      window.open(`https://wa.me/${num}?text=${encodeURIComponent(activeMsg)}`, '_blank')
+      return
+    }
     if (shareImageFile && navigator.share && navigator.canShare?.({ files: [shareImageFile] })) {
       navigator.share({ files: [shareImageFile], text: activeMsg })
         .catch(err => {
@@ -441,6 +447,19 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
                 )}
               </div>
 
+              <div>
+                <label className="text-[#0f1f3d] text-xs font-semibold block mb-1.5">
+                  Share to WhatsApp number <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="tel"
+                  value={waPhone}
+                  onChange={e => setWaPhone(e.target.value)}
+                  placeholder="e.g. 91XXXXXXXXXX"
+                  className="w-full bg-gray-50 border border-[#e4e7f0] focus:border-[#0f1f3d]/30 rounded-xl px-3 py-2.5 text-sm outline-none transition-colors"
+                />
+              </div>
+
               <div className="flex gap-2">
                 <button
                   onClick={copyLink}
@@ -450,7 +469,7 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
                       : 'bg-white border-[#e4e7f0] text-[#0f1f3d] hover:border-[#0f1f3d]/40'
                   }`}
                 >
-                  {copied ? '✓ Copied!' : 'Copy Link'}
+                  {copied ? '✓ Copied!' : 'Copy Message'}
                 </button>
                 <button
                   onClick={openWhatsApp}
