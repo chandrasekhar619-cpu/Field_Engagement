@@ -175,6 +175,10 @@
     </div>
 
     <div class="comparison-container">
+        <div class="split-box" style="padding:0 0 12px;border-bottom:1px solid var(--border-color);">
+            <span class="box-label">Nominee</span>
+            <span class="box-value" id="ui-nominee" style="font-size:15px;">--</span>
+        </div>
         <div class="split-grid">
             <div class="split-box">
                 <span class="box-label">Annual Premium</span>
@@ -208,6 +212,7 @@
         document.getElementById('ui-annual-premium').innerText=fmtRupee(g('premium'));
         document.getElementById('ui-maturity').innerText=fmtRupee(g('maturity'));
         document.getElementById('ui-sum-assured').innerText=fmtRupee(g('sum_assured'));
+        var nn=g('nominee_name'); document.getElementById('ui-nominee').innerText=nn&&nn.trim()?nn.trim():'your nominee';
     })();
 </script>
 

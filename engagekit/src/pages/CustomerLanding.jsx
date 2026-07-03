@@ -45,7 +45,8 @@ async function fetchIp() {
 
 export default function CustomerLanding() {
   const [searchParams] = useSearchParams()
-  const token = searchParams.get('token')
+  const token       = searchParams.get('token')
+  const nomineeName = searchParams.get('nominee_name') || ''
 
   const [link,       setLink]       = useState(null)
   const [content,    setContent]    = useState(null)
@@ -233,6 +234,7 @@ export default function CustomerLanding() {
         token={token}
         linkId={link?.id}
         customerIp={customerIp}
+        nomineeName={nomineeName}
       />
     )
   }

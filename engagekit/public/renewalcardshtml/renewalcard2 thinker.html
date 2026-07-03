@@ -136,6 +136,10 @@
     </p>
 
     <div class="data-grid">
+        <div class="data-block">
+            <span class="label">Nominee</span>
+            <span class="value" id="ui-nominee">--</span>
+        </div>
         <div class="data-block highlighted">
             <span class="label">Annual Premium</span>
             <span class="value primary" id="ui-annual-premium">--</span>
@@ -164,6 +168,7 @@
         document.getElementById('ui-annual-premium').innerText=fmtRupee(g('premium'));
         document.getElementById('ui-maturity').innerText=fmtRupee(g('maturity'));
         document.getElementById('ui-sum-assured').innerText=fmtRupee(g('sum_assured'));
+        var nn=g('nominee_name'); document.getElementById('ui-nominee').innerText=nn&&nn.trim()?nn.trim():'your nominee';
     })();
 </script>
 

@@ -18,7 +18,7 @@ function Disclaimer() {
   )
 }
 
-export default function RenewalCard({ customer, metadata, rpmName, token, linkId, customerIp }) {
+export default function RenewalCard({ customer, metadata, rpmName, token, linkId, customerIp, nomineeName }) {
   const markedUsedRef = useRef(false)
 
   const { card_number = 1, ppt, sum_assured, maturity, premium } = metadata || {}
@@ -29,14 +29,15 @@ export default function RenewalCard({ customer, metadata, rpmName, token, linkId
     : `renewalcard${card_number}.html`
 
   const params = new URLSearchParams({
-    name:        customer?.name          ?? '',
-    policy:      customer?.policy_number ?? '',
-    due_date:    customer?.due_date      ?? '',   // read from customer record
-    rcd:         customer?.issue_date    ?? '',
-    ppt:         ppt         ?? '',
-    premium:     premium     ?? '',
-    sum_assured: sum_assured ?? '',
-    maturity:    maturity    ?? '',
+    name:         customer?.name          ?? '',
+    policy:       customer?.policy_number ?? '',
+    due_date:     customer?.due_date      ?? '',   // read from customer record
+    rcd:          customer?.issue_date    ?? '',
+    ppt:          ppt         ?? '',
+    premium:      premium     ?? '',
+    sum_assured:  sum_assured ?? '',
+    maturity:     maturity    ?? '',
+    nominee_name: nomineeName ?? '',
   })
 
   const src = `/renewalcardshtml/${encodeURIComponent(fileName)}?${params.toString()}`

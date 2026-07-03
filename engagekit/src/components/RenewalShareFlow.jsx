@@ -4,7 +4,11 @@ import { supabase } from '../lib/supabaseClient'
 import { getWhatsAppMessage } from '../lib/whatsappMessages'
 import RenewalShareCard from './RenewalShareCard'
 
-function linkUrl(token) { return `${window.location.origin}/c?token=${token}` }
+function linkUrl(token, extra) {
+  const base = `${window.location.origin}/c?token=${token}`
+  if (!extra) return base
+  return `${base}&${new URLSearchParams(extra).toString()}`
+}
 
 function initials(name = '') {
   return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '?'
@@ -44,6 +48,7 @@ export default function RenewalShareFlow({ item, onClose }) {
   const [imageGenerating, setImageGenerating] = useState(false)
   const [prefilled,       setPrefilled]       = useState(false)
   const [waPhone,         setWaPhone]         = useState('')
+  const [nomineeName,     setNomineeName]     = useState('')
 
   const [allCustomers,     setAllCustomers]     = useState([])
   const [customersLoading, setCustomersLoading] = useState(false)
@@ -211,8 +216,11 @@ export default function RenewalShareFlow({ item, onClose }) {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const activeMsg = token && selected
-    ? getWhatsAppMessage('renewal-card', selected.persona, selected.name || 'there', linkUrl(token))
+  const cardLink = token
+    ? linkUrl(token, selectedCard === 2 && nomineeName.trim() ? { nominee_name: nomineeName.trim() } : null)
+    : ''
+  const activeMsg = cardLink && selected
+    ? getWhatsAppMessage('renewal-card', selected.persona, selected.name || 'there', cardLink)
     : ''
 
   function openWhatsApp() {
@@ -273,7 +281,7 @@ export default function RenewalShareFlow({ item, onClose }) {
               {CARD_OPTIONS.map(opt => (
                 <button
                   key={opt.cardNumber}
-                  onClick={() => setSelectedCard(opt.cardNumber)}
+                  onClick={() => { setSelectedCard(opt.cardNumber); setNomineeName('') }}
                   className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
                     selectedCard === opt.cardNumber
                       ? 'border-[#0f1f3d] bg-[#0f1f3d]/[0.03]'
@@ -423,6 +431,20 @@ export default function RenewalShareFlow({ item, onClose }) {
             </div>
 
             <div className="overflow-y-auto flex-1 p-4 flex flex-col gap-4">
+              {selectedCard === 2 && (
+                <div>
+                  <label className="text-[#0f1f3d] text-xs font-semibold block mb-1.5">
+                    Nominee Name <span className="text-gray-400 font-normal">(optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={nomineeName}
+                    onChange={e => setNomineeName(e.target.value)}
+                    placeholder="e.g. Rahul Sharma"
+                    className="w-full bg-gray-50 border border-[#e4e7f0] focus:border-[#0f1f3d]/30 rounded-xl px-3 py-2.5 text-sm outline-none transition-colors"
+                  />
+                </div>
+              )}
               {[
                 { field: 'premium',     label: 'Annual Premium (₹)',         type: 'number', placeholder: 'e.g. 24,500' },
                 { field: 'ppt',         label: 'Premium Payment Term (yrs)', type: 'number', placeholder: 'e.g. 10' },
