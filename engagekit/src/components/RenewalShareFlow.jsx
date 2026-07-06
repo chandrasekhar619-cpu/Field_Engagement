@@ -29,7 +29,14 @@ const CARD_OPTIONS = [
   { label: 'Final Reminder',   desc: 'Send in the last few days before and during grace period', cardNumber: 1 },
 ]
 
-const EMPTY_DETAILS = { premium: '', ppt: '', sum_assured: '', maturity: '' }
+const EMPTY_DETAILS = { premium: '', ppt: '', sum_assured: '', maturity: '', payment_mode: '' }
+
+const PAYMENT_MODE_OPTIONS = [
+  { value: 'Monthly',        label: 'Monthly' },
+  { value: 'Quarterly',      label: 'Quarterly' },
+  { value: 'Semi-annually',  label: 'Semi-annually' },
+  { value: 'Annually',       label: 'Annually' },
+]
 
 export default function RenewalShareFlow({ item, onClose }) {
   const { user } = useAuth()
@@ -49,6 +56,7 @@ export default function RenewalShareFlow({ item, onClose }) {
   const [prefilled,       setPrefilled]       = useState(false)
   const [waPhone,         setWaPhone]         = useState('')
   const [nomineeName,     setNomineeName]     = useState('')
+  const [paymentMode,     setPaymentMode]     = useState('')
 
   const [allCustomers,     setAllCustomers]     = useState([])
   const [customersLoading, setCustomersLoading] = useState(false)
@@ -111,10 +119,11 @@ export default function RenewalShareFlow({ item, onClose }) {
     setSelected(c)
     setPrefilled(false)
     setDetails(EMPTY_DETAILS)
+    setPaymentMode('')
     if (!c.policy_number) return
     const { data } = await supabase
       .from('policy_metadata')
-      .select('premium, ppt, sum_assured, maturity')
+      .select('premium, ppt, sum_assured, maturity, payment_mode')
       .eq('policy_number', c.policy_number)
       .single()
     if (data) {
@@ -123,7 +132,9 @@ export default function RenewalShareFlow({ item, onClose }) {
         ppt:         data.ppt         != null ? String(data.ppt)         : '',
         sum_assured: data.sum_assured != null ? String(data.sum_assured) : '',
         maturity:    data.maturity    != null ? String(data.maturity)    : '',
+        payment_mode: data.payment_mode != null ? String(data.payment_mode) : '',
       })
+      setPaymentMode(data.payment_mode || '')
       setPrefilled(true)
     }
   }
@@ -134,6 +145,7 @@ export default function RenewalShareFlow({ item, onClose }) {
     if (!details.ppt)         errs.ppt         = 'Required'
     if (!details.sum_assured) errs.sum_assured = 'Required'
     if (!details.maturity)    errs.maturity    = 'Required'
+    if (selectedCard === 2 && !paymentMode) errs.payment_mode = 'Required'
     setDetailErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -156,6 +168,7 @@ export default function RenewalShareFlow({ item, onClose }) {
             sum_assured:  parseInt(details.sum_assured),
             maturity:     parseInt(details.maturity),
             premium:      parseInt(details.premium),
+            ...(selectedCard === 2 && paymentMode && { payment_mode: paymentMode }),
           },
         })
         .select('token')
@@ -195,6 +208,7 @@ export default function RenewalShareFlow({ item, onClose }) {
         ppt:           parseInt(details.ppt),
         sum_assured:   parseInt(details.sum_assured),
         maturity:      parseInt(details.maturity),
+        ...(selectedCard === 2 && paymentMode && { payment_mode: paymentMode }),
         updated_at:    new Date().toISOString(),
       }, { onConflict: 'policy_number' })
         .then(({ error }) => { if (error) console.error('policy_metadata upsert failed:', error) })
@@ -217,7 +231,10 @@ export default function RenewalShareFlow({ item, onClose }) {
   }
 
   const cardLink = token
-    ? linkUrl(token, selectedCard === 2 && nomineeName.trim() ? { nominee_name: nomineeName.trim() } : null)
+    ? linkUrl(token, selectedCard === 2 ? {
+        ...(nomineeName.trim() && { nominee_name: nomineeName.trim() }),
+        ...(paymentMode && { payment_mode: paymentMode }),
+      } : null)
     : ''
   const activeMsg = cardLink && selected
     ? getWhatsAppMessage('renewal-card', selected.persona, selected.name || 'there', cardLink)
@@ -244,6 +261,12 @@ export default function RenewalShareFlow({ item, onClose }) {
   function handleDetailChange(field, value) {
     setDetails(d => ({ ...d, [field]: value }))
     if (detailErrors[field]) setDetailErrors(e => { const n = { ...e }; delete n[field]; return n })
+  }
+
+  function handleCardChange(card) {
+    setSelectedCard(card)
+    setNomineeName('')
+    setPaymentMode('')
   }
 
   return (
@@ -281,7 +304,7 @@ export default function RenewalShareFlow({ item, onClose }) {
               {CARD_OPTIONS.map(opt => (
                 <button
                   key={opt.cardNumber}
-                  onClick={() => { setSelectedCard(opt.cardNumber); setNomineeName('') }}
+                  onClick={() => { setSelectedCard(opt.cardNumber); setNomineeName(''); setPaymentMode('') }}
                   className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
                     selectedCard === opt.cardNumber
                       ? 'border-[#0f1f3d] bg-[#0f1f3d]/[0.03]'
@@ -472,6 +495,31 @@ export default function RenewalShareFlow({ item, onClose }) {
                   )}
                 </div>
               ))}
+              <div>
+                <label className="text-[#0f1f3d] text-xs font-semibold block mb-1.5">
+                  Payment Mode <span className="text-red-400">*</span>
+                </label>
+                <select
+                  value={paymentMode}
+                  onChange={e => {
+                    setPaymentMode(e.target.value)
+                    if (detailErrors.payment_mode) setDetailErrors(er => { const n = { ...er }; delete n.payment_mode; return n })
+                  }}
+                  className={`w-full bg-gray-50 border rounded-xl px-3 py-2.5 text-sm outline-none transition-colors ${
+                    detailErrors.payment_mode
+                      ? 'border-red-300 focus:border-red-400'
+                      : 'border-[#e4e7f0] focus:border-[#0f1f3d]/30'
+                  }`}
+                >
+                  <option value="">Select payment mode...</option>
+                  {PAYMENT_MODE_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                {detailErrors.payment_mode && (
+                  <p className="text-red-400 text-xs mt-1">{detailErrors.payment_mode}</p>
+                )}
+              </div>
             </div>
 
             <div className="p-4 border-t border-[#e4e7f0] flex-shrink-0">
