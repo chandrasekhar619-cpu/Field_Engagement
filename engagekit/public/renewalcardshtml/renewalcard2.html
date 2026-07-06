@@ -186,14 +186,14 @@
             </div>
 
             <div class="split-box right">
-                <span class="box-label">Maturity Amount</span>
-                <span class="box-value" id="ui-maturity">--</span>
+                <span class="box-label">Your Nominee</span>
+                <span class="box-value" id="ui-nominee-display">--</span>
             </div>
         </div>
 
         <div class="shield-highlight-box">
-            <span class="shield-label">Sum Assured</span>
-            <span class="shield-value" id="ui-sum-assured">--</span>
+            <span class="shield-label">Payment Mode</span>
+            <span class="shield-value" id="ui-payment-mode">--</span>
         </div>
     </div>
 
@@ -210,9 +210,9 @@
         function fmtRupee(v){ var n=parseInt(v); return isNaN(n)?'--':'₹'+n.toLocaleString('en-IN'); }
 
         document.getElementById('ui-annual-premium').innerText=fmtRupee(g('premium'));
-        document.getElementById('ui-maturity').innerText=fmtRupee(g('maturity'));
-        document.getElementById('ui-sum-assured').innerText=fmtRupee(g('sum_assured'));
-        var nn=g('nominee_name'); document.getElementById('ui-nominee').innerText=nn&&nn.trim()?nn.trim():'your nominee';
+        var nn=g('nominee_name'); document.getElementById('ui-nominee-display').innerText=nn&&nn.trim()?nn.trim():'To be confirmed';
+        document.getElementById('ui-payment-mode').innerText=g('payment_mode')||'--';
+        document.getElementById('ui-nominee').innerText=nn&&nn.trim()?nn.trim():'your nominee';
     })();
 </script>
 
