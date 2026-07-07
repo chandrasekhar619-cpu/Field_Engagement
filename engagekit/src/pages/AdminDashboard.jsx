@@ -329,38 +329,35 @@ export default function AdminDashboard() {
     })
     const rpmSummaryRows = Object.values(rpmSummaryMap).sort((a, b) => b.links - a.links)
 
-    // ── Engagement Activity — permanent IP filter then row build ───────────
-    const ipMatchLinkIds = new Set()
-    opens.forEach(i => {
-      const l = linkMap[i.link_id]
-      if (l && l.rpm_ip && i.customer_ip && l.rpm_ip === i.customer_ip) {
-        ipMatchLinkIds.add(i.link_id)
+    // ── Engagement Activity — filter at interaction level, not link level ─────
+    // An interaction is IP-matched if the customer's IP equals the RPM's share IP.
+    // We only count non-IP-matched interactions for Opened and Outcome so that
+    // an RPM opening/completing their own link doesn't inflate either column.
+    const allEngagementRows = links.map(l => {
+      const ints      = intersByLinkId[l.id] || []
+      const validInts = ints.filter(i =>
+        !(l.rpm_ip && i.customer_ip && l.rpm_ip === i.customer_ip)
+      )
+      const isCompleted = validInts.some(i => i.action === 'completed')
+      const engLabel    = mapEngagementLabel(l)
+      let outcome = '—'
+      if (isCompleted) {
+        if (engLabel === 'Persona Quiz') {
+          outcome = custMap[l.customer_id]?.persona || 'Completed'
+        } else {
+          outcome = 'Completed'
+        }
+      }
+      return {
+        rpmName:      l.rpm_name      || '—',
+        date:         l.created_at,
+        customerName: l.customer_name || '—',
+        engagement:   engLabel,
+        opened:       validInts.some(i => i.action === 'opened') ? 'Yes' : 'No',
+        outcome,
+        feedback:     feedbackByToken[l.token] ?? null,
       }
     })
-    const allEngagementRows = links
-      .filter(l => !ipMatchLinkIds.has(l.id))
-      .map(l => {
-        const ints        = intersByLinkId[l.id] || []
-        const isCompleted = ints.some(i => i.action === 'completed')
-        const engLabel    = mapEngagementLabel(l)
-        let outcome = '—'
-        if (isCompleted) {
-          if (engLabel === 'Persona Quiz') {
-            outcome = custMap[l.customer_id]?.persona || 'Completed'
-          } else {
-            outcome = 'Completed'
-          }
-        }
-        return {
-          rpmName:      l.rpm_name      || '—',
-          date:         l.created_at,
-          customerName: l.customer_name || '—',
-          engagement:   engLabel,
-          opened:       ints.some(i => i.action === 'opened') ? 'Yes' : 'No',
-          outcome,
-          feedback:     feedbackByToken[l.token] ?? null,
-        }
-      })
     const eaAllRpms = [...new Set(allEngagementRows.map(r => r.rpmName).filter(n => n !== '—'))].sort()
     const eaAllEngs = [...new Set(allEngagementRows.map(r => r.engagement))].sort()
 
