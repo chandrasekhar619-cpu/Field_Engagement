@@ -30,7 +30,11 @@ function mapEngagementLabel(link) {
   if (link.content_id === '13')                                            return 'Word Hunt'
   if (link.content_id === '3')                                             return 'Money Word'
   if (link.content_id === '1' || link.content_type === 'Quiz')            return 'Persona Quiz'
-  return link.content_type || link.content_id || '—'
+  if (link.content_id === '5')                                             return 'Diwali Savings Gift'
+  if (link.content_id === '8')                                             return 'Birthday Wealth Wish'
+  if (link.content_id === '12')                                            return 'New Year Goal Setter'
+  if (link.content_type)                                                   return `${link.content_type} — ${link.content_id}`
+  return link.content_id || '—'
 }
 
 // ── Mini UI ──────────────────────────────────────────────────────────────────
@@ -133,6 +137,8 @@ export default function AdminDashboard() {
   const [eaSortCol,      setEaSortCol]      = useState('date')
   const [eaSortDir,      setEaSortDir]      = useState('desc')
   const [eaPage,         setEaPage]         = useState(0)
+  const [eaOpenedFilter,  setEaOpenedFilter]  = useState('all')
+  const [eaOutcomeFilter, setEaOutcomeFilter] = useState('all')
 
   function handleEaSort(col) {
     if (eaSortCol === col) {
@@ -178,10 +184,17 @@ export default function AdminDashboard() {
       .select('id, persona')
       .limit(5000)
 
+    // 5. Feedback
+    const { data: feedbacks } = await supabase
+      .from('feedback')
+      .select('token, thumbs_up, feedback_text')
+      .limit(5000)
+
     setRawData({
       links:        links        || [],
       interactions: interactions || [],
       customers:    customers    || [],
+      feedbacks:    feedbacks    || [],
     })
     setLoading(false)
   }
@@ -193,12 +206,14 @@ export default function AdminDashboard() {
   // All hooks must be above early returns
   const d = useMemo(() => {
     if (!rawData) return null
-    const { links, interactions, customers } = rawData
+    const { links, interactions, customers, feedbacks } = rawData
 
     const linkMap = {}
     links.forEach(l => { linkMap[l.id] = l })
     const custMap = {}
     customers.forEach(c => { custMap[c.id] = c })
+    const feedbackByToken = {}
+    feedbacks.forEach(f => { if (f.token) feedbackByToken[f.token] = f })
 
     const intersByLinkId = {}
     interactions.forEach(i => {
@@ -325,14 +340,25 @@ export default function AdminDashboard() {
     const allEngagementRows = links
       .filter(l => !ipMatchLinkIds.has(l.id))
       .map(l => {
-        const ints = intersByLinkId[l.id] || []
+        const ints        = intersByLinkId[l.id] || []
+        const isCompleted = ints.some(i => i.action === 'completed')
+        const engLabel    = mapEngagementLabel(l)
+        let outcome = '—'
+        if (isCompleted) {
+          if (engLabel === 'Persona Quiz') {
+            outcome = custMap[l.customer_id]?.persona || 'Completed'
+          } else {
+            outcome = 'Completed'
+          }
+        }
         return {
           rpmName:      l.rpm_name      || '—',
           date:         l.created_at,
           customerName: l.customer_name || '—',
-          engagement:   mapEngagementLabel(l),
-          opened:       ints.some(i => i.action === 'opened')    ? 'Yes' : 'No',
-          outcome:      ints.some(i => i.action === 'completed') ? 'Completed' : '—',
+          engagement:   engLabel,
+          opened:       ints.some(i => i.action === 'opened') ? 'Yes' : 'No',
+          outcome,
+          feedback:     feedbackByToken[l.token] ?? null,
         }
       })
     const eaAllRpms = [...new Set(allEngagementRows.map(r => r.rpmName).filter(n => n !== '—'))].sort()
@@ -378,15 +404,17 @@ export default function AdminDashboard() {
       const cutoff = daysAgo(parseInt(eaDateRange))
       rows = rows.filter(r => new Date(r.date) >= cutoff)
     }
-    if (eaRpmFilter !== 'all') rows = rows.filter(r => r.rpmName === eaRpmFilter)
-    if (eaEngFilter !== 'all') rows = rows.filter(r => r.engagement === eaEngFilter)
+    if (eaRpmFilter    !== 'all') rows = rows.filter(r => r.rpmName === eaRpmFilter)
+    if (eaEngFilter    !== 'all') rows = rows.filter(r => r.engagement === eaEngFilter)
+    if (eaOpenedFilter !== 'all') rows = rows.filter(r => eaOpenedFilter === 'yes' ? r.opened === 'Yes' : r.opened === 'No')
+    if (eaOutcomeFilter !== 'all') rows = rows.filter(r => eaOutcomeFilter === 'has' ? r.outcome !== '—' : r.outcome === '—')
 
     return [...rows].sort((a, b) => {
       const av = a[eaSortCol] ?? '', bv = b[eaSortCol] ?? ''
       const cmp = av < bv ? -1 : av > bv ? 1 : 0
       return eaSortDir === 'asc' ? cmp : -cmp
     })
-  }, [d, eaDateRange, eaRpmFilter, eaEngFilter, eaSortCol, eaSortDir])
+  }, [d, eaDateRange, eaRpmFilter, eaEngFilter, eaOpenedFilter, eaOutcomeFilter, eaSortCol, eaSortDir])
 
   const EA_PAGE_SIZE  = 25
   const eaTotalPages  = Math.max(1, Math.ceil(eaRows.length / EA_PAGE_SIZE))
@@ -499,6 +527,26 @@ export default function AdminDashboard() {
               {(d?.eaAllEngs || []).map(e => <option key={e} value={e}>{e}</option>)}
             </select>
 
+            <select
+              value={eaOpenedFilter}
+              onChange={e => { setEaOpenedFilter(e.target.value); setEaPage(0) }}
+              className="text-sm border border-[#e4e7f0] rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none"
+            >
+              <option value="all">All (Opened)</option>
+              <option value="yes">Opened: Yes</option>
+              <option value="no">Opened: No</option>
+            </select>
+
+            <select
+              value={eaOutcomeFilter}
+              onChange={e => { setEaOutcomeFilter(e.target.value); setEaPage(0) }}
+              className="text-sm border border-[#e4e7f0] rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none"
+            >
+              <option value="all">All (Outcome)</option>
+              <option value="has">Has outcome</option>
+              <option value="none">No outcome</option>
+            </select>
+
             {!loading && (
               <span className="text-xs text-gray-400 self-center">
                 {eaRows.length} row{eaRows.length !== 1 ? 's' : ''}
@@ -507,7 +555,7 @@ export default function AdminDashboard() {
           </div>
 
           <div className="bg-white rounded-xl border border-[#e4e7f0] overflow-x-auto">
-            <table className="w-full min-w-[700px]">
+            <table className="w-full min-w-[860px]">
               <thead>
                 <tr>
                   <SortTh col="rpmName"      sortCol={eaSortCol} sortDir={eaSortDir} onSort={handleEaSort}>RPM Name</SortTh>
@@ -516,11 +564,12 @@ export default function AdminDashboard() {
                   <SortTh col="engagement"   sortCol={eaSortCol} sortDir={eaSortDir} onSort={handleEaSort}>Engagement</SortTh>
                   <SortTh col="opened"       sortCol={eaSortCol} sortDir={eaSortDir} onSort={handleEaSort}>Opened</SortTh>
                   <SortTh col="outcome"      sortCol={eaSortCol} sortDir={eaSortDir} onSort={handleEaSort}>Outcome</SortTh>
+                  <Th>Feedback</Th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <LoadingRow cols={6} />
+                  <LoadingRow cols={7} />
                 ) : eaPageRows.length ? (
                   eaPageRows.map((r, i) => (
                     <tr key={i} className="border-t border-[#f0f2f7] hover:bg-gray-50/50">
@@ -534,14 +583,34 @@ export default function AdminDashboard() {
                         </span>
                       </Td>
                       <Td>
-                        <span className={r.outcome === 'Completed' ? 'text-[#0f1f3d] font-medium' : 'text-gray-300'}>
+                        <span className={r.outcome !== '—' ? 'text-[#0f1f3d] font-medium' : 'text-gray-300'}>
                           {r.outcome}
                         </span>
+                      </Td>
+                      <Td>
+                        {r.feedback ? (
+                          <span
+                            title={r.feedback.feedback_text || ''}
+                            className="cursor-default flex items-center gap-1 flex-wrap"
+                          >
+                            {r.feedback.thumbs_up === true && <span>👍</span>}
+                            {r.feedback.thumbs_up === false && <span>👎</span>}
+                            {r.feedback.feedback_text ? (
+                              <span className="text-gray-500 text-xs">
+                                {r.feedback.feedback_text.length > 40
+                                  ? r.feedback.feedback_text.slice(0, 40) + '…'
+                                  : r.feedback.feedback_text}
+                              </span>
+                            ) : null}
+                          </span>
+                        ) : (
+                          <span className="text-gray-300">—</span>
+                        )}
                       </Td>
                     </tr>
                   ))
                 ) : (
-                  <EmptyRow cols={6} msg="No activity in the selected period." />
+                  <EmptyRow cols={7} msg="No activity in the selected period." />
                 )}
               </tbody>
             </table>
