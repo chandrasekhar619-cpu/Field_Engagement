@@ -25,6 +25,14 @@ function fmtDate(iso) { return iso ? new Date(iso).toLocaleDateString('en-IN', {
 function isoDay(date) { return date.toISOString().split('T')[0] }
 function daysAgo(n)   { const d = new Date(); d.setDate(d.getDate() - n); d.setHours(0, 0, 0, 0); return d }
 
+function mapEngagementLabel(link) {
+  if (link.content_id === 'renewal-reminder')                              return 'Renewal Reminder'
+  if (link.content_id === '13')                                            return 'Word Hunt'
+  if (link.content_id === '3')                                             return 'Money Word'
+  if (link.content_id === '1' || link.content_type === 'Quiz')            return 'Persona Quiz'
+  return link.content_type || link.content_id || '—'
+}
+
 // ── Mini UI ──────────────────────────────────────────────────────────────────
 
 function Spinner() {
@@ -94,6 +102,18 @@ function LoadingRow({ cols }) {
   )
 }
 
+function SortTh({ col, sortCol, sortDir, onSort, children, right }) {
+  const active = sortCol === col
+  return (
+    <th
+      onClick={() => onSort(col)}
+      className={`px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider border-b border-[#e4e7f0] whitespace-nowrap cursor-pointer select-none transition-colors hover:text-[#0f1f3d] ${right ? 'text-right' : 'text-left'} ${active ? 'text-[#0f1f3d]' : 'text-gray-400'}`}
+    >
+      {children}{active ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
+    </th>
+  )
+}
+
 // ── Main component ───────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
@@ -105,6 +125,24 @@ export default function AdminDashboard() {
   const [activityView,   setActivityView]   = useState('chart')
   const [showAllAlerts,  setShowAllAlerts]  = useState(false)
   const [tableRpmFilter, setTableRpmFilter] = useState('all')
+
+  // Engagement Activity section state
+  const [eaDateRange,    setEaDateRange]    = useState('30')
+  const [eaRpmFilter,    setEaRpmFilter]    = useState('all')
+  const [eaEngFilter,    setEaEngFilter]    = useState('all')
+  const [eaSortCol,      setEaSortCol]      = useState('date')
+  const [eaSortDir,      setEaSortDir]      = useState('desc')
+  const [eaPage,         setEaPage]         = useState(0)
+
+  function handleEaSort(col) {
+    if (eaSortCol === col) {
+      setEaSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    } else {
+      setEaSortCol(col)
+      setEaSortDir('desc')
+    }
+    setEaPage(0)
+  }
 
   async function load() {
     setLoading(true)
@@ -161,6 +199,12 @@ export default function AdminDashboard() {
     links.forEach(l => { linkMap[l.id] = l })
     const custMap = {}
     customers.forEach(c => { custMap[c.id] = c })
+
+    const intersByLinkId = {}
+    interactions.forEach(i => {
+      if (!intersByLinkId[i.link_id]) intersByLinkId[i.link_id] = []
+      intersByLinkId[i.link_id].push(i)
+    })
 
     const opens = interactions.filter(i => i.action === 'opened')
 
@@ -270,6 +314,30 @@ export default function AdminDashboard() {
     })
     const rpmSummaryRows = Object.values(rpmSummaryMap).sort((a, b) => b.links - a.links)
 
+    // ── Engagement Activity — permanent IP filter then row build ───────────
+    const ipMatchLinkIds = new Set()
+    opens.forEach(i => {
+      const l = linkMap[i.link_id]
+      if (l && l.rpm_ip && i.customer_ip && l.rpm_ip === i.customer_ip) {
+        ipMatchLinkIds.add(i.link_id)
+      }
+    })
+    const allEngagementRows = links
+      .filter(l => !ipMatchLinkIds.has(l.id))
+      .map(l => {
+        const ints = intersByLinkId[l.id] || []
+        return {
+          rpmName:      l.rpm_name      || '—',
+          date:         l.created_at,
+          customerName: l.customer_name || '—',
+          engagement:   mapEngagementLabel(l),
+          opened:       ints.some(i => i.action === 'opened')    ? 'Yes' : 'No',
+          outcome:      ints.some(i => i.action === 'completed') ? 'Completed' : '—',
+        }
+      })
+    const eaAllRpms = [...new Set(allEngagementRows.map(r => r.rpmName).filter(n => n !== '—'))].sort()
+    const eaAllEngs = [...new Set(allEngagementRows.map(r => r.engagement))].sort()
+
     // ── Section 4 — Alerts ─────────────────────────────────────────────────
     const alertRows = opens.map(i => {
       const l = linkMap[i.link_id]
@@ -290,6 +358,7 @@ export default function AdminDashboard() {
     return {
       totalLinks, totalOpens, activeRpms, customersEngaged, overallOpenRate,
       engagementRows,
+      allEngagementRows, eaAllRpms, eaAllEngs,
       rTotalSent, rTotalOpens, rOpenRate, reminderRows, personaRows, rpmRenewalRows,
       chartData, activityRows, allRpms, rpmSummaryRows,
       alertRows,
@@ -300,6 +369,28 @@ export default function AdminDashboard() {
     if (!d) return []
     return tableRpmFilter === 'all' ? d.activityRows : d.activityRows.filter(r => r.rpm === tableRpmFilter)
   }, [d, tableRpmFilter])
+
+  const eaRows = useMemo(() => {
+    if (!d) return []
+    let rows = d.allEngagementRows
+
+    if (eaDateRange !== 'all') {
+      const cutoff = daysAgo(parseInt(eaDateRange))
+      rows = rows.filter(r => new Date(r.date) >= cutoff)
+    }
+    if (eaRpmFilter !== 'all') rows = rows.filter(r => r.rpmName === eaRpmFilter)
+    if (eaEngFilter !== 'all') rows = rows.filter(r => r.engagement === eaEngFilter)
+
+    return [...rows].sort((a, b) => {
+      const av = a[eaSortCol] ?? '', bv = b[eaSortCol] ?? ''
+      const cmp = av < bv ? -1 : av > bv ? 1 : 0
+      return eaSortDir === 'asc' ? cmp : -cmp
+    })
+  }, [d, eaDateRange, eaRpmFilter, eaEngFilter, eaSortCol, eaSortDir])
+
+  const EA_PAGE_SIZE  = 25
+  const eaTotalPages  = Math.max(1, Math.ceil(eaRows.length / EA_PAGE_SIZE))
+  const eaPageRows    = eaRows.slice(eaPage * EA_PAGE_SIZE, (eaPage + 1) * EA_PAGE_SIZE)
 
   // Early returns after all hooks
   if (authLoading) return <Spinner />
@@ -367,6 +458,119 @@ export default function AdminDashboard() {
               </tbody>
             </table>
           </div>
+        </section>
+
+        {/* ── Engagement Activity ───────────────────────────────────────── */}
+        <section>
+          <SectionHead title="Engagement Activity" />
+
+          {/* Filters */}
+          <div className="flex flex-wrap gap-3 mb-4">
+            {/* Date range */}
+            <div className="flex bg-white border border-[#e4e7f0] rounded-lg overflow-hidden">
+              {[['7','Last 7 days'],['30','Last 30 days'],['90','Last 90 days'],['all','All time']].map(([val, label]) => (
+                <button
+                  key={val}
+                  onClick={() => { setEaDateRange(val); setEaPage(0) }}
+                  className={`px-3 py-1.5 text-xs font-medium transition-colors border-r border-[#e4e7f0] last:border-r-0 ${
+                    eaDateRange === val ? 'bg-[#0f1f3d] text-white' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <select
+              value={eaRpmFilter}
+              onChange={e => { setEaRpmFilter(e.target.value); setEaPage(0) }}
+              className="text-sm border border-[#e4e7f0] rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none"
+            >
+              <option value="all">All RPMs</option>
+              {(d?.eaAllRpms || []).map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+
+            <select
+              value={eaEngFilter}
+              onChange={e => { setEaEngFilter(e.target.value); setEaPage(0) }}
+              className="text-sm border border-[#e4e7f0] rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none"
+            >
+              <option value="all">All Engagements</option>
+              {(d?.eaAllEngs || []).map(e => <option key={e} value={e}>{e}</option>)}
+            </select>
+
+            {!loading && (
+              <span className="text-xs text-gray-400 self-center">
+                {eaRows.length} row{eaRows.length !== 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
+
+          <div className="bg-white rounded-xl border border-[#e4e7f0] overflow-x-auto">
+            <table className="w-full min-w-[700px]">
+              <thead>
+                <tr>
+                  <SortTh col="rpmName"      sortCol={eaSortCol} sortDir={eaSortDir} onSort={handleEaSort}>RPM Name</SortTh>
+                  <SortTh col="date"         sortCol={eaSortCol} sortDir={eaSortDir} onSort={handleEaSort}>Date</SortTh>
+                  <SortTh col="customerName" sortCol={eaSortCol} sortDir={eaSortDir} onSort={handleEaSort}>Customer Name</SortTh>
+                  <SortTh col="engagement"   sortCol={eaSortCol} sortDir={eaSortDir} onSort={handleEaSort}>Engagement</SortTh>
+                  <SortTh col="opened"       sortCol={eaSortCol} sortDir={eaSortDir} onSort={handleEaSort}>Opened</SortTh>
+                  <SortTh col="outcome"      sortCol={eaSortCol} sortDir={eaSortDir} onSort={handleEaSort}>Outcome</SortTh>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <LoadingRow cols={6} />
+                ) : eaPageRows.length ? (
+                  eaPageRows.map((r, i) => (
+                    <tr key={i} className="border-t border-[#f0f2f7] hover:bg-gray-50/50">
+                      <Td>{r.rpmName}</Td>
+                      <Td>{fmtDate(r.date)}</Td>
+                      <Td>{r.customerName}</Td>
+                      <Td>{r.engagement}</Td>
+                      <Td>
+                        <span className={r.opened === 'Yes' ? 'text-green-600 font-medium' : 'text-gray-400'}>
+                          {r.opened}
+                        </span>
+                      </Td>
+                      <Td>
+                        <span className={r.outcome === 'Completed' ? 'text-[#0f1f3d] font-medium' : 'text-gray-300'}>
+                          {r.outcome}
+                        </span>
+                      </Td>
+                    </tr>
+                  ))
+                ) : (
+                  <EmptyRow cols={6} msg="No activity in the selected period." />
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {!loading && eaTotalPages > 1 && (
+            <div className="flex items-center justify-between mt-3">
+              <span className="text-xs text-gray-400">
+                Page {eaPage + 1} of {eaTotalPages}
+              </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setEaPage(p => Math.max(0, p - 1))}
+                  disabled={eaPage === 0}
+                  className="text-xs px-3 py-1.5 rounded-lg border border-[#e4e7f0] bg-white text-gray-600 disabled:opacity-40 hover:bg-gray-50 transition-colors"
+                >
+                  ← Prev
+                </button>
+                <button
+                  onClick={() => setEaPage(p => Math.min(eaTotalPages - 1, p + 1))}
+                  disabled={eaPage >= eaTotalPages - 1}
+                  className="text-xs px-3 py-1.5 rounded-lg border border-[#e4e7f0] bg-white text-gray-600 disabled:opacity-40 hover:bg-gray-50 transition-colors"
+                >
+                  Next →
+                </button>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* ── Section 2 — Renewal Reminder ──────────────────────────────── */}
