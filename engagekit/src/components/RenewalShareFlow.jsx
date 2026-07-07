@@ -29,7 +29,7 @@ const CARD_OPTIONS = [
   { label: 'Final Reminder',   desc: 'Send in the last few days before and during grace period', cardNumber: 1 },
 ]
 
-const EMPTY_DETAILS = { premium: '', ppt: '', sum_assured: '', maturity: '', payment_mode: '' }
+const EMPTY_DETAILS = { premium: '', payment_mode: '' }
 
 const PAYMENT_MODE_OPTIONS = [
   { value: 'Monthly',        label: 'Monthly' },
@@ -123,15 +123,12 @@ export default function RenewalShareFlow({ item, onClose }) {
     if (!c.policy_number) return
     const { data } = await supabase
       .from('policy_metadata')
-      .select('premium, ppt, sum_assured, maturity, payment_mode')
+      .select('premium, payment_mode')
       .eq('policy_number', c.policy_number)
       .single()
     if (data) {
       setDetails({
-        premium:     data.premium     != null ? String(data.premium)     : '',
-        ppt:         data.ppt         != null ? String(data.ppt)         : '',
-        sum_assured: data.sum_assured != null ? String(data.sum_assured) : '',
-        maturity:    data.maturity    != null ? String(data.maturity)    : '',
+        premium: data.premium != null ? String(data.premium) : '',
         payment_mode: data.payment_mode != null ? String(data.payment_mode) : '',
       })
       setPaymentMode(data.payment_mode || '')
@@ -141,10 +138,7 @@ export default function RenewalShareFlow({ item, onClose }) {
 
   function validateDetails() {
     const errs = {}
-    if (!details.premium)     errs.premium     = 'Required'
-    if (!details.ppt)         errs.ppt         = 'Required'
-    if (!details.sum_assured) errs.sum_assured = 'Required'
-    if (!details.maturity)    errs.maturity    = 'Required'
+    if (!details.premium)     errs.premium = 'Required'
     if (selectedCard === 2 && !paymentMode) errs.payment_mode = 'Required'
     setDetailErrors(errs)
     return Object.keys(errs).length === 0
@@ -164,9 +158,6 @@ export default function RenewalShareFlow({ item, onClose }) {
           created_by:  authUser?.id ?? null,
           metadata: {
             card_number:  selectedCard,
-            ppt:          parseInt(details.ppt),
-            sum_assured:  parseInt(details.sum_assured),
-            maturity:     parseInt(details.maturity),
             premium:      parseInt(details.premium),
             ...(selectedCard === 2 && paymentMode && { payment_mode: paymentMode }),
           },
@@ -205,9 +196,6 @@ export default function RenewalShareFlow({ item, onClose }) {
       supabase.from('policy_metadata').upsert({
         policy_number: selected.policy_number,
         premium:       parseInt(details.premium),
-        ppt:           parseInt(details.ppt),
-        sum_assured:   parseInt(details.sum_assured),
-        maturity:      parseInt(details.maturity),
         ...(selectedCard === 2 && paymentMode && { payment_mode: paymentMode }),
         updated_at:    new Date().toISOString(),
       }, { onConflict: 'policy_number' })
@@ -231,10 +219,14 @@ export default function RenewalShareFlow({ item, onClose }) {
   }
 
   const cardLink = token
-    ? linkUrl(token, selectedCard === 2 ? {
-        ...(nomineeName.trim() && { nominee_name: nomineeName.trim() }),
-        ...(paymentMode && { payment_mode: paymentMode }),
-      } : null)
+    ? linkUrl(token, {
+        premium: details.premium,
+        ppt: details.ppt,
+        sum_assured: details.sum_assured,
+        maturity: details.maturity,
+        ...(selectedCard === 2 && nomineeName.trim() && { nominee_name: nomineeName.trim() }),
+        ...(selectedCard === 2 && paymentMode && { payment_mode: paymentMode }),
+      })
     : ''
   const activeMsg = cardLink && selected
     ? getWhatsAppMessage('renewal-card', selected.persona, selected.name || 'there', cardLink)
@@ -469,10 +461,7 @@ export default function RenewalShareFlow({ item, onClose }) {
                 </div>
               )}
               {[
-                { field: 'premium',     label: 'Annual Premium (₹)',         type: 'number', placeholder: 'e.g. 24,500' },
-                { field: 'ppt',         label: 'Premium Payment Term (yrs)', type: 'number', placeholder: 'e.g. 10' },
-                { field: 'sum_assured', label: 'Sum Assured (₹)',             type: 'number', placeholder: 'e.g. 5,00,000' },
-                { field: 'maturity',    label: 'Maturity Amount (₹)',         type: 'number', placeholder: 'e.g. 8,50,000' },
+                { field: 'premium', label: 'Annual Premium (₹)', type: 'number', placeholder: 'e.g. 24,500' },
               ].map(({ field, label, type, placeholder }) => (
                 <div key={field}>
                   <label className="text-[#0f1f3d] text-xs font-semibold block mb-1.5">
