@@ -139,6 +139,10 @@
             <span class="label">Payment Mode</span>
             <span class="value" id="ui-payment-mode">--</span>
         </div>
+        <div class="data-block">
+            <span class="label">Payment Mode</span>
+            <span class="value" id="ui-payment-mode">--</span>
+        </div>
     </div>
 
     <div class="card-footer" id="ui-rm-nudge">
@@ -154,6 +158,7 @@
 
         document.getElementById('ui-annual-premium').innerText=fmtRupee(g('premium'));
         var nn=g('nominee_name'); document.getElementById('ui-nominee-display').innerText=nn&&nn.trim()?nn.trim():'Update your legacy now';
+        document.getElementById('ui-payment-mode').innerText=g('payment_mode')||'--';
         document.getElementById('ui-payment-mode').innerText=g('payment_mode')||'--';
     })();
 </script>
