@@ -104,10 +104,9 @@ export const contentItems = [
     category: 'Read',
     title: 'Demystifying Money',
     description: 'A 60-second book insight card exploring a key idea from The Psychology of Money.',
-    personas: [],
+    personas: ['Go-Getter', 'Protector', 'Caregiver', 'Thinker'],
     languages: ['EN'],
-    demoType: 'trial',
-    trialOnly: true,
+    demoType: 'book-insight',
     previewSrc: '/previews/book-insight.html',
   },
 ]

@@ -238,7 +238,8 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
         item.demoType,
         usePersonaMessage ? selected.persona : null,
         selected.name || 'there',
-        linkUrl(token)
+        linkUrl(token),
+        user?.name || 'Your Advisor'
       )
     : ''
 

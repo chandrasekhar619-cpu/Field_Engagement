@@ -57,8 +57,22 @@ const MESSAGES = {
   },
 }
 
-export function getWhatsAppMessage(demoType, persona, customerName, link) {
+export function getWhatsAppMessage(demoType, persona, customerName, link, rpmName) {
   const variants = MESSAGES[demoType] || MESSAGES.creative
   const fn = (persona && variants[persona]) ? variants[persona] : variants.generic
+  
+  // For book-insight, use the special multi-line format with RPM name
+  if (demoType === 'book-insight' && rpmName) {
+    return `Hello,
+
+Wanted to share this quick 60-second read with you! It's a clean, zero-fluff visual breakdown of how smart financial habits can insulate your family's long-term capital goals.
+
+📲 ${link}
+
+Best regards,
+
+${rpmName}`
+  }
+  
   return fn(customerName || 'there', link)
 }

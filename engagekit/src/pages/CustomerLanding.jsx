@@ -11,6 +11,7 @@ import LifeWordDemo       from '../components/demos/LifeWordDemo'
 import CreativesDemo      from '../components/demos/CreativesDemo'
 import WordHuntDemo       from '../components/demos/WordHuntDemo'
 import RenewalCard        from '../components/RenewalCard'
+import BookInsight        from '../components/BookInsight'
 
 function Disclaimer() {
   return (
@@ -31,6 +32,7 @@ const DEMOS = {
   'life-word':       LifeWordDemo,
   'creative':        CreativesDemo,
   'word-hunt':       WordHuntDemo,
+  'book-insight':    BookInsight,
 }
 
 async function fetchIp() {

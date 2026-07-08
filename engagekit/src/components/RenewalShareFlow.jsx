@@ -226,7 +226,7 @@ export default function RenewalShareFlow({ item, onClose }) {
       })
     : ''
   const activeMsg = cardLink && selected
-    ? getWhatsAppMessage('renewal-card', selected.persona, selected.name || 'there', cardLink)
+    ? getWhatsAppMessage('renewal-card', selected.persona, selected.name || 'there', cardLink, user?.name || 'Your Advisor')
     : ''
 
   function openWhatsApp() {
