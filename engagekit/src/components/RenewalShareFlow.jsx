@@ -221,9 +221,6 @@ export default function RenewalShareFlow({ item, onClose }) {
   const cardLink = token
     ? linkUrl(token, {
         premium: details.premium,
-        ppt: details.ppt,
-        sum_assured: details.sum_assured,
-        maturity: details.maturity,
         ...(selectedCard === 2 && nomineeName.trim() && { nominee_name: nomineeName.trim() }),
         ...(selectedCard === 2 && paymentMode && { payment_mode: paymentMode }),
       })
