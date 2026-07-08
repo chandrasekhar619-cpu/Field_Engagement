@@ -485,28 +485,25 @@ export default function RenewalShareFlow({ item, onClose }) {
                 <label className="text-[#0f1f3d] text-xs font-semibold block mb-1.5">
                   Payment Mode <span className="text-red-400">*</span>
                 </label>
-                <select
+                <input
+                  type="text"
                   value={paymentMode}
                   onChange={e => {
                     setPaymentMode(e.target.value)
                     if (detailErrors.payment_mode) setDetailErrors(er => { const n = { ...er }; delete n.payment_mode; return n })
                   }}
+                  placeholder="e.g. Monthly, Quarterly, Annual"
                   className={`w-full bg-gray-50 border rounded-xl px-3 py-2.5 text-sm outline-none transition-colors ${
                     detailErrors.payment_mode
                       ? 'border-red-300 focus:border-red-400'
                       : 'border-[#e4e7f0] focus:border-[#0f1f3d]/30'
                   }`}
-                >
-                  <option value="">Select payment mode...</option>
-                  {PAYMENT_MODE_OPTIONS.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
+                />
                 {detailErrors.payment_mode && (
                   <p className="text-red-400 text-xs mt-1">{detailErrors.payment_mode}</p>
                 )}
                 {paymentMode && (
-                  <p className="text-green-600 text-xs mt-2 px-3 py-1.5 bg-green-50 rounded-lg">✓ Selected: <strong>{paymentMode}</strong></p>
+                  <p className="text-green-600 text-xs mt-2 px-3 py-1.5 bg-green-50 rounded-lg">✓ Entered: <strong>{paymentMode}</strong></p>
                 )}
               </div>
             </div>
