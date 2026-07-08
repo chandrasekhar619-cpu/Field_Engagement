@@ -181,6 +181,11 @@
         </div>
         <div class="split-grid">
             <div class="split-box">
+                <span class="box-label">Annual Premium</span>
+                <span class="box-value" id="ui-annual-premium">--</span>
+            </div>
+
+            <div class="split-box right">
                 <span class="box-label">Payment Mode</span>
                 <span class="box-value" id="ui-payment-mode">--</span>
             </div>
@@ -197,8 +202,10 @@
     (function(){
         var p=new URLSearchParams(window.location.search);
         function g(k){ return p.get(k); }
+        function fmtRupee(v){ var n=parseInt(v); return isNaN(n)?'--':'₹'+n.toLocaleString('en-IN'); }
 
-        var nn=g('nominee_name'); document.getElementById('ui-nominee-display').innerText=nn&&nn.trim()?nn.trim():'Update your legacy now';
+        document.getElementById('ui-annual-premium').innerText=fmtRupee(g('premium'));
+        var nn=g('nominee_name'); document.getElementById('ui-nominee-display').innerText=nn&&nn.trim()?nn.trim():'Update nominee details';
         document.getElementById('ui-payment-mode').innerText=g('payment_mode')||'--';
     })();
 </script>
