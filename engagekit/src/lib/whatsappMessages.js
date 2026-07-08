@@ -57,13 +57,103 @@ const MESSAGES = {
   },
 }
 
-export function getWhatsAppMessage(demoType, persona, customerName, link, rpmName) {
-  const variants = MESSAGES[demoType] || MESSAGES.creative
-  const fn = (persona && variants[persona]) ? variants[persona] : variants.generic
-  
-  // For book-insight, use the special multi-line format with RPM name
-  if (demoType === 'book-insight' && rpmName) {
-    return `Hello,
+// Persona-specific messages for word-hunt and book-insight
+const PERSONA_MESSAGES = {
+  'word-hunt': {
+    'Go-Getter': (name, link, rpmName) => `Hi ${name},
+
+Challenge accepted? This word hunt puzzle tests your financial knowledge in under a minute. Speed and smarts required — let's see if you can crack all three.
+
+Give it a try now:
+
+🧩 ${link}
+
+Best regards,
+
+${rpmName}`,
+    'Protector': (name, link, rpmName) => `Hi ${name},
+
+We've created this word hunt to help you learn 3 key wealth protection concepts. Understanding these terms ensures your family's financial security.
+
+Give it a try now:
+
+🧩 ${link}
+
+Best regards,
+
+${rpmName}`,
+    'Caregiver': (name, link, rpmName) => `Hi ${name},
+
+A fun way to learn important financial concepts — this word hunt breaks down wealth ideas in a gentle, gamified format. Perfect for growing your money knowledge.
+
+Give it a try now:
+
+🧩 ${link}
+
+Best regards,
+
+${rpmName}`,
+    'Thinker': (name, link, rpmName) => `Hi ${name},
+
+Designed for the analytical mind — this word hunt challenges you to find 3 hidden financial terms in a logical puzzle grid. Data-backed financial learning.
+
+Give it a try now:
+
+🧩 ${link}
+
+Best regards,
+
+${rpmName}`,
+    generic: (name, link, rpmName) => `Hi ${name},
+
+We have designed this interactive word hunt puzzle and wanted to share it with you. It will take less than a minute to play and breaks down core wealth concepts through a simple, gamified crossword grid.
+
+Give it a try now:
+
+🧩 ${link}
+
+Best regards,
+
+${rpmName}`
+  },
+  'book-insight': {
+    'Go-Getter': (name, link, rpmName) => `Hi ${name},
+
+Ready to shift your wealth velocity? This 60-second breakdown from The Psychology of Money reveals how the wealthiest maintain absolute control over their capital.
+
+📲 ${link}
+
+Best regards,
+
+${rpmName}`,
+    'Protector': (name, link, rpmName) => `Hi ${name},
+
+Discover the quiet secret that keeps families financially secure. This 60-second read explains the real difference between displaying wealth and building lasting protection.
+
+📲 ${link}
+
+Best regards,
+
+${rpmName}`,
+    'Caregiver': (name, link, rpmName) => `Hi ${name},
+
+A gentle read on nurturing wealth for those you love. This 60-second insight reveals how to care for your financial future and your family's wellbeing.
+
+📲 ${link}
+
+Best regards,
+
+${rpmName}`,
+    'Thinker': (name, link, rpmName) => `Hi ${name},
+
+For the analytical mind — this 60-second breakdown reveals the mathematical truth behind being rich vs. being wealthy. Logic-backed financial wisdom.
+
+📲 ${link}
+
+Best regards,
+
+${rpmName}`,
+    generic: (name, link, rpmName) => `Hi ${name},
 
 Wanted to share this quick 60-second read with you! It's a clean, zero-fluff visual breakdown of how smart financial habits can insulate your family's long-term capital goals.
 
@@ -72,6 +162,18 @@ Wanted to share this quick 60-second read with you! It's a clean, zero-fluff vis
 Best regards,
 
 ${rpmName}`
+  }
+}
+
+export function getWhatsAppMessage(demoType, persona, customerName, link, rpmName) {
+  const variants = MESSAGES[demoType] || MESSAGES.creative
+  const fn = (persona && variants[persona]) ? variants[persona] : variants.generic
+  
+  // For word-hunt and book-insight, use persona-specific multi-line format with RPM name
+  if ((demoType === 'word-hunt' || demoType === 'book-insight') && rpmName) {
+    const personaMessages = PERSONA_MESSAGES[demoType]
+    const messageFn = (persona && personaMessages[persona]) ? personaMessages[persona] : personaMessages.generic
+    return messageFn(customerName || 'there', link, rpmName)
   }
   
   return fn(customerName || 'there', link)

@@ -86,12 +86,12 @@ function InteractivePreview({ item, name }) {
 }
 
 function WaMessagePreview({ demoType, persona, customerName }) {
-  const message = getWhatsAppMessage(demoType, persona, customerName || '[Customer Name]', '[link]')
+  const message = getWhatsAppMessage(demoType, persona, customerName || '[Customer Name]', '[link]', '[Service Manager Name]')
   return (
     <div className="px-4 py-3 bg-gray-50 border-t border-[#e4e7f0]">
       <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-2">WhatsApp message preview</p>
       <div className="bg-[#dcf8c6] rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
-        <p className="text-gray-700 text-sm leading-relaxed">{message}</p>
+        <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">{message}</p>
       </div>
     </div>
   )
