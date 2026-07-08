@@ -505,6 +505,9 @@ export default function RenewalShareFlow({ item, onClose }) {
                 {detailErrors.payment_mode && (
                   <p className="text-red-400 text-xs mt-1">{detailErrors.payment_mode}</p>
                 )}
+                {paymentMode && (
+                  <p className="text-green-600 text-xs mt-2 px-3 py-1.5 bg-green-50 rounded-lg">✓ Selected: <strong>{paymentMode}</strong></p>
+                )}
               </div>
             </div>
 
