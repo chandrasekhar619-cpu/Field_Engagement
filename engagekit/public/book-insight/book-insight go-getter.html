@@ -6,13 +6,14 @@
     <title>Book Summary Series</title>
     <style>
         :root {
-            --bg-color: #050814;
-            --card-color: #0b1126;
-            --text-main: #f0f4f8;
-            --text-muted: #8aa0cc;
-            --primary-green: #00e676;
-            --accent-gold: #e8a020;
-            --accent-blue: #2979ff;
+            --bg-color: #f8fafc;
+            --card-color: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary-color: #dc2626;
+            --accent-gold: #b58900;
+            --border-color: #e2e8f0;
+            --highlight-bg: #fef2f2;
         }
 
         * {
@@ -24,9 +25,9 @@
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
             padding: 16px;
@@ -36,11 +37,11 @@
         .editorial-card {
             width: 100%;
             max-width: 380px;
-            background: linear-gradient(145deg, var(--card-color) 0%, #070b1a 100%);
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            background: var(--card-color);
+            border: 1px solid var(--border-color);
             border-radius: 28px;
             padding: 24px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);
             display: flex;
             flex-direction: column;
             gap: 18px;
@@ -60,8 +61,8 @@
         }
 
         .read-time {
-            background: rgba(41, 121, 255, 0.1);
-            color: var(--accent-blue);
+            background: rgba(220, 38, 38, 0.08);
+            color: var(--primary-color);
             padding: 3px 8px;
             border-radius: 20px;
         }
@@ -97,17 +98,20 @@
             color: var(--text-muted);
         }
 
-        .bold-white {
+        .bold-dark {
             color: var(--text-main);
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .insight-box {
-            background: rgba(255, 215, 0, 0.02);
-            border-left: 3px solid var(--accent-gold);
-            padding: 14px;
+            background: #fffdf5;
+            border-left: 4px solid var(--accent-gold);
+            border-top: 1px solid #fef3c7;
+            border-right: 1px solid #fef3c7;
+            border-bottom: 1px solid #fef3c7;
+            padding: 16px;
             border-radius: 0 16px 16px 0;
-            margin: 6px 0;
+            margin: 4px 0;
         }
 
         .insight-title {
@@ -116,38 +120,38 @@
             color: var(--accent-gold);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
 
         .education-block {
-            background: rgba(0, 230, 118, 0.02);
-            border: 1px dashed rgba(0, 230, 118, 0.2);
+            background: var(--highlight-bg);
+            border: 1px dashed rgba(15, 23, 42, 0.15);
             border-radius: 16px;
             padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         .action-title {
             font-size: 12px;
             font-weight: 800;
-            color: var(--primary-green);
+            color: var(--primary-color);
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
         .action-item {
             font-size: 13px;
-            color: var(--text-muted);
+            color: var(--text-main);
             display: flex;
             gap: 8px;
             align-items: flex-start;
         }
 
         .editorial-footer {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 14px;
             font-size: 12px;
@@ -171,27 +175,27 @@
         <h1>The Psychology of Money</h1>
     </div>
 
-    <p>When we spot a luxury sports car rolling down the street, we instinctively assume the driver is highly successful. But personal finance literature highlights a glaring gap in this logic: the only definitive data point you actually know about that driver is that their capital is now <span class="bold-white">exactly less money</span> than it was before they made that purchase.</p>
+    <p>When we see someone driving a brand-new luxury sports car down the street, we instinctively think, "Wow, that person has achieved peak success." But there is a huge trap in this way of thinking. The only thing you actually know about that driver for sure is that they have <span class="bold-dark">spent a massive amount of cash</span> right out of their capital pool.</p>
     
-    <p>We are culturally wired to judge financial security based exclusively on what we can visually track, completely missing the structural truth of wealth creation.</p>
+    <p>We are wired to judge high-performance financial success only by outward displays, completely missing how lasting power and capital leverage are actually built.</p>
 
     <div class="insight-box">
-        <div class="insight-title">The Invisible Asset: Rich vs. Wealthy</div>
-        <p style="color: #e2e8f0; font-size: 13.5px;"><b>Being Rich</b> is current income displayed through external items. It actively demands immediate attention. <b>Being Wealthy</b> is quiet—it is the income left unspent, the allocations, and the steady compounding channels that live unseen in your asset pools.</p>
+        <div class="insight-title">The Secret: Rich vs. Wealthy</div>
+        <p style="color: var(--text-main); font-size: 13.5px;"><b>Being Rich</b> means generating a heavy current income stream and spending heavily to show status. <b>Being Wealthy</b> is quieter—it is the capital you intentionally choose not to deploy. It stays inside high-performing compounding instruments to quietly secure absolute control over your market options.</p>
     </div>
 
-    <h2>⚡ Buying Back Your Future Time</h2>
-    <p>Confounding these two concepts traps investors in a constant cycle of visible spending. True financial freedom is the absolute resilience that comes from your unspent pool. Leaving capital to compound uninterrupted isn't missing out; it is an active purchase of your long-term flexibility.</p>
+    <h2>⚡ Compounding Your Edge</h2>
+    <p>Confusing these two concepts stalls your long-term wealth velocity. The ultimate leverage isn't buying assets that lose value; it's buying the freedom to act on opportunities instantly. Letting your funds compound untouched is the ultimate power move.</p>
 
     <div class="education-block">
-        <div class="action-title">The Strategic Takeaway</div>
+        <div class="action-title">The Go-Getter Blueprint</div>
         <div class="action-item">
             <span>•</span>
-            <span><b>The Philosophy:</b> The absolute value of wealth isn't buying more luxury items down the road; it is the quiet autonomy to control your time completely.</span>
+            <span><b>The Strategy:</b> True capital value isn't just about display capacity later. It is about maximizing your personal leverage and maintaining command over your timeline.</span>
         </div>
         <div class="action-item">
             <span>•</span>
-            <span><b>Our Mission:</b> True asset management is about building an invisible fortress of compounding shields that ensures your long-term peace of mind.</span>
+            <span><b>The Playbook:</b> True wealth is your invisible balance sheet—high-growth, active compounding that positions you to dominate your financial goals systematically.</span>
         </div>
     </div>
 
