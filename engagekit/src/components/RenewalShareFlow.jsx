@@ -213,13 +213,13 @@ export default function RenewalShareFlow({ item, onClose }) {
       if (linkErr) throw linkErr
 
       // Fire-and-forget — store values so the next share for this policy auto-fills
-      supabase.from('policy_metadata').upsert({
+      const { error: metaErr } = await supabase.from('policy_metadata').upsert({
         policy_number: selected.policy_number,
         premium:       parseInt(details.premium),
         ...(selectedCard === 2 && paymentMode && { payment_mode: paymentMode }),
         updated_at:    new Date().toISOString(),
       }, { onConflict: 'policy_number' })
-        .then(({ error }) => { if (error) console.error('policy_metadata upsert failed:', error) })
+      if (metaErr) console.error('policy_metadata upsert failed:', metaErr)
 
       setToken(uuid)
       setStep('link')
