@@ -253,9 +253,9 @@
             return ('0'+d.getDate()).slice(-2)+' '+m[d.getMonth()]+' '+d.getFullYear();
         }
 
-        var rcdStr=g('rcd'), rcd=rcdStr?new Date(rcdStr):null;
+        var issueStr=g('issue_date'), issueDate=issueStr?new Date(issueStr):null;
         var today=new Date();
-        var yearsPaid=(rcd&&!isNaN(rcd.getTime()))?Math.floor((today-rcd)/(365.25*24*60*60*1000)):0;
+        var yearsPaid=(issueDate&&!isNaN(issueDate.getTime()))?Math.floor((today-issueDate)/(365.25*24*60*60*1000))+1:0;
 
         var dueDateStr=g('due_date'), dueDate=dueDateStr?new Date(dueDateStr):null;
         var isPostDue=dueDate&&!isNaN(dueDate.getTime())?today>dueDate:false;
@@ -277,7 +277,7 @@
         document.getElementById('ui-headline').innerText=headline;
         document.getElementById('ui-body').innerText=body;
 
-        var yrsDisplayed=Math.min(yearsPaid, ppt);
+        var yrsDisplayed=ppt>0?Math.min(yearsPaid, ppt):yearsPaid;
         var pct=ppt>0?Math.min(100,(yrsDisplayed/ppt)*100):0;
         document.getElementById('ui-bar-fill').style.width=pct+'%';
         document.getElementById('ui-status-count').innerText=yrsDisplayed+' year'+(yrsDisplayed!==1?'s':'')+' paid';
