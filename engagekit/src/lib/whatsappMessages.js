@@ -219,6 +219,43 @@ Do let me know if it relates to your financial personality. Give it a try now:
 Best regards,
 
 ${rpmName}`
+  },
+  'renewal-card': {
+    'Go-Getter': (name, link, rpmName) => `Hi ${name} 👋 Your policy renewal is coming up — here's a quick update put together just for you.
+
+${link}
+
+Best regards,
+
+${rpmName}`,
+    'Protector': (name, link, rpmName) => `Hi ${name} 👋 Wanted to make sure your family's cover stays uninterrupted. Here's your renewal update.
+
+${link}
+
+Best regards,
+
+${rpmName}`,
+    'Caregiver': (name, link, rpmName) => `Hi ${name} 👋 Just checking in — your renewal is coming up and I've put this together for you.
+
+${link}
+
+Best regards,
+
+${rpmName}`,
+    'Thinker': (name, link, rpmName) => `Hi ${name} 👋 Your renewal details are ready for review. Take a look when you get a moment.
+
+${link}
+
+Best regards,
+
+${rpmName}`,
+    generic: (name, link, rpmName) => `Hi ${name} 👋 Your policy renewal is coming up. Here's a quick update for you.
+
+${link}
+
+Best regards,
+
+${rpmName}`
   }
 }
 
@@ -226,8 +263,8 @@ export function getWhatsAppMessage(demoType, persona, customerName, link, rpmNam
   const variants = MESSAGES[demoType] || MESSAGES.creative
   const fn = (persona && variants[persona]) ? variants[persona] : variants.generic
   
-  // For word-hunt, book-insight, and mood, use persona-specific multi-line format with RPM name
-  if ((demoType === 'word-hunt' || demoType === 'book-insight' || demoType === 'mood') && rpmName) {
+  // For word-hunt, book-insight, mood, and renewal-card, use persona-specific multi-line format with RPM name
+  if ((demoType === 'word-hunt' || demoType === 'book-insight' || demoType === 'mood' || demoType === 'renewal-card') && rpmName) {
     const personaMessages = PERSONA_MESSAGES[demoType]
     const messageFn = (persona && personaMessages[persona]) ? personaMessages[persona] : personaMessages.generic
     return messageFn(customerName || 'there', link, rpmName)
