@@ -162,6 +162,63 @@ Wanted to share this quick 60-second read with you! It's a clean, zero-fluff vis
 Best regards,
 
 ${rpmName}`
+  },
+  'mood': {
+    'Go-Getter': (name, link, rpmName) => `Hi ${name},
+
+This is a quick 4-question profile assessment for you. It will take less than a minute to complete and instantly shows your natural money style.
+
+Let me know if it matches how you think. Give it a try now:
+
+📊 ${link}
+
+Best regards,
+
+${rpmName}`,
+    'Protector': (name, link, rpmName) => `Hi ${name},
+
+This is a quick 4-question profile assessment for you. It will take less than a minute to complete and helps you understand your natural approach to money and security.
+
+Let me know if it resonates with you. Give it a try now:
+
+📊 ${link}
+
+Best regards,
+
+${rpmName}`,
+    'Caregiver': (name, link, rpmName) => `Hi ${name},
+
+This is a quick 4-question profile assessment for you. It will take less than a minute to complete and reveals your natural style in caring for money and loved ones.
+
+Let me know what you think. Give it a try now:
+
+📊 ${link}
+
+Best regards,
+
+${rpmName}`,
+    'Thinker': (name, link, rpmName) => `Hi ${name},
+
+This is a quick 4-question profile assessment for you. It will take less than a minute to complete and maps your natural thinking style about money.
+
+See if it aligns with how you see things. Give it a try now:
+
+📊 ${link}
+
+Best regards,
+
+${rpmName}`,
+    generic: (name, link, rpmName) => `Hi ${name},
+
+This is a quick 4-question profile assessment for you. It will take less than a minute to complete and instantly maps out your natural style to a financial personality profile.
+
+Do let me know if it relates to your financial personality. Give it a try now:
+
+📊 ${link}
+
+Best regards,
+
+${rpmName}`
   }
 }
 
@@ -169,8 +226,8 @@ export function getWhatsAppMessage(demoType, persona, customerName, link, rpmNam
   const variants = MESSAGES[demoType] || MESSAGES.creative
   const fn = (persona && variants[persona]) ? variants[persona] : variants.generic
   
-  // For word-hunt and book-insight, use persona-specific multi-line format with RPM name
-  if ((demoType === 'word-hunt' || demoType === 'book-insight') && rpmName) {
+  // For word-hunt, book-insight, and mood, use persona-specific multi-line format with RPM name
+  if ((demoType === 'word-hunt' || demoType === 'book-insight' || demoType === 'mood') && rpmName) {
     const personaMessages = PERSONA_MESSAGES[demoType]
     const messageFn = (persona && personaMessages[persona]) ? personaMessages[persona] : personaMessages.generic
     return messageFn(customerName || 'there', link, rpmName)
