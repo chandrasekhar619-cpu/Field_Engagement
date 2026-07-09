@@ -277,10 +277,11 @@
         document.getElementById('ui-headline').innerText=headline;
         document.getElementById('ui-body').innerText=body;
 
-        var pct=ppt>0?Math.min(100,(yearsPaid/ppt)*100):0;
+        var yrsDisplayed=Math.min(yearsPaid, ppt);
+        var pct=ppt>0?Math.min(100,(yrsDisplayed/ppt)*100):0;
         document.getElementById('ui-bar-fill').style.width=pct+'%';
-        document.getElementById('ui-status-count').innerText=yearsPaid+' year'+(yearsPaid!==1?'s':'')+' paid';
-        document.getElementById('ui-progress-ratio').innerText='Paid '+yearsPaid+' of '+(ppt||'--')+' Years';
+        document.getElementById('ui-status-count').innerText=yrsDisplayed+' year'+(yrsDisplayed!==1?'s':'')+' paid';
+        document.getElementById('ui-progress-ratio').innerText='Paid '+yrsDisplayed+' of '+(ppt||'--')+' Years';
         document.getElementById('ui-total-term').innerText=ppt?ppt+' Yrs':'--';
         document.getElementById('ui-premium-amount').innerText=fmtRupee(g('premium'));
         document.getElementById('ui-due-date').innerText='Due: '+fmtDate(dueDateStr);

@@ -94,11 +94,12 @@
             document.getElementById('ui-headline').innerText=headline;
             document.getElementById('ui-body').innerText=body;
 
-            var pct=ppt>0?Math.min(100,(yearsPaid/ppt)*100):0;
+            var yrsDisplayed=Math.min(yearsPaid, ppt);
+            var pct=ppt>0?Math.min(100,(yrsDisplayed/ppt)*100):0;
             document.getElementById('ui-bar-fill').style.width=pct+'%';
-            document.getElementById('ui-text-years').innerText=yearsPaid+' year'+(yearsPaid!==1?'s':'')+' paid';
-            document.getElementById('ui-status-count').innerText='Year '+(yearsPaid+1);
-            document.getElementById('ui-progress-ratio').innerText=yearsPaid+' of '+(ppt||'--')+' payments completed';
+            document.getElementById('ui-text-years').innerText=yrsDisplayed+' year'+(yrsDisplayed!==1?'s':'')+' paid';
+            document.getElementById('ui-status-count').innerText='Year '+(yrsDisplayed+1);
+            document.getElementById('ui-progress-ratio').innerText=yrsDisplayed+' of '+(ppt||'--')+' payments completed';
             document.getElementById('ui-total-term').innerText=ppt?ppt+' Years':'--';
             document.getElementById('ui-premium-amount').innerText=fmtRupee(g('premium'));
             document.getElementById('ui-due-date').innerText='Due: '+fmtDate(dueDateStr);

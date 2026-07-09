@@ -74,6 +74,7 @@ export default function RenewalShareFlow({ item, onClose }) {
   const [prefilled,       setPrefilled]       = useState(false)
   const [nomineeName,     setNomineeName]     = useState('')
   const [paymentMode,     setPaymentMode]     = useState('')
+  const [pptTerm,         setPptTerm]         = useState('')
 
   const [allCustomers,     setAllCustomers]     = useState([])
   const [customersLoading, setCustomersLoading] = useState(false)
@@ -158,6 +159,7 @@ export default function RenewalShareFlow({ item, onClose }) {
   function validateDetails() {
     const errs = {}
     if (!details.premium)     errs.premium = 'Required'
+    if (selectedCard === 1 && !pptTerm) errs.ppt = 'Required'
     if (selectedCard === 2 && !paymentMode) errs.payment_mode = 'Required'
     setDetailErrors(errs)
     return Object.keys(errs).length === 0
@@ -178,6 +180,7 @@ export default function RenewalShareFlow({ item, onClose }) {
           metadata: {
             card_number:  selectedCard,
             premium:      parseInt(details.premium),
+            ...(selectedCard === 1 && pptTerm && { ppt: parseInt(pptTerm), premium_due_date: selected.premium_due_date }),
             ...(selectedCard === 2 && paymentMode && { payment_mode: paymentMode }),
             ...(selectedCard === 3 && { product_name: selected.product_name, premium_due_date: selected.premium_due_date }),
           },
@@ -276,6 +279,7 @@ export default function RenewalShareFlow({ item, onClose }) {
     setSelectedCard(card)
     setNomineeName('')
     setPaymentMode('')
+    setPptTerm('')
   }
 
   return (
@@ -463,6 +467,44 @@ export default function RenewalShareFlow({ item, onClose }) {
             </div>
 
             <div className="overflow-y-auto flex-1 p-4 flex flex-col gap-4">
+              {selectedCard === 1 && (
+                <>
+                  <div>
+                    <label className="text-[#0f1f3d] text-xs font-semibold block mb-1.5">
+                      Premium Paying Term (Years) <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={pptTerm}
+                      onChange={e => {
+                        setPptTerm(e.target.value)
+                        if (detailErrors.ppt) setDetailErrors(er => { const n = { ...er }; delete n.ppt; return n })
+                      }}
+                      placeholder="e.g. 10, 15, 20"
+                      min="1"
+                      className={`w-full bg-gray-50 border rounded-xl px-3 py-2.5 text-sm outline-none transition-colors ${
+                        detailErrors.ppt
+                          ? 'border-red-300 focus:border-red-400'
+                          : 'border-[#e4e7f0] focus:border-[#0f1f3d]/30'
+                      }`}
+                    />
+                    {detailErrors.ppt && (
+                      <p className="text-red-400 text-xs mt-1">{detailErrors.ppt}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="text-[#0f1f3d] text-xs font-semibold block mb-1.5">
+                      Renewal Due Date <span className="text-gray-400 font-normal">(auto-filled)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formatDDMMYYYY(selected?.premium_due_date)}
+                      disabled
+                      className="w-full bg-gray-100 border border-[#e4e7f0] rounded-xl px-3 py-2.5 text-sm outline-none text-gray-600 cursor-not-allowed"
+                    />
+                  </div>
+                </>
+              )}
               {selectedCard === 2 && (
                 <div>
                   <label className="text-[#0f1f3d] text-xs font-semibold block mb-1.5">
