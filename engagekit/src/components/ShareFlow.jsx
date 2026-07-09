@@ -113,7 +113,7 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
   const [shareImageFile,   setShareImageFile]   = useState(null)
   const [imageGenerating,  setImageGenerating]  = useState(false)
   const [usePersonaMessage, setUsePersonaMessage] = useState(true)
-  const [waPhone,          setWaPhone]          = useState('')
+  const [waPhoneNumber,    setWaPhoneNumber]    = useState('')
 
   const isCreative = item.demoType === 'creative'
   const name        = user?.name        || 'Your Advisor'
@@ -244,9 +244,9 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
     : ''
 
   function openWhatsApp() {
-    const num = waPhone.trim().replace(/\D/g, '')
-    if (num) {
-      window.open(`https://wa.me/${num}?text=${encodeURIComponent(activeMsg)}`, '_blank')
+    const num = waPhoneNumber.trim().replace(/\D/g, '')
+    if (num && num.length === 10) {
+      window.open(`https://wa.me/91${num}?text=${encodeURIComponent(activeMsg)}`, '_blank')
       return
     }
     if (shareImageFile && navigator.share && navigator.canShare?.({ files: [shareImageFile] })) {
@@ -452,13 +452,22 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
                 <label className="text-[#0f1f3d] text-xs font-semibold block mb-1.5">
                   Share to WhatsApp number <span className="text-gray-400 font-normal">(optional)</span>
                 </label>
-                <input
-                  type="tel"
-                  value={waPhone}
-                  onChange={e => setWaPhone(e.target.value)}
-                  placeholder="e.g. 91XXXXXXXXXX"
-                  className="w-full bg-gray-50 border border-[#e4e7f0] focus:border-[#0f1f3d]/30 rounded-xl px-3 py-2.5 text-sm outline-none transition-colors"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value="+91"
+                    disabled
+                    className="w-[60px] bg-gray-100 border border-[#e4e7f0] rounded-xl px-3 py-2.5 text-sm outline-none font-semibold text-[#0f1f3d]"
+                  />
+                  <input
+                    type="tel"
+                    value={waPhoneNumber}
+                    onChange={e => setWaPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    placeholder="10-digit number"
+                    maxLength="10"
+                    className="flex-1 bg-gray-50 border border-[#e4e7f0] focus:border-[#0f1f3d]/30 rounded-xl px-3 py-2.5 text-sm outline-none transition-colors"
+                  />
+                </div>
               </div>
 
               <div className="flex gap-2">
