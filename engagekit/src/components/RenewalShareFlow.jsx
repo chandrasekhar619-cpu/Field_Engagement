@@ -14,6 +14,24 @@ function initials(name = '') {
   return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '?'
 }
 
+// Convert DD-MM-YYYY to YYYY-MM-DD for date parsing
+function convertDDMMYYYY(dateStr) {
+  if (!dateStr) return ''
+  const [day, month, year] = dateStr.split('-')
+  if (!day || !month || !year) return ''
+  return `${year}-${month}-${day}`
+}
+
+// Format DD-MM-YYYY date for display
+function formatDDMMYYYY(dateStr) {
+  if (!dateStr) return ''
+  const yyyy_mm_dd = convertDDMMYYYY(dateStr)
+  if (!yyyy_mm_dd) return ''
+  const d = new Date(yyyy_mm_dd)
+  if (isNaN(d.getTime())) return ''
+  return d.toLocaleDateString('en-IN')
+}
+
 const avatarBg = ['bg-[#0f1f3d]', 'bg-indigo-700', 'bg-emerald-700', 'bg-rose-700', 'bg-violet-700']
 
 const policyBadge = {
@@ -478,7 +496,7 @@ export default function RenewalShareFlow({ item, onClose }) {
                     </label>
                     <input
                       type="text"
-                      value={selected?.premium_due_date ? new Date(selected.premium_due_date).toLocaleDateString('en-IN') : ''}
+                      value={formatDDMMYYYY(selected?.premium_due_date)}
                       disabled
                       className="w-full bg-gray-100 border border-[#e4e7f0] rounded-xl px-3 py-2.5 text-sm outline-none text-gray-600 cursor-not-allowed"
                     />

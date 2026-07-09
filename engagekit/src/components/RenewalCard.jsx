@@ -8,6 +8,14 @@ const PERSONA_FILE = {
   'Thinker':    'thinker',
 }
 
+// Convert DD-MM-YYYY to YYYY-MM-DD for date parsing
+function convertDDMMYYYY(dateStr) {
+  if (!dateStr) return ''
+  const [day, month, year] = dateStr.split('-')
+  if (!day || !month || !year) return ''
+  return `${year}-${month}-${day}`
+}
+
 function Disclaimer() {
   return (
     <div className="border-t border-[#e4e7f0] bg-white px-6 py-4 flex-shrink-0">
@@ -31,7 +39,7 @@ export default function RenewalCard({ customer, metadata, rpmName, token, linkId
   const params = new URLSearchParams({
     name:         customer?.name          ?? '',
     policy:       product_name ?? customer?.product_name ?? '',
-    due_date:     premium_due_date ?? customer?.premium_due_date ?? '',
+    due_date:     convertDDMMYYYY(premium_due_date ?? customer?.premium_due_date ?? ''),
     rcd:          customer?.issue_date    ?? '',
     ppt:          ppt         ?? '',
     premium:      premium     ?? '',
