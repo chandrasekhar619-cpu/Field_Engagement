@@ -21,7 +21,7 @@ function Disclaimer() {
 export default function RenewalCard({ customer, metadata, rpmName, token, linkId, customerIp, nomineeName }) {
   const markedUsedRef = useRef(false)
 
-  const { card_number = 1, ppt, sum_assured, maturity, premium, payment_mode } = metadata || {}
+  const { card_number = 1, ppt, sum_assured, maturity, premium, payment_mode, product_name, premium_due_date } = metadata || {}
 
   const personaSlug = PERSONA_FILE[customer?.persona] ?? null
   const fileName = personaSlug
@@ -30,8 +30,8 @@ export default function RenewalCard({ customer, metadata, rpmName, token, linkId
 
   const params = new URLSearchParams({
     name:         customer?.name          ?? '',
-    policy:       customer?.policy_number ?? '',
-    due_date:     customer?.due_date      ?? '',
+    policy:       product_name ?? customer?.product_name ?? '',
+    due_date:     premium_due_date ?? customer?.premium_due_date ?? '',
     rcd:          customer?.issue_date    ?? '',
     ppt:          ppt         ?? '',
     premium:      premium     ?? '',
