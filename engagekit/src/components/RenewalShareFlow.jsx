@@ -180,9 +180,11 @@ export default function RenewalShareFlow({ item, onClose }) {
           metadata: {
             card_number:  selectedCard,
             premium:      parseInt(details.premium),
+            policy_number: selected.policy_number ?? '',
+            product_name: selected.product_name ?? '',
             ...(selectedCard === 1 && pptTerm && { ppt: parseInt(pptTerm), premium_due_date: selected.premium_due_date }),
             ...(selectedCard === 2 && paymentMode && { payment_mode: paymentMode }),
-            ...(selectedCard === 3 && { product_name: selected.product_name, premium_due_date: selected.premium_due_date }),
+            ...(selectedCard === 3 && { premium_due_date: selected.premium_due_date }),
           },
         })
         .select('token')
@@ -471,6 +473,28 @@ export default function RenewalShareFlow({ item, onClose }) {
                 <>
                   <div>
                     <label className="text-[#0f1f3d] text-xs font-semibold block mb-1.5">
+                      Product Name <span className="text-gray-400 font-normal">(auto-filled)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={selected?.product_name || ''}
+                      disabled
+                      className="w-full bg-gray-100 border border-[#e4e7f0] rounded-xl px-3 py-2.5 text-sm outline-none text-gray-600 cursor-not-allowed"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[#0f1f3d] text-xs font-semibold block mb-1.5">
+                      Policy Number <span className="text-gray-400 font-normal">(auto-filled)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={selected?.policy_number || ''}
+                      disabled
+                      className="w-full bg-gray-100 border border-[#e4e7f0] rounded-xl px-3 py-2.5 text-sm outline-none text-gray-600 cursor-not-allowed"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[#0f1f3d] text-xs font-semibold block mb-1.5">
                       Premium Paying Term (Years) <span className="text-red-400">*</span>
                     </label>
                     <input
@@ -528,6 +552,17 @@ export default function RenewalShareFlow({ item, onClose }) {
                     <input
                       type="text"
                       value={selected?.product_name || ''}
+                      disabled
+                      className="w-full bg-gray-100 border border-[#e4e7f0] rounded-xl px-3 py-2.5 text-sm outline-none text-gray-600 cursor-not-allowed"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[#0f1f3d] text-xs font-semibold block mb-1.5">
+                      Policy Number <span className="text-gray-400 font-normal">(auto-filled)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={selected?.policy_number || ''}
                       disabled
                       className="w-full bg-gray-100 border border-[#e4e7f0] rounded-xl px-3 py-2.5 text-sm outline-none text-gray-600 cursor-not-allowed"
                     />

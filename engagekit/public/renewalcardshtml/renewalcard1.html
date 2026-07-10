@@ -231,6 +231,7 @@
             <div class="premium-label-block">
                 <span class="premium-label">Premium Amount</span>
                 <span class="premium-due-date" id="ui-due-date">--</span>
+                <span class="premium-due-date" id="ui-policy-no">Policy No: --</span>
             </div>
             <div class="premium-value" id="ui-premium-amount">--</div>
         </div>
@@ -285,6 +286,7 @@
         document.getElementById('ui-total-term').innerText=ppt?ppt+' Yrs':'--';
         document.getElementById('ui-premium-amount').innerText=fmtRupee(g('premium'));
         document.getElementById('ui-due-date').innerText='Due: '+fmtDate(dueDateStr);
+        document.getElementById('ui-policy-no').innerText='Policy No: '+(g('policy_no')||'--');
     })();
 </script>
 

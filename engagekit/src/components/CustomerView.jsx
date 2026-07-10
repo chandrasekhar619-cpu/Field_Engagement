@@ -6,6 +6,7 @@ function normalize(row, activeIds) {
   return {
     ...row,
     policyNumber:    row.policy_number,
+    productName:     row.product_name,
     issueDate:       row.issue_date,
     policyType:      row.policy_type,
     hasInteractions: activeIds ? activeIds.has(row.id) : false,
@@ -48,7 +49,7 @@ export default function CustomerView() {
       setFetchErr(null)
 
       let q = supabase.from('customers').select('*').order('name', { ascending: true }).limit(50)
-      if (term) q = q.or(`name.ilike.%${term}%,policy_number.ilike.%${term}%`)
+      if (term) q = q.or(`name.ilike.%${term}%,policy_number.ilike.%${term}%,product_name.ilike.%${term}%`)
 
       const { data, error } = await q
       if (error) {

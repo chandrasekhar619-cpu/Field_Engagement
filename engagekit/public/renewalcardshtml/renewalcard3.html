@@ -221,6 +221,10 @@
             <span class="row-value" id="ui-plan-name">--</span>
         </div>
         <div class="invoice-row">
+            <span class="row-label">Policy Number</span>
+            <span class="row-value" id="ui-policy-no">--</span>
+        </div>
+        <div class="invoice-row">
             <span class="row-label">Due Date</span>
             <span class="row-value" id="ui-due-date">--</span>
         </div>
@@ -272,6 +276,7 @@
         }
 
         document.getElementById('ui-plan-name').innerText=g('policy')||'--';
+        document.getElementById('ui-policy-no').innerText=g('policy_no')||'--';
         document.getElementById('ui-due-date').innerText=fmtDate(g('due_date'));
         document.getElementById('ui-premium-amount').innerText=fmtRupee(g('premium'));
     })();

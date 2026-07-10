@@ -57,7 +57,10 @@
         </div>
         <div class="premium-breakdown-box">
             <div class="amount-display" id="ui-premium-amount">--</div>
-            <div class="due-date-subtext" id="ui-due-date">--</div>
+            <div>
+                <div class="due-date-subtext" id="ui-due-date">--</div>
+                <div class="due-date-subtext" id="ui-policy-no">Policy No: --</div>
+            </div>
         </div>
         <div class="warning-banner" id="ui-warning-days" style="display:none;"></div>
         <a href="https://www.edelweisslife.in/login" class="action-button" id="ui-cta" target="_blank">Confirm Payment</a>
@@ -106,6 +109,7 @@
             document.getElementById('ui-total-term').innerText=ppt?ppt+' Yrs':'--';
             document.getElementById('ui-premium-amount').innerText=fmtRupee(g('premium'));
             document.getElementById('ui-due-date').innerText='Due: '+fmtDate(dueDateStr);
+            document.getElementById('ui-policy-no').innerText='Policy No: '+(g('policy_no')||'--');
         })();
     </script>
 </body>

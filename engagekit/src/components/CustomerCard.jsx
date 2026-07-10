@@ -54,6 +54,9 @@ export default function CustomerCard({ customer }) {
         </div>
 
         <p className="text-gray-400 text-xs mt-0.5">{customer.policyNumber}</p>
+        {customer.productName && (
+          <p className="text-gray-500 text-xs mt-0.5">{customer.productName}</p>
+        )}
         {fmtDueDate(customer.premium_due_date) && (
           <p className="text-gray-400 text-xs mb-1.5">{fmtDueDate(customer.premium_due_date)}</p>
         )}
