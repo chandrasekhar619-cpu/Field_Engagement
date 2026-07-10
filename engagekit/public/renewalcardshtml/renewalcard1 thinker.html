@@ -29,7 +29,7 @@
         .bar-filled { height: 100%; background: var(--go-green); width: 0%; transition: width 1s ease-in-out; border-radius: 10px; }
         .bar-labels { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: var(--text-muted); }
         .current-marker { color: var(--go-green); font-weight: 700; }
-        .premium-breakdown-box { background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 14px; padding: 14px; display: flex; justify-content: space-between; align-items: center; }
+        .premium-breakdown-box { background: rgba(16, 185, 129, 0.03); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
         .amount-display { font-size: 20px; font-weight: 800; color: var(--text-main); }
         .due-date-subtext { font-size: 12px; color: var(--text-muted); text-align: right; }
         .action-button { background: var(--go-green); color: #ffffff; text-align: center; padding: 14px; border-radius: 16px; font-size: 15px; font-weight: 700; text-decoration: none; box-shadow: 0 4px 12px var(--glow-green); transition: all 0.2s ease; }
@@ -56,12 +56,11 @@
             </div>
         </div>
         <div class="premium-breakdown-box">
-            <div class="amount-display" id="ui-premium-amount">--</div>
-            <div>
-                <div class="due-date-subtext" id="ui-due-date">--</div>
-                <div class="due-date-subtext" id="ui-product-name">Product Name: --</div>
-                <div class="due-date-subtext" id="ui-policy-no">Policy No: --</div>
-            </div>
+            <div class="due-date-subtext" style="font-weight:700; text-transform:uppercase; letter-spacing:.06em;">Policy Details</div>
+            <div class="due-date-subtext" id="ui-due-date">Due Date: --</div>
+            <div class="due-date-subtext" id="ui-product-name">Product Name: --</div>
+            <div class="due-date-subtext" id="ui-policy-no">Policy No: --</div>
+            <div class="due-date-subtext" id="ui-premium-amount">Premium Amount: --</div>
         </div>
         <div class="warning-banner" id="ui-warning-days" style="display:none;"></div>
         <a href="https://www.edelweisslife.in/login" class="action-button" id="ui-cta" target="_blank">Confirm Payment</a>
@@ -108,8 +107,8 @@
             document.getElementById('ui-status-count').innerText='Year '+(yrsDisplayed+1);
             document.getElementById('ui-progress-ratio').innerText='Paid '+yrsDisplayed+' of '+(ppt||'--')+' Years';
             document.getElementById('ui-total-term').innerText=ppt?ppt+' Yrs':'--';
-            document.getElementById('ui-premium-amount').innerText=fmtRupee(g('premium'));
-            document.getElementById('ui-due-date').innerText='Due: '+fmtDate(dueDateStr);
+            document.getElementById('ui-premium-amount').innerText='Premium Amount: '+fmtRupee(g('premium'));
+            document.getElementById('ui-due-date').innerText='Due Date: '+fmtDate(dueDateStr);
             document.getElementById('ui-product-name').innerText='Product Name: '+(g('policy')||'--');
             document.getElementById('ui-policy-no').innerText='Policy No: '+(g('policy_no')||'--');
         })();

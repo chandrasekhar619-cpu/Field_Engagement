@@ -137,8 +137,9 @@
             border-radius: 14px;
             padding: 14px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
         }
 
         .premium-label-block {
@@ -228,13 +229,11 @@
         </div>
 
         <div class="premium-breakdown-box">
-            <div class="premium-label-block">
-                <span class="premium-label">Premium Amount</span>
-                <span class="premium-due-date" id="ui-due-date">--</span>
-                <span class="premium-due-date" id="ui-product-name">Product Name: --</span>
-                <span class="premium-due-date" id="ui-policy-no">Policy No: --</span>
-            </div>
-            <div class="premium-value" id="ui-premium-amount">--</div>
+            <span class="premium-label">Policy Details</span>
+            <span class="premium-due-date" id="ui-due-date">Due Date: --</span>
+            <span class="premium-due-date" id="ui-product-name">Product Name: --</span>
+            <span class="premium-due-date" id="ui-policy-no">Policy No: --</span>
+            <span class="premium-due-date" id="ui-premium-amount">Premium Amount: --</span>
         </div>
 
         <div class="warning-box" id="ui-warning-days" style="display:none;"></div>
@@ -285,8 +284,8 @@
         document.getElementById('ui-status-count').innerText=yrsDisplayed+' year'+(yrsDisplayed!==1?'s':'')+' paid';
         document.getElementById('ui-progress-ratio').innerText='Paid '+yrsDisplayed+' of '+(ppt||'--')+' Years';
         document.getElementById('ui-total-term').innerText=ppt?ppt+' Yrs':'--';
-        document.getElementById('ui-premium-amount').innerText=fmtRupee(g('premium'));
-        document.getElementById('ui-due-date').innerText='Due: '+fmtDate(dueDateStr);
+        document.getElementById('ui-premium-amount').innerText='Premium Amount: '+fmtRupee(g('premium'));
+        document.getElementById('ui-due-date').innerText='Due Date: '+fmtDate(dueDateStr);
         document.getElementById('ui-product-name').innerText='Product Name: '+(g('policy')||'--');
         document.getElementById('ui-policy-no').innerText='Policy No: '+(g('policy_no')||'--');
     })();
