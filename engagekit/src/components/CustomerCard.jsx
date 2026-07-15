@@ -2,12 +2,59 @@ import { useNavigate } from 'react-router-dom'
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 
+const RENEWAL_ACTIVITY_MAP = {
+  'M-10': ['Central Trigger into MSG', 'How do you think about money quiz'],
+  'M-9':  ['Demystifying money', 'Word hunt'],
+  'M-8':  ['ULIP/Payout Game', 'Demystifying money 2'],
+  'M-7':  ['Financial Playbook for Kids', 'Demystifying money 3'],
+  'M-6':  ['The Money word', 'Quizzes'],
+  'M-5':  ['Demystifying money 4', 'Calculator'],
+  'M-4':  ['Policy Snapshot', 'Word Hunt 2'],
+  'M-3':  ['Demystifying money 5', 'Product and Org Knowledge'],
+  'M-2':  ['Check-in Call', 'Renewal nominee'],
+  'M-1':  ['Renewal Reminder Card m-30', '-'],
+  M0:     ['Renewal final reminder', '-'],
+}
+
 function fmtDueDate(str) {
   if (!str) return null
   const [d, m, y] = str.split('-')
   const mi = parseInt(m, 10) - 1
   if (mi < 0 || mi > 11 || !y) return str
   return `Due: ${parseInt(d, 10)}-${MONTHS[mi]}-${y}`
+}
+
+function dueMonthIndex(str) {
+  if (!str) return null
+  const parts = str.split('-')
+  if (parts.length < 2) return null
+
+  const token = (parts[1] || '').trim()
+  if (!token) return null
+
+  if (/^\d+$/.test(token)) {
+    const mi = parseInt(token, 10) - 1
+    return mi >= 0 && mi <= 11 ? mi : null
+  }
+
+  const abbr = token.slice(0, 3).toLowerCase()
+  const idx = MONTHS.findIndex(m => m.toLowerCase() === abbr)
+  return idx >= 0 ? idx : null
+}
+
+function getMonthBucket(str) {
+  const renewalMonth = dueMonthIndex(str)
+  if (renewalMonth == null) return null
+
+  const currentMonth = new Date().getMonth()
+  let offset = currentMonth - renewalMonth
+  if (offset > 0) offset -= 12
+  return `M${offset}`
+}
+
+function getActivities(bucket) {
+  if (!bucket) return ['-', '-']
+  return RENEWAL_ACTIVITY_MAP[bucket] || ['-', '-']
 }
 
 const policyTypeBadge = {
@@ -27,6 +74,8 @@ export default function CustomerCard({ customer }) {
   const navigate = useNavigate()
   const bg = avatarBg[customer.name.charCodeAt(0) % avatarBg.length]
   const badgeClass = policyTypeBadge[customer.policyType] || 'bg-gray-100 text-gray-600'
+  const monthBucket = getMonthBucket(customer.premium_due_date)
+  const [activity1, activity2] = getActivities(monthBucket)
 
   return (
     <button
@@ -61,6 +110,21 @@ export default function CustomerCard({ customer }) {
           <p className="text-gray-400 text-xs mb-1.5">{fmtDueDate(customer.premium_due_date)}</p>
         )}
         {!customer.premium_due_date && <div className="mb-2" />}
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2.5">
+          <div className="rounded-lg border border-[#cfd8ea] bg-[#eef3ff] px-2.5 py-2 shadow-[0_1px_0_rgba(15,31,61,0.06)]">
+            <p className="text-[10px] uppercase tracking-wide text-[#4d5f86] font-semibold">Month</p>
+            <p className="text-xs font-bold text-[#0f1f3d] mt-0.5">{monthBucket || '-'}</p>
+          </div>
+          <div className="rounded-lg border border-[#bcd2ff] bg-[#eaf2ff] px-2.5 py-2 shadow-[0_1px_0_rgba(24,62,120,0.08)]">
+            <p className="text-[10px] uppercase tracking-wide text-[#36578c] font-semibold">Activity 1</p>
+            <p className="text-xs font-semibold text-[#1f3d70] mt-0.5 leading-[1.15rem]">{activity1}</p>
+          </div>
+          <div className="rounded-lg border border-[#bfe6dc] bg-[#eaf8f3] px-2.5 py-2 shadow-[0_1px_0_rgba(24,88,74,0.08)]">
+            <p className="text-[10px] uppercase tracking-wide text-[#2e7666] font-semibold">Activity 2</p>
+            <p className="text-xs font-semibold text-[#1f6a5a] mt-0.5 leading-[1.15rem]">{activity2}</p>
+          </div>
+        </div>
 
         <div className="flex items-center gap-2 flex-wrap">
           <span className={`text-[11px] px-2 py-0.5 rounded-md font-medium ${badgeClass}`}>
