@@ -324,6 +324,21 @@ ${rpmName}`
   }
 }
 
+function stripExistingSignature(message = '') {
+  // Remove any trailing "Best regards" block so we can enforce one standard signature.
+  return message.replace(/\n+\s*Best regards,?\s*\n+[\s\S]*$/i, '').trim()
+}
+
+function buildSignature(rpmName) {
+  const safeRpmName = rpmName || 'Your Advisor'
+  return `Best regards,\n\n${safeRpmName}\n(Service Manager)\nEdelweiss Life Insurance`
+}
+
+function withStandardSignature(message, rpmName) {
+  const body = stripExistingSignature(message)
+  return `${body}\n\n${buildSignature(rpmName)}`
+}
+
 export function getWhatsAppMessage(demoType, persona, customerName, link, rpmName) {
   const variants = MESSAGES[demoType] || MESSAGES.creative
   const fn = (persona && variants[persona]) ? variants[persona] : variants.generic
@@ -332,8 +347,8 @@ export function getWhatsAppMessage(demoType, persona, customerName, link, rpmNam
   if ((demoType === 'word-hunt' || demoType === 'book-insight' || demoType === 'mood' || demoType === 'renewal-card') && rpmName) {
     const personaMessages = PERSONA_MESSAGES[demoType]
     const messageFn = (persona && personaMessages[persona]) ? personaMessages[persona] : personaMessages.generic
-    return messageFn(customerName || 'there', link, rpmName)
+    return withStandardSignature(messageFn(customerName || 'there', link, rpmName), rpmName)
   }
-  
-  return fn(customerName || 'there', link, rpmName || 'Your Advisor')
+
+  return withStandardSignature(fn(customerName || 'there', link, rpmName || 'Your Advisor'), rpmName || 'Your Advisor')
 }
