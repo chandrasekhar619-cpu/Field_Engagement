@@ -24,6 +24,15 @@ function pct(n, d)    { return d ? (n / d * 100).toFixed(1) + '%' : '—' }
 function fmtDate(iso) { return iso ? new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—' }
 function isoDay(date) { return date.toISOString().split('T')[0] }
 function daysAgo(n)   { const d = new Date(); d.setDate(d.getDate() - n); d.setHours(0, 0, 0, 0); return d }
+function localDayKey(date) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+function fmtDay(date) {
+  return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+}
 
 function mapEngagementLabel(link) {
   if (link.content_id === 'renewal-reminder')                              return 'Renewal Reminder'
@@ -139,6 +148,7 @@ export default function AdminDashboard() {
   const [eaPage,         setEaPage]         = useState(0)
   const [eaOpenedFilter,  setEaOpenedFilter]  = useState('all')
   const [eaOutcomeFilter, setEaOutcomeFilter] = useState('all')
+  const yesterday = useMemo(() => daysAgo(1), [])
 
   function handleEaSort(col) {
     if (eaSortCol === col) {
@@ -262,14 +272,21 @@ export default function AdminDashboard() {
       })(),
     ]
 
+    const yesterdayKey = localDayKey(yesterday)
+    const renewalLinksYesterday = renewalLinks.filter(
+      l => localDayKey(new Date(l.created_at)) === yesterdayKey
+    )
+    const renewalYesterdayLinkIds = new Set(renewalLinksYesterday.map(l => l.id))
+    const renewalOpensYesterday = renewalOpens.filter(i => renewalYesterdayLinkIds.has(i.link_id))
+
     const rpmRenewalMap = {}
-    renewalLinks.forEach(l => {
+    renewalLinksYesterday.forEach(l => {
       const key = l.rpm_id || l.rpm_name || 'Unknown'
       if (!rpmRenewalMap[key]) rpmRenewalMap[key] = { name: l.rpm_name || 'Unknown', sent: 0, opened: 0, lastSent: l.created_at }
       rpmRenewalMap[key].sent++
       if (l.created_at > rpmRenewalMap[key].lastSent) rpmRenewalMap[key].lastSent = l.created_at
     })
-    renewalOpens.forEach(i => {
+    renewalOpensYesterday.forEach(i => {
       const l = linkMap[i.link_id]
       if (!l) return
       const key = l.rpm_id || l.rpm_name || 'Unknown'
@@ -704,7 +721,7 @@ export default function AdminDashboard() {
 
           {/* RPM-level renewal */}
           <div className="bg-white rounded-xl border border-[#e4e7f0] overflow-hidden">
-            <p className="px-4 pt-4 pb-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">By RPM</p>
+            <p className="px-4 pt-4 pb-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">By RPM (Sent on {fmtDay(yesterday)})</p>
             <table className="w-full">
               <thead><tr>
                 <Th>RPM Name</Th>
