@@ -1,10 +1,75 @@
 const MESSAGES = {
   quiz: {
-    'Go-Getter': (name, link) => `Hi ${name}! Here's a quick quiz that'll show you just how much of a Go-Getter you are with money. 2 minutes. ${link}`,
-    'Protector': (name, link) => `Hi ${name}! This quiz gives you a surprising read on how you think about protecting what matters most. ${link}`,
-    'Caregiver': (name, link) => `Hi ${name}! Something fun — a quick quiz on how you think about money and the people you love. ${link}`,
-    'Thinker':   (name, link) => `Hi ${name}! Here's a data-backed personality quiz on money. Curious what it says about you. ${link}`,
-    generic:     (name, link) => `Hi ${name}! Here's a quick 4-question quiz that tells you your money personality — surprisingly accurate. ${link}`,
+  'Go-Getter': (name, link, rpmName) => `Hi ${name},
+
+I wanted to share a quick activity with you: How do you think about money?
+It is a 4-question quiz that takes less than 2 minutes.
+
+Please try it here:
+
+${link}
+
+Best regards,
+
+${rpmName}
+(Service Manager)
+Edelweiss Life Insurance Company`,
+  'Protector': (name, link, rpmName) => `Hi ${name},
+
+I wanted to share a quick activity with you: How do you think about money?
+It is a 4-question quiz that takes less than 2 minutes.
+
+Please try it here:
+
+${link}
+
+Best regards,
+
+${rpmName}
+(Service Manager)
+Edelweiss Life Insurance Company`,
+  'Caregiver': (name, link, rpmName) => `Hi ${name},
+
+I wanted to share a quick activity with you: How do you think about money?
+It is a 4-question quiz that takes less than 2 minutes.
+
+Please try it here:
+
+${link}
+
+Best regards,
+
+${rpmName}
+(Service Manager)
+Edelweiss Life Insurance Company`,
+  'Thinker':   (name, link, rpmName) => `Hi ${name},
+
+I wanted to share a quick activity with you: How do you think about money?
+It is a 4-question quiz that takes less than 2 minutes.
+
+Please try it here:
+
+${link}
+
+Best regards,
+
+${rpmName}
+(Service Manager)
+Edelweiss Life Insurance Company`,
+  generic:     (name, link, rpmName) => `Hi ${name},
+
+I wanted to share a quick activity with you: How do you think about money?
+It is a 4-question quiz that takes less than 2 minutes.
+
+Please try it here:
+
+${link}
+
+Best regards,
+
+${rpmName}
+(Service Manager)
+Edelweiss Life Insurance Company`,
   },
   'fire-calculator': {
     'Go-Getter': (name, link) => `Hi ${name}! This shows you exactly when you can stop working and start living fully. ${link}`,
@@ -270,5 +335,5 @@ export function getWhatsAppMessage(demoType, persona, customerName, link, rpmNam
     return messageFn(customerName || 'there', link, rpmName)
   }
   
-  return fn(customerName || 'there', link)
+  return fn(customerName || 'there', link, rpmName || 'Your Advisor')
 }
