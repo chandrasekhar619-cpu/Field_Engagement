@@ -123,6 +123,12 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
   const [customersLoading, setCustomersLoading] = useState(false)
   const debounceRef = useRef(null)
 
+  useEffect(() => {
+    if (preselectedCustomer) {
+      setSelected(preselectedCustomer)
+    }
+  }, [preselectedCustomer?.id])
+
   // Server-side search — minimum 2 characters, top 20 results
   useEffect(() => {
     const term = search.trim()
@@ -218,12 +224,13 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
   }
 
   function handleSendThis() {
-    if (preselectedCustomer) {
+    const customer = selected || preselectedCustomer
+    if (customer) {
       // Customer already known — generate immediately, skip selector.
-      generateLink(preselectedCustomer)
-    } else {
-      setStep('selector')
+      generateLink(customer)
+      return
     }
+    setStep('selector')
   }
 
   async function copyLink() {
@@ -263,8 +270,8 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
 
   const sendButtonLabel = generating
     ? 'Generating…'
-    : preselectedCustomer
-      ? `Send to ${preselectedCustomer.name} →`
+    : (selected || preselectedCustomer)
+      ? `Send to ${(selected || preselectedCustomer).name} →`
       : 'Send This →'
 
   return (
