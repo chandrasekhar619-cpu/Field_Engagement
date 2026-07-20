@@ -38,6 +38,8 @@ function mapEngagementLabel(link) {
   if (link.content_id === 'renewal-reminder')                              return 'Renewal Reminder'
   if (link.content_id === '13')                                            return 'Word Hunt'
   if (link.content_id === '3')                                             return 'Money Word'
+  if (link.content_id === 'book-insight-2')                                return 'Demystifying Money 2'
+  if (link.content_id === 'book-insight')                                  return 'Demystifying Money'
   if (link.content_id === '1' || link.content_type === 'Quiz')            return 'Persona Quiz'
   if (link.content_id === '5')                                             return 'Diwali Savings Gift'
   if (link.content_id === '8')                                             return 'Birthday Wealth Wish'

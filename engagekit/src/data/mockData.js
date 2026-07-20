@@ -109,6 +109,18 @@ export const contentItems = [
     demoType: 'book-insight',
     previewSrc: '/previews/book-insight.html',
   },
+  {
+    id: 'book-insight-2',
+    emoji: '📖',
+    category: 'Read',
+    title: 'Demystifying Money 2',
+    description: 'A 60-second book insight card exploring automation vs willpower and the power of systems.',
+    personas: ['Go-Getter', 'Protector', 'Caregiver', 'Thinker'],
+    languages: ['EN'],
+    demoType: 'book-insight',
+    previewSrc: '/book-insight/demystifying-money-2.html',
+    hiddenFromGallery: true,
+  },
 ]
 
 export const customers = [

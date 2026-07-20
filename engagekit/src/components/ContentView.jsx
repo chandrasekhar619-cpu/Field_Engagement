@@ -4,6 +4,7 @@ import { contentItems } from '../data/mockData'
 import { supabase } from '../lib/supabaseClient'
 import ContentCard from './ContentCard'
 import CreativesModal from './CreativesModal'
+import BookInsightVariantModal from './BookInsightVariantModal'
 import ShareFlow from './ShareFlow'
 import RenewalShareFlow from './RenewalShareFlow'
 import RenewalPreviewModal from './RenewalPreviewModal'
@@ -18,6 +19,7 @@ export default function ContentView() {
   const [shareItem, setShareItem] = useState(null)
   const [renewalShareItem, setRenewalShareItem] = useState(null)
   const [renewalPreviewOpen, setRenewalPreviewOpen] = useState(false)
+  const [bookInsightVariantOpen, setBookInsightVariantOpen] = useState(false)
   const [activeCustomer, setActiveCustomer] = useState(null)
   const [firstCustomer, setFirstCustomer] = useState(null)
   const [searchParams, setSearchParams] = useSearchParams()
@@ -52,15 +54,28 @@ export default function ContentView() {
       setCreativeItem(item)
     } else if (item.demoType === 'renewal-card') {
       setRenewalPreviewOpen(true)
+    } else if (item.trialOnly) {
+      window.open(`/preview/${item.id}`, '_blank')
+    } else if (item.previewSrc) {
+      window.open(item.previewSrc, '_blank')
     } else {
       window.open(`/preview/${item.id}`, '_blank')
     }
   }
 
+  function handleShare(item) {
+    if (item.id === 'book-insight') {
+      setBookInsightVariantOpen(true)
+      return
+    }
+    setShareItem(item)
+  }
+
   const filtered = contentItems.filter(item => {
     const catOk = activeCategory === 'All' || item.category === activeCategory
     const langOk = !activeLanguage || item.languages.includes(activeLanguage)
-    return catOk && langOk
+    const visible = !item.hiddenFromGallery
+    return catOk && langOk && visible
   })
 
   return (
@@ -132,7 +147,7 @@ export default function ContentView() {
                 key={item.id}
                 item={item}
                 onTryIt={handleTryIt}
-                onShare={item.demoType === 'renewal-card' ? setRenewalShareItem : setShareItem}
+                onShare={item.demoType === 'renewal-card' ? setRenewalShareItem : handleShare}
               />
             ))}
           </div>
@@ -176,6 +191,17 @@ export default function ContentView() {
         <RenewalPreviewModal
           customer={firstCustomer}
           onClose={() => setRenewalPreviewOpen(false)}
+        />
+      )}
+
+      {bookInsightVariantOpen && (
+        <BookInsightVariantModal
+          items={contentItems.filter(item => item.id === 'book-insight' || item.id === 'book-insight-2')}
+          onSelect={(item) => {
+            setShareItem(item)
+            setBookInsightVariantOpen(false)
+          }}
+          onClose={() => setBookInsightVariantOpen(false)}
         />
       )}
     </>

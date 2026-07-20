@@ -257,6 +257,7 @@ export default function CustomerLanding() {
           rpmName={link.rpm_name}
           customerId={customer?.id}
           shareToken={token}
+          contentId={content?.id}
         />
         <Disclaimer />
       </div>
@@ -289,6 +290,7 @@ export default function CustomerLanding() {
           customerId={customer?.id}
           shareToken={token}
           persona={customer?.persona}
+          contentId={content?.id}
         />
       </div>
 

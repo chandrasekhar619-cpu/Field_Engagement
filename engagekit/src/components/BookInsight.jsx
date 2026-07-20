@@ -8,11 +8,13 @@ const PERSONA_FILE = {
   'Thinker':    'thinker',
 }
 
-export default function BookInsight({ customer, token, linkId, customerIp }) {
+export default function BookInsight({ customer, token, linkId, customerIp, contentId }) {
   const markedUsedRef = useRef(false)
 
   const personaSlug = PERSONA_FILE[customer?.persona] ?? null
-  const fileName = personaSlug
+  const fileName = contentId === 'book-insight-2'
+    ? 'demystifying-money-2.html'
+    : personaSlug
     ? `book-insight ${personaSlug}.html`
     : `book-insight.html`
 
