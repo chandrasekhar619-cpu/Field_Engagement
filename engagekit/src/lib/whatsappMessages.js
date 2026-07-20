@@ -184,49 +184,54 @@ ${rpmName}`
   'book-insight': {
     'Go-Getter': (name, link, rpmName) => `Hi ${name},
 
-Ready to shift your wealth velocity? This 60-second breakdown from The Psychology of Money reveals how the wealthiest maintain absolute control over their capital.
+  Thought I'd share a quick 60-sec read from "I Will Teach You To Be Rich" on how automation can make savings easier.
+  Hope you enjoy it.
 
-📲 ${link}
+  📲 ${link}
 
-Best regards,
+  Best regards,
 
-${rpmName}`,
+  ${rpmName}`,
     'Protector': (name, link, rpmName) => `Hi ${name},
 
-Discover the quiet secret that keeps families financially secure. This 60-second read explains the real difference between displaying wealth and building lasting protection.
+  Thought I'd share a quick 60-sec read from "I Will Teach You To Be Rich" on how automation can make savings easier.
+  Hope you enjoy it.
 
-📲 ${link}
+  📲 ${link}
 
-Best regards,
+  Best regards,
 
-${rpmName}`,
+  ${rpmName}`,
     'Caregiver': (name, link, rpmName) => `Hi ${name},
 
-A gentle read on nurturing wealth for those you love. This 60-second insight reveals how to care for your financial future and your family's wellbeing.
+  Thought I'd share a quick 60-sec read from "I Will Teach You To Be Rich" on how automation can make savings easier.
+  Hope you enjoy it.
 
-📲 ${link}
+  📲 ${link}
 
-Best regards,
+  Best regards,
 
-${rpmName}`,
+  ${rpmName}`,
     'Thinker': (name, link, rpmName) => `Hi ${name},
 
-For the analytical mind — this 60-second breakdown reveals the mathematical truth behind being rich vs. being wealthy. Logic-backed financial wisdom.
+  Thought I'd share a quick 60-sec read from "I Will Teach You To Be Rich" on how automation can make savings easier.
+  Hope you enjoy it.
 
-📲 ${link}
+  📲 ${link}
 
-Best regards,
+  Best regards,
 
-${rpmName}`,
+  ${rpmName}`,
     generic: (name, link, rpmName) => `Hi ${name},
 
-Wanted to share this quick 60-second read with you! It's a clean, zero-fluff visual breakdown of how smart financial habits can insulate your family's long-term capital goals.
+  Thought I'd share a quick 60-sec read from "I Will Teach You To Be Rich" on how automation can make savings easier.
+  Hope you enjoy it.
 
-📲 ${link}
+  📲 ${link}
 
-Best regards,
+  Best regards,
 
-${rpmName}`
+  ${rpmName}`
   },
   'mood': {
     'Go-Getter': (name, link, rpmName) => `Hi ${name},
