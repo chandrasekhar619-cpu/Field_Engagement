@@ -7,6 +7,7 @@ import CreativesModal from './CreativesModal'
 import BookInsightVariantModal from './BookInsightVariantModal'
 import ShareFlow from './ShareFlow'
 import RenewalShareFlow from './RenewalShareFlow'
+import BonusAnnouncementShareFlow from './BonusAnnouncementShareFlow'
 import RenewalPreviewModal from './RenewalPreviewModal'
 
 const CATEGORIES = ['All', 'Quiz', 'Calculator', 'Game', 'Mood', 'Festive', 'Occasion', 'Interactive Game', 'Read', 'Reminder']
@@ -18,6 +19,7 @@ export default function ContentView() {
   const [creativeItem, setCreativeItem] = useState(null)
   const [shareItem, setShareItem] = useState(null)
   const [renewalShareItem, setRenewalShareItem] = useState(null)
+  const [bonusShareItem, setBonusShareItem] = useState(null)
   const [renewalPreviewOpen, setRenewalPreviewOpen] = useState(false)
   const [bookInsightVariantOpen, setBookInsightVariantOpen] = useState(false)
   const [activeCustomer, setActiveCustomer] = useState(null)
@@ -31,7 +33,7 @@ export default function ContentView() {
     if (!customerId) { setActiveCustomer(null); return }
     supabase
       .from('customers')
-      .select('id, name, policy_number, policy_type, persona')
+      .select('id, name, policy_number, policy_type, persona, product_name')
       .eq('id', customerId)
       .single()
       .then(({ data }) => setActiveCustomer(data ?? null))
@@ -64,6 +66,10 @@ export default function ContentView() {
   }
 
   function handleShare(item) {
+    if (item.id === 'bonus-announcement-premium' || item.id === 'bonus-announcement-rpu') {
+      setBonusShareItem(item)
+      return
+    }
     if (item.id === 'book-insight') {
       setBookInsightVariantOpen(true)
       return
@@ -184,6 +190,14 @@ export default function ContentView() {
         <RenewalShareFlow
           item={renewalShareItem}
           onClose={() => setRenewalShareItem(null)}
+        />
+      )}
+
+      {bonusShareItem && (
+        <BonusAnnouncementShareFlow
+          item={bonusShareItem}
+          onClose={() => setBonusShareItem(null)}
+          preselectedCustomer={activeCustomer}
         />
       )}
 

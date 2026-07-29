@@ -13,6 +13,7 @@ import WordHuntDemo       from '../components/demos/WordHuntDemo'
 import RenewalCard        from '../components/RenewalCard'
 import BookInsight        from '../components/BookInsight'
 import FinancialPlaybookKids from '../components/FinancialPlaybookKids'
+import BonusAnnouncement from '../components/BonusAnnouncement'
 
 function Disclaimer() {
   return (
@@ -35,6 +36,7 @@ const DEMOS = {
   'word-hunt':       WordHuntDemo,
   'book-insight':    BookInsight,
   'financial-playbook-kids': FinancialPlaybookKids,
+  'bonus-announcement': BonusAnnouncement,
 }
 
 async function fetchIp() {
@@ -131,6 +133,8 @@ export default function CustomerLanding() {
           // Renewal cards route via links.content_id like all other engagements.
           // Metadata (card_number, ppt, etc.) is read from share_tokens.metadata.
           setContent({ demoType: 'renewal-card', metadata: shareToken.metadata })
+        } else if (item.demoType === 'bonus-announcement') {
+          setContent({ ...item, metadata: shareToken.metadata })
         } else if (!DEMOS[item.demoType]) {
           setError('The content for this link could not be loaded.')
           return
@@ -293,6 +297,8 @@ export default function CustomerLanding() {
           shareToken={token}
           persona={customer?.persona}
           contentId={content?.id}
+          customer={customer}
+          metadata={content?.metadata}
         />
       </div>
 

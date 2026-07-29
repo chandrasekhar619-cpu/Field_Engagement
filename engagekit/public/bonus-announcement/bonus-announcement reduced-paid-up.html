@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bonus Announcement (Reduced Paid-Up)</title>
+  <style>
+    :root {
+      --bg1: #f7fafc;
+      --bg2: #e9efff;
+      --ink: #0f172a;
+      --muted: #475569;
+      --accent: #b45309;
+      --card: #ffffff;
+      --line: #dbe2f0;
+      --stripBg: #fff7ed;
+      --stripLine: #fed7aa;
+      --stripInk: #7c2d12;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(160deg, var(--bg1) 0%, var(--bg2) 48%, var(--bg1) 100%);
+      color: var(--ink);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 20px 14px;
+    }
+
+    .sheet {
+      width: min(980px, 100%);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+      overflow: hidden;
+    }
+
+    .hero {
+      padding: 28px 22px 12px;
+      background: linear-gradient(120deg, #ffffff 0%, #f9fafb 100%);
+    }
+
+    .eyebrow {
+      margin: 0;
+      color: var(--accent);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 8px 0 10px;
+      font-size: clamp(24px, 6vw, 40px);
+      line-height: 1.16;
+      letter-spacing: -0.02em;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(15px, 3.6vw, 20px);
+      line-height: 1.45;
+    }
+
+    .body {
+      padding: 18px 22px 24px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .meta {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      background: #ffffff;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .cell {
+      min-width: 0;
+    }
+
+    .label {
+      margin: 0;
+      color: #64748b;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .value {
+      margin: 5px 0 0;
+      color: var(--ink);
+      font-size: clamp(18px, 4.2vw, 28px);
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .bonus {
+      border: 1px solid var(--stripLine);
+      background: var(--stripBg);
+      border-radius: 16px;
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .tag {
+      margin: 0;
+      color: #9a3412;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .amount {
+      margin: 0;
+      color: var(--stripInk);
+      font-size: clamp(22px, 5.4vw, 34px);
+      line-height: 1.2;
+      font-weight: 900;
+    }
+
+    .footer {
+      padding: 0 22px 22px;
+      color: #475569;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    @media (min-width: 760px) {
+      .hero { padding: 34px 30px 14px; }
+      .body { padding: 22px 30px 28px; }
+      .row { grid-template-columns: 1fr 1fr; }
+      .full { grid-column: 1 / -1; }
+      .footer { padding: 0 30px 28px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="sheet">
+    <section class="hero">
+      <p class="eyebrow">BONUS ANNOUNCEMENT</p>
+      <h1>Good news! Your policy bonus is declared.</h1>
+      <p class="sub">We've declared our 14th consecutive annual bonus on your policy.</p>
+    </section>
+
+    <section class="body">
+      <div class="meta">
+        <div class="row">
+          <div class="cell">
+            <p class="label">Customer Name</p>
+            <p id="name" class="value">-</p>
+          </div>
+          <div class="cell">
+            <p class="label">Policy Number</p>
+            <p id="policy" class="value">-</p>
+          </div>
+        </div>
+        <div class="cell full">
+          <p class="label">Product Name</p>
+          <p id="product" class="value">-</p>
+        </div>
+      </div>
+
+      <div class="bonus">
+        <p class="tag">Reduced Paid-Up Policy</p>
+        <p id="bonusAmount" class="amount">Bonus (This Year): Rs. -</p>
+        <p id="bonusAmountRevived" class="amount">Bonus (If Policy Revived): Rs. -</p>
+      </div>
+    </section>
+
+    <p class="footer">This personalised card is generated for your policy details.</p>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+
+    function safeText(v) {
+      return (v == null || String(v).trim() === "") ? "-" : String(v);
+    }
+
+    function formatInr(v) {
+      const n = Number(String(v || "").replace(/,/g, ""));
+      if (!Number.isFinite(n)) return "Rs. -";
+      return "Rs. " + n.toLocaleString("en-IN");
+    }
+
+    document.getElementById("name").textContent = safeText(params.get("name"));
+    document.getElementById("policy").textContent = safeText(params.get("policy"));
+    document.getElementById("product").textContent = safeText(params.get("product"));
+    document.getElementById("bonusAmount").textContent = "Bonus (This Year): " + formatInr(params.get("bonus_amount"));
+    document.getElementById("bonusAmountRevived").textContent = "Bonus (If Policy Revived): " + formatInr(params.get("bonus_amount_revived"));
+  </script>
+</body>
+</html>

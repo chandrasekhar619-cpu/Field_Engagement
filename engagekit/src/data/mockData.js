@@ -72,6 +72,28 @@ export const contentItems = [
     demoType: 'renewal-card',
     renewalOnly: true,
   },
+  {
+    id: 'bonus-announcement-premium',
+    emoji: '🏅',
+    category: 'Reminder',
+    title: 'Bonus Announcement (Premium Paying)',
+    description: 'Share annual declared bonus details for premium-paying policies as a personalised image.',
+    personas: [],
+    languages: ['EN'],
+    demoType: 'bonus-announcement',
+    previewSrc: '/bonus-announcement/bonus-announcement premium-paying.html',
+  },
+  {
+    id: 'bonus-announcement-rpu',
+    emoji: '🏅',
+    category: 'Reminder',
+    title: 'Bonus Announcement (Reduced Paid-Up)',
+    description: 'Share annual declared bonus details including revival value for reduced paid-up policies.',
+    personas: [],
+    languages: ['EN'],
+    demoType: 'bonus-announcement',
+    previewSrc: '/bonus-announcement/bonus-announcement reduced-paid-up.html',
+  },
 
   // ── TRIAL-only cards — preview only, no share ──────────────────────────────
   {
