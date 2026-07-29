@@ -1,211 +1,280 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bonus Announcement (Reduced Paid-Up)</title>
-  <style>
-    :root {
-      --bg1: #f7fafc;
-      --bg2: #e9efff;
-      --ink: #0f172a;
-      --muted: #475569;
-      --accent: #b45309;
-      --card: #ffffff;
-      --line: #dbe2f0;
-      --stripBg: #fff7ed;
-      --stripLine: #fed7aa;
-      --stripInk: #7c2d12;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policy Milestone Announcement (RPU)</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 40px 20px;
+            color: #334155;
+            -webkit-font-smoothing: antialiased;
+        }
 
-    * { box-sizing: border-box; }
+        .card {
+            max-width: 550px;
+            background: #ffffff;
+            margin: 0 auto;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+            overflow: hidden;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: "Segoe UI", Arial, sans-serif;
-      background: linear-gradient(160deg, var(--bg1) 0%, var(--bg2) 48%, var(--bg1) 100%);
-      color: var(--ink);
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 20px 14px;
-    }
+        .header-bar {
+            background: #0056b3;
+            padding: 30px 24px 45px 24px;
+            text-align: center;
+        }
+        .headline {
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
 
-    .sheet {
-      width: min(980px, 100%);
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 24px;
-      box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
-      overflow: hidden;
-    }
+        .milestone-row {
+            display: flex;
+            gap: 12px;
+            margin: -32px auto 25px auto;
+            max-width: 90%;
+            position: relative;
+            z-index: 2;
+        }
+        .milestone-counter {
+            flex: 1;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            border-radius: 12px;
+            padding: 14px 6px;
+            text-align: center;
+        }
+        .counter-number {
+            font-size: 26px;
+            font-weight: 800;
+            color: #0056b3;
+            line-height: 1.1;
+            margin-bottom: 4px;
+        }
+        .counter-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
-    .hero {
-      padding: 28px 22px 12px;
-      background: linear-gradient(120deg, #ffffff 0%, #f9fafb 100%);
-    }
+        .content {
+            padding: 25px 35px 35px 35px;
+            text-align: center;
+        }
 
-    .eyebrow {
-      margin: 0;
-      color: var(--accent);
-      font-size: 12px;
-      letter-spacing: 0.14em;
-      font-weight: 800;
-    }
+        .greeting-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0 0 10px 0;
+        }
 
-    h1 {
-      margin: 8px 0 10px;
-      font-size: clamp(24px, 6vw, 40px);
-      line-height: 1.16;
-      letter-spacing: -0.02em;
-    }
+        .guess-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0 0 12px 0;
+        }
+        .divider {
+            height: 1px;
+            background-color: #e2e8f0;
+            width: 60px;
+            margin: 0 auto 20px auto;
+        }
+        .intro-text {
+            color: #475569;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0 0 25px 0;
+        }
+        .good-news-highlight {
+            color: #0056b3;
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: 0.5px;
+        }
+        .highlight-blue {
+            color: #0056b3;
+            font-weight: 600;
+        }
 
-    .sub {
-      margin: 0;
-      color: var(--muted);
-      font-size: clamp(15px, 3.6vw, 20px);
-      line-height: 1.45;
-    }
+        .info-grid-small {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 0 auto 20px auto;
+        }
+        .info-box-small {
+            background: #f8fafc;
+            border: 1px solid #edf2f7;
+            border-radius: 8px;
+            padding: 10px 6px;
+            text-align: center;
+        }
+        .info-label-small {
+            color: #94a3b8;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+        .info-value-small {
+            color: #475569;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-    .body {
-      padding: 18px 22px 24px;
-      display: grid;
-      gap: 14px;
-    }
+        .bonus-box {
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 25px;
+        }
+        .bonus-label {
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .bonus-amount {
+            color: #0f172a;
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
 
-    .meta {
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 14px;
-      display: grid;
-      gap: 10px;
-      background: #ffffff;
-    }
+        .message {
+            color: #475569;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
 
-    .row {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
-
-    .cell {
-      min-width: 0;
-    }
-
-    .label {
-      margin: 0;
-      color: #64748b;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .value {
-      margin: 5px 0 0;
-      color: var(--ink);
-      font-size: clamp(18px, 4.2vw, 28px);
-      font-weight: 800;
-      overflow-wrap: anywhere;
-    }
-
-    .bonus {
-      border: 1px solid var(--stripLine);
-      background: var(--stripBg);
-      border-radius: 16px;
-      padding: 14px;
-      display: grid;
-      gap: 10px;
-    }
-
-    .tag {
-      margin: 0;
-      color: #9a3412;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .amount {
-      margin: 0;
-      color: var(--stripInk);
-      font-size: clamp(22px, 5.4vw, 34px);
-      line-height: 1.2;
-      font-weight: 900;
-    }
-
-    .footer {
-      padding: 0 22px 22px;
-      color: #475569;
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    @media (min-width: 760px) {
-      .hero { padding: 34px 30px 14px; }
-      .body { padding: 22px 30px 28px; }
-      .row { grid-template-columns: 1fr 1fr; }
-      .full { grid-column: 1 / -1; }
-      .footer { padding: 0 30px 28px; }
-    }
-  </style>
+        .footer {
+            background-color: #f8fafc;
+            border-top: 1px solid #edf2f7;
+            padding: 20px 30px;
+            text-align: center;
+            font-size: 13px;
+            color: #64748b;
+        }
+        .footer a {
+            color: #0056b3;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer-separator {
+            margin: 0 8px;
+            color: #cbd5e1;
+        }
+    </style>
 </head>
 <body>
-  <main class="sheet">
-    <section class="hero">
-      <p class="eyebrow">BONUS ANNOUNCEMENT</p>
-      <h1>Good news! Your policy bonus is declared.</h1>
-      <p class="sub">We've declared our 14th consecutive annual bonus on your policy.</p>
-    </section>
+<div class="card">
+    <div class="header-bar">
+        <h1 class="headline">Big Policy Milestone Alert</h1>
+    </div>
 
-    <section class="body">
-      <div class="meta">
-        <div class="row">
-          <div class="cell">
-            <p class="label">Customer Name</p>
-            <p id="name" class="value">-</p>
-          </div>
-          <div class="cell">
-            <p class="label">Policy Number</p>
-            <p id="policy" class="value">-</p>
-          </div>
+    <div class="milestone-row">
+        <div class="milestone-counter">
+            <div class="counter-number">14</div>
+            <div class="counter-label">Years</div>
         </div>
-        <div class="cell full">
-          <p class="label">Product Name</p>
-          <p id="product" class="value">-</p>
+        <div class="milestone-counter">
+            <div class="counter-number">14</div>
+            <div class="counter-label">Bonuses</div>
         </div>
-      </div>
+        <div class="milestone-counter">
+            <div class="counter-number">0</div>
+            <div class="counter-label">Misses</div>
+        </div>
+    </div>
 
-      <div class="bonus">
-        <p class="tag">Reduced Paid-Up Policy</p>
-        <p id="bonusAmount" class="amount">Bonus (This Year): Rs. -</p>
-        <p id="bonusAmountRevived" class="amount">Bonus (If Policy Revived): Rs. -</p>
-      </div>
-    </section>
+    <div class="content">
+        <div id="name" class="greeting-text">Hi -,</div>
+        <div class="guess-title">Guess what?</div>
+        <div class="divider"></div>
 
-    <p class="footer">This personalised card is generated for your policy details.</p>
-  </main>
+        <p class="intro-text">
+            We have some <span class="good-news-highlight">GOOD NEWS</span> heading your way! Even on Reduced Paid-Up status, your money continues to grow. We have officially declared bonuses for the 14th consecutive year, calculated at the industry's highest benchmark illustrated scenario of <span class="highlight-blue">8% as promised</span>.
+        </p>
 
-  <script>
+        <div class="info-grid-small">
+            <div class="info-box-small">
+                <div class="info-label-small">Product Name</div>
+                <div id="product" class="info-value-small">-</div>
+            </div>
+            <div class="info-box-small">
+                <div class="info-label-small">Policy Number</div>
+                <div id="policy" class="info-value-small">-</div>
+            </div>
+        </div>
+
+        <div class="bonus-box">
+            <div class="bonus-label">Declared Bonus For The Current Year</div>
+            <div id="bonusAmount" class="bonus-amount" style="font-size: 28px; color: #0056b3; margin-bottom: 12px;">₹-</div>
+
+            <div style="height: 1px; background-color: #e2e8f0; margin: 12px 0;"></div>
+
+            <div class="bonus-label">Bonus Potential On Full Policy Continuity</div>
+            <div id="bonusAmountRevived" class="bonus-amount" style="font-size: 32px;">₹-</div>
+        </div>
+
+        <p class="message">
+            Your dedication to securing your family's future continues to pay off. Your accumulated funds remain 100% safe and are steadily building wealth year after year. Whenever you choose to resume your regular premiums, your policy instantly unlocks its maximum payout potential and full life cover.
+        </p>
+
+        <p style="font-size: 13px; font-weight: 600; color: #0056b3; margin: 0;">
+            Want to explore upgrading back to your full benefit potential? Reach out to us anytime.
+        </p>
+    </div>
+
+    <div class="footer">
+        Want to know more about your policy?
+        <br style="margin-bottom: 4px;">
+        Call Toll-Free at <a href="tel:18002121212">1800-212-1212</a> <span class="footer-separator">|</span> WhatsApp "Hi" to <a href="https://wa.me/919833521212">+91 98335 21212</a>
+    </div>
+</div>
+
+<script>
     const params = new URLSearchParams(window.location.search);
 
     function safeText(v) {
-      return (v == null || String(v).trim() === "") ? "-" : String(v);
+        return (v == null || String(v).trim() === "") ? "-" : String(v);
     }
 
     function formatInr(v) {
-      const n = Number(String(v || "").replace(/,/g, ""));
-      if (!Number.isFinite(n)) return "Rs. -";
-      return "Rs. " + n.toLocaleString("en-IN");
+        const n = Number(String(v || "").replace(/,/g, ""));
+        if (!Number.isFinite(n)) return "-";
+        return n.toLocaleString("en-IN");
     }
 
-    document.getElementById("name").textContent = safeText(params.get("name"));
+    document.getElementById("name").textContent = `Hi ${safeText(params.get("name"))},`;
     document.getElementById("policy").textContent = safeText(params.get("policy"));
     document.getElementById("product").textContent = safeText(params.get("product"));
-    document.getElementById("bonusAmount").textContent = "Bonus (This Year): " + formatInr(params.get("bonus_amount"));
-    document.getElementById("bonusAmountRevived").textContent = "Bonus (If Policy Revived): " + formatInr(params.get("bonus_amount_revived"));
-  </script>
+    document.getElementById("bonusAmount").textContent = `₹${formatInr(params.get("bonus_amount"))}`;
+    document.getElementById("bonusAmountRevived").textContent = `₹${formatInr(params.get("bonus_amount_revived"))}`;
+</script>
 </body>
 </html>
