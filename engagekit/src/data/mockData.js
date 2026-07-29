@@ -82,7 +82,7 @@ export const contentItems = [
     languages: ['EN'],
     demoType: 'trial',
     trialOnly: true,
-    previewSrc: '/bonus-announcement/bonus-announcement premium-paying.html',
+    previewSrc: '/bonus-announcement/bonus-announcement premium-paying.html?v=v4-20260729',
   },
 
   // ── TRIAL-only cards — preview only, no share ──────────────────────────────
