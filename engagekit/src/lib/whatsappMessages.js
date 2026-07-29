@@ -127,9 +127,7 @@ As parents, teaching our children how to make smart money choices early sets the
 
 We've put together a quick 1-minute guide featuring 5 essential financial rules to help pass down smart money habits to the next generation.
 
-Read it here: 💡
-
-*${link}*
+Read it here: ${link}
 
 Feel free to share this with anyone in your network who might benefit from it!`,
   },
