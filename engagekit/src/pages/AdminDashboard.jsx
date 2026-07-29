@@ -45,7 +45,7 @@ function fmtMonth(date) {
 
 function mapEngagementLabel(link) {
   if (link.content_id === 'renewal-reminder')                              return 'Renewal Reminder'
-  if (link.content_id === 'bonus-announcement')                            return 'Bonus Announcement'
+  if (link.content_id === 'bonus-announcement')                            return 'Bonus Announcement (Trial)'
   if (link.content_id === 'bonus-announcement-premium')                    return 'Bonus Announcement (Premium Paying)'
   if (link.content_id === 'bonus-announcement-rpu')                        return 'Bonus Announcement (Reduced Paid-Up)'
   if (link.content_id === '13')                                            return 'Word Hunt'

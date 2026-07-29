@@ -7,6 +7,7 @@ export default function BonusAnnouncement({ customer, contentId, metadata }) {
   const fileName = variant === 'rpu'
     ? 'bonus-announcement reduced-paid-up.html'
     : 'bonus-announcement premium-paying.html'
+  const templateVersion = 'v3-20260729'
 
   const params = new URLSearchParams({
     name: safe(customer?.name),
@@ -14,6 +15,7 @@ export default function BonusAnnouncement({ customer, contentId, metadata }) {
     policy: safe(customer?.policy_number || metadata?.policy_number),
     bonus_amount: safe(metadata?.bonus_amount),
     bonus_amount_revived: safe(metadata?.bonus_amount_revived),
+    v: templateVersion,
   })
 
   const src = `/bonus-announcement/${encodeURIComponent(fileName)}?${params.toString()}`
