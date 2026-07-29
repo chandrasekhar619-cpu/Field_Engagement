@@ -81,6 +81,11 @@ export default function PreviewPage() {
   const variant = searchParams.get('variant') === 'rpu' ? 'rpu' : 'premium'
   const item = contentItems.find(c => c.id === contentId)
 
+  // Bonus announcement uses static HTML preview with selectable variant.
+  if (item?.id === 'bonus-announcement') {
+    return <TrialPreview item={item} variant={variant} />
+  }
+
   // Trial-only cards get the customer-simulation preview
   if (item?.demoType === 'trial') {
     return <TrialPreview item={item} variant={variant} />

@@ -75,13 +75,12 @@ export const contentItems = [
   {
     id: 'bonus-announcement',
     emoji: '🏅',
-    category: 'Interactive Game',
+    category: 'Reminder',
     title: 'Bonus Announcement',
-    description: 'Trial preview of annual bonus announcement variants for premium-paying and reduced paid-up policies.',
+    description: 'Share annual bonus announcement with premium-paying and reduced paid-up variants.',
     personas: [],
     languages: ['EN'],
-    demoType: 'trial',
-    trialOnly: true,
+    demoType: 'bonus-announcement',
     previewSrc: '/bonus-announcement/bonus-announcement premium-paying.html?v=v4-20260729',
   },
 
