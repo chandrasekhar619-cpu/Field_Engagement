@@ -33,6 +33,15 @@ function localDayKey(date) {
 function fmtDay(date) {
   return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
 }
+function startOfMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1)
+}
+function startOfNextMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 1)
+}
+function fmtMonth(date) {
+  return date.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
+}
 
 function mapEngagementLabel(link) {
   if (link.content_id === 'renewal-reminder')                              return 'Renewal Reminder'
@@ -138,6 +147,7 @@ export default function AdminDashboard() {
   const [rawData,        setRawData]        = useState(null)
   const [chartRange,     setChartRange]     = useState(30)
   const [activityView,   setActivityView]   = useState('chart')
+  const [activityPeriod, setActivityPeriod] = useState('yesterday')
   const [showAllAlerts,  setShowAllAlerts]  = useState(false)
   const [tableRpmFilter, setTableRpmFilter] = useState('all')
 
@@ -340,6 +350,44 @@ export default function AdminDashboard() {
     const activityRows = Object.values(rpmDayMap).sort((a, b) => b.day.localeCompare(a.day))
     const allRpms = [...new Set(activityRows.map(r => r.rpm))].sort()
 
+    const monthStart = startOfMonth(new Date())
+    const nextMonthStart = startOfNextMonth(new Date())
+
+    function buildPeriodRows(periodLinks, periodOpens) {
+      const rpmMap = {}
+      periodLinks.forEach(l => {
+        const key = l.rpm_id || l.rpm_name || 'Unknown'
+        if (!rpmMap[key]) rpmMap[key] = { name: l.rpm_name || 'Unknown', sent: 0, opened: 0, lastSent: l.created_at }
+        rpmMap[key].sent++
+        if (l.created_at > rpmMap[key].lastSent) rpmMap[key].lastSent = l.created_at
+      })
+      periodOpens.forEach(i => {
+        const l = linkMap[i.link_id]
+        if (!l) return
+        const key = l.rpm_id || l.rpm_name || 'Unknown'
+        if (rpmMap[key]) rpmMap[key].opened++
+      })
+      return Object.values(rpmMap)
+        .map(r => ({ ...r, rate: pct(r.opened, r.sent) }))
+        .sort((a, b) => b.sent - a.sent)
+    }
+
+    const activityLinksYesterday = links.filter(
+      l => localDayKey(new Date(l.created_at)) === yesterdayKey
+    )
+    const activityYesterdayLinkIds = new Set(activityLinksYesterday.map(l => l.id))
+    const activityOpensYesterday = opens.filter(i => activityYesterdayLinkIds.has(i.link_id))
+
+    const activityLinksMonth = links.filter(l => {
+      const created = new Date(l.created_at)
+      return created >= monthStart && created < nextMonthStart
+    })
+    const activityMonthLinkIds = new Set(activityLinksMonth.map(l => l.id))
+    const activityOpensMonth = opens.filter(i => activityMonthLinkIds.has(i.link_id))
+
+    const rpmActivityYesterdayRows = buildPeriodRows(activityLinksYesterday, activityOpensYesterday)
+    const rpmActivityMonthRows = buildPeriodRows(activityLinksMonth, activityOpensMonth)
+
     const rpmSummaryMap = {}
     activityRows.forEach(r => {
       if (!rpmSummaryMap[r.rpm]) rpmSummaryMap[r.rpm] = { rpm: r.rpm, links: 0, opens: 0 }
@@ -402,10 +450,15 @@ export default function AdminDashboard() {
       engagementRows,
       allEngagementRows, eaAllRpms, eaAllEngs,
       rTotalSent, rTotalOpens, rOpenRate, reminderRows, personaRows, rpmRenewalRows,
-      chartData, activityRows, allRpms, rpmSummaryRows,
+      chartData, activityRows, allRpms, rpmSummaryRows, rpmActivityYesterdayRows, rpmActivityMonthRows,
       alertRows,
     }
   }, [rawData, chartRange])
+
+  const activitySummaryRows = useMemo(() => {
+    if (!d) return []
+    return activityPeriod === 'month' ? d.rpmActivityMonthRows : d.rpmActivityYesterdayRows
+  }, [d, activityPeriod])
 
   const filteredActivityRows = useMemo(() => {
     if (!d) return []
@@ -812,7 +865,27 @@ export default function AdminDashboard() {
 
           {activityView === 'table' && (
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3 justify-between">
+                <div className="flex bg-white border border-[#e4e7f0] rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setActivityPeriod('yesterday')}
+                    className={`px-3 py-1.5 text-xs font-medium transition-colors border-r border-[#e4e7f0] ${
+                      activityPeriod === 'yesterday' ? 'bg-[#0f1f3d] text-white' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    Yesterday ({fmtDay(yesterday)})
+                  </button>
+                  <button
+                    onClick={() => setActivityPeriod('month')}
+                    className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                      activityPeriod === 'month' ? 'bg-[#0f1f3d] text-white' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {fmtMonth(new Date())}
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-3">
                 <span className="text-xs text-gray-500 font-medium">RPM</span>
                 <select
                   value={tableRpmFilter}
@@ -822,6 +895,38 @@ export default function AdminDashboard() {
                   <option value="all">All RPMs</option>
                   {(d?.allRpms || []).map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl border border-[#e4e7f0] overflow-hidden">
+                <p className="px-4 pt-4 pb-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                  Activity Summary — {activityPeriod === 'month' ? fmtMonth(new Date()) : `Yesterday (${fmtDay(yesterday)})`}
+                </p>
+                <table className="w-full">
+                  <thead><tr>
+                    <Th>RPM Name</Th>
+                    <Th right>Sent</Th>
+                    <Th right>Opened</Th>
+                    <Th right>Open Rate</Th>
+                    <Th right>Last Sent</Th>
+                  </tr></thead>
+                  <tbody>
+                    {loading
+                      ? <LoadingRow cols={5} />
+                      : activitySummaryRows.length
+                        ? activitySummaryRows.map(r => (
+                            <tr key={`${activityPeriod}-${r.name}`} className="border-t border-[#f0f2f7]">
+                              <Td>{r.name}</Td>
+                              <Td right>{r.sent}</Td>
+                              <Td right>{r.opened}</Td>
+                              <Td right>{r.rate}</Td>
+                              <Td right>{fmtDate(r.lastSent)}</Td>
+                            </tr>
+                          ))
+                        : <EmptyRow cols={5} msg={`No activity found for ${activityPeriod === 'month' ? fmtMonth(new Date()) : fmtDay(yesterday)}.`} />
+                    }
+                  </tbody>
+                </table>
               </div>
 
               <div className="bg-white rounded-xl border border-[#e4e7f0] overflow-hidden">
