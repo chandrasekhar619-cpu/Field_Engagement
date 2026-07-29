@@ -3,7 +3,8 @@ function safe(v) {
 }
 
 export default function BonusAnnouncement({ customer, contentId, metadata }) {
-  const fileName = contentId === 'bonus-announcement-rpu'
+  const variant = metadata?.variant || (contentId === 'bonus-announcement-rpu' ? 'rpu' : 'premium')
+  const fileName = variant === 'rpu'
     ? 'bonus-announcement reduced-paid-up.html'
     : 'bonus-announcement premium-paying.html'
 

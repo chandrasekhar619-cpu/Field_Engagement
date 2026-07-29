@@ -66,7 +66,7 @@ export default function ContentView() {
   }
 
   function handleShare(item) {
-    if (item.id === 'bonus-announcement-premium' || item.id === 'bonus-announcement-rpu') {
+    if (item.id === 'bonus-announcement') {
       setBonusShareItem(item)
       return
     }

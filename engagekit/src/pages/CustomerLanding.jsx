@@ -124,22 +124,33 @@ export default function CustomerLanding() {
 
         // 4. Resolve content from local mock (content_id is the item id string)
         const item = contentItems.find(c => c.id === linkRecord.content_id)
-        if (!item) {
+        const isLegacyBonus = linkRecord.content_id === 'bonus-announcement-premium' || linkRecord.content_id === 'bonus-announcement-rpu'
+        const resolvedItem = item || (isLegacyBonus
+          ? { id: 'bonus-announcement', demoType: 'bonus-announcement' }
+          : null)
+        if (!resolvedItem) {
           setError('The content for this link could not be loaded.')
           return
         }
 
-        if (item.demoType === 'renewal-card') {
+        if (resolvedItem.demoType === 'renewal-card') {
           // Renewal cards route via links.content_id like all other engagements.
           // Metadata (card_number, ppt, etc.) is read from share_tokens.metadata.
           setContent({ demoType: 'renewal-card', metadata: shareToken.metadata })
-        } else if (item.demoType === 'bonus-announcement') {
-          setContent({ ...item, metadata: shareToken.metadata })
-        } else if (!DEMOS[item.demoType]) {
+        } else if (resolvedItem.demoType === 'bonus-announcement') {
+          const legacyVariant = linkRecord.content_id === 'bonus-announcement-rpu' ? 'rpu' : 'premium'
+          setContent({
+            ...resolvedItem,
+            metadata: {
+              ...(shareToken.metadata || {}),
+              variant: shareToken.metadata?.variant || (isLegacyBonus ? legacyVariant : undefined),
+            },
+          })
+        } else if (!DEMOS[resolvedItem.demoType]) {
           setError('The content for this link could not be loaded.')
           return
         } else {
-          setContent(item)
+          setContent(resolvedItem)
         }
 
         // 5. Capture customer IP

@@ -131,18 +131,7 @@ Read it here: ${link}
 
 Feel free to share this with anyone in your network who might benefit from it!`,
   },
-  'bonus-announcement-premium': {
-    generic: (name, link, _rpmName, productName) => `Hi ${name},
-
-Good news!
-
-We've declared our *14th consecutive annual bonus* on your policy *${productName || 'your policy'}*.
-
-Click the image to view your bonus amount details.
-
-${link}`,
-  },
-  'bonus-announcement-rpu': {
+  'bonus-announcement': {
     generic: (name, link, _rpmName, productName) => `Hi ${name},
 
 Good news!

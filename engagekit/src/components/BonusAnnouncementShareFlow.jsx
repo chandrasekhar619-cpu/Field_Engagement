@@ -21,9 +21,23 @@ const policyBadge = {
   Annuity: 'bg-amber-50 text-amber-700',
 }
 
+const VARIANTS = [
+  {
+    id: 'premium',
+    label: 'Premium Paying',
+    desc: 'Share this year bonus for premium-paying policies',
+  },
+  {
+    id: 'rpu',
+    label: 'Reduced Paid-Up',
+    desc: 'Share this year bonus and revival bonus value',
+  },
+]
+
 export default function BonusAnnouncementShareFlow({ item, onClose, preselectedCustomer }) {
   const { user } = useAuth()
-  const [step, setStep] = useState(preselectedCustomer ? 'details' : 'customer')
+  const [step, setStep] = useState('variant')
+  const [variant, setVariant] = useState(null)
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState(preselectedCustomer || null)
   const [bonusAmount, setBonusAmount] = useState('')
@@ -42,7 +56,7 @@ export default function BonusAnnouncementShareFlow({ item, onClose, preselectedC
   const debounceRef = useRef(null)
   const cardRef = useRef(null)
 
-  const isRpu = item.id === 'bonus-announcement-rpu'
+  const isRpu = variant === 'rpu'
 
   useEffect(() => {
     if (preselectedCustomer) setSelected(preselectedCustomer)
@@ -126,6 +140,7 @@ export default function BonusAnnouncementShareFlow({ item, onClose, preselectedC
       const { data: { user: authUser } } = await supabase.auth.getUser()
 
       const metadata = {
+        variant,
         product_name: selected.product_name || '',
         policy_number: selected.policy_number || '',
         bonus_amount: bonusAmount,
@@ -158,7 +173,7 @@ export default function BonusAnnouncementShareFlow({ item, onClose, preselectedC
         token: uuid,
         rpm_id: user?.id ?? null,
         customer_id: selected.id,
-        content_id: item.id,
+        content_id: item.id || 'bonus-announcement',
         content_type: 'Reminder',
         is_demo: false,
         rpm_ip: rpmIp,
@@ -185,7 +200,7 @@ export default function BonusAnnouncementShareFlow({ item, onClose, preselectedC
 
   const activeMsg = token && selected
     ? getWhatsAppMessage(
-      item.id,
+      'bonus-announcement',
       selected.persona,
       selected.name || 'there',
       linkUrl(token),
@@ -233,9 +248,56 @@ export default function BonusAnnouncementShareFlow({ item, onClose, preselectedC
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden z-10 max-h-[88vh] flex flex-col">
+        {step === 'variant' && (
+          <>
+            <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-[#e4e7f0] flex-shrink-0">
+              <div>
+                <h3 className="text-[#0f1f3d] font-bold text-base">Bonus Announcement</h3>
+                <p className="text-gray-400 text-xs mt-0.5">Select variant</p>
+              </div>
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-lg leading-none">✕</button>
+            </div>
+
+            <div className="overflow-y-auto flex-1 p-4 flex flex-col gap-3">
+              {VARIANTS.map(opt => (
+                <button
+                  key={opt.id}
+                  onClick={() => {
+                    setVariant(opt.id)
+                    setStep(preselectedCustomer ? 'details' : 'customer')
+                  }}
+                  className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                    variant === opt.id
+                      ? 'border-[#0f1f3d] bg-[#0f1f3d]/[0.03]'
+                      : 'border-[#e4e7f0] hover:border-[#0f1f3d]/30'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="text-[#0f1f3d] font-semibold text-sm">{opt.label}</p>
+                    {variant === opt.id && (
+                      <span className="w-5 h-5 rounded-full bg-[#0f1f3d] flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-[10px] font-bold">✓</span>
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-gray-400 text-xs mt-1">{opt.desc}</p>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
         {step === 'customer' && (
           <>
             <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-[#e4e7f0] flex-shrink-0">
+              <button
+                onClick={() => setStep('variant')}
+                className="text-gray-400 hover:text-[#0f1f3d] transition-colors p-1 -ml-1"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
               <h3 className="text-[#0f1f3d] font-bold text-base flex-1">Select Customer</h3>
               <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-lg leading-none">✕</button>
             </div>
@@ -294,16 +356,14 @@ export default function BonusAnnouncementShareFlow({ item, onClose, preselectedC
         {step === 'details' && selected && (
           <>
             <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-[#e4e7f0] flex-shrink-0">
-              {!preselectedCustomer && (
-                <button
-                  onClick={() => setStep('customer')}
-                  className="text-gray-400 hover:text-[#0f1f3d] transition-colors p-1 -ml-1"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-              )}
+              <button
+                onClick={() => setStep(preselectedCustomer ? 'variant' : 'customer')}
+                className="text-gray-400 hover:text-[#0f1f3d] transition-colors p-1 -ml-1"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
               <div className="flex-1">
                 <h3 className="text-[#0f1f3d] font-bold text-base">{isRpu ? 'Reduced Paid-Up' : 'Premium Paying'} Bonus</h3>
                 <p className="text-gray-400 text-xs mt-0.5">{selected.name}</p>
@@ -360,7 +420,7 @@ export default function BonusAnnouncementShareFlow({ item, onClose, preselectedC
               {linkError && <p className="text-red-400 text-xs mb-2">{linkError}</p>}
               <button
                 onClick={generateLink}
-                disabled={generating}
+                disabled={generating || !variant}
                 className="w-full bg-[#0f1f3d] hover:bg-[#0f1f3d]/90 disabled:opacity-50 text-white font-semibold py-3.5 rounded-xl text-sm transition-colors"
               >
                 {generating ? 'Generating…' : 'Generate & Prepare JPG →'}
