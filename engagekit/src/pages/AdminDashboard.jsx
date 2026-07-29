@@ -49,6 +49,7 @@ function mapEngagementLabel(link) {
   if (link.content_id === '3')                                             return 'Money Word'
   if (link.content_id === 'book-insight-2')                                return 'Demystifying Money 2'
   if (link.content_id === 'book-insight')                                  return 'Demystifying Money'
+  if (link.content_id === 'financial-playbook-kids')                       return 'Financial Playbook for Kids'
   if (link.content_id === '1' || link.content_type === 'Quiz')            return 'Persona Quiz'
   if (link.content_id === '5')                                             return 'Diwali Savings Gift'
   if (link.content_id === '8')                                             return 'Birthday Wealth Wish'
@@ -774,35 +775,6 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* RPM-level renewal */}
-          <div className="bg-white rounded-xl border border-[#e4e7f0] overflow-hidden">
-            <p className="px-4 pt-4 pb-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">By RPM (Sent on {fmtDay(yesterday)})</p>
-            <table className="w-full">
-              <thead><tr>
-                <Th>RPM Name</Th>
-                <Th right>Sent</Th>
-                <Th right>Opened</Th>
-                <Th right>Open Rate</Th>
-                <Th right>Last Sent</Th>
-              </tr></thead>
-              <tbody>
-                {loading
-                  ? <LoadingRow cols={5} />
-                  : d?.rpmRenewalRows.length
-                    ? d.rpmRenewalRows.map(r => (
-                        <tr key={r.name} className="border-t border-[#f0f2f7]">
-                          <Td>{r.name}</Td>
-                          <Td right>{r.sent}</Td>
-                          <Td right>{r.opened}</Td>
-                          <Td right>{r.rate}</Td>
-                          <Td right>{fmtDate(r.lastSent)}</Td>
-                        </tr>
-                      ))
-                    : <EmptyRow cols={5} />
-                }
-              </tbody>
-            </table>
-          </div>
         </section>
 
         {/* ── Section 3 — RPM Activity ───────────────────────────────────── */}

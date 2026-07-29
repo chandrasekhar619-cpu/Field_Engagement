@@ -8,6 +8,7 @@ import PollDemo           from '../components/demos/PollDemo'
 import MoodDemo           from '../components/demos/MoodDemo'
 import LifeWordDemo       from '../components/demos/LifeWordDemo'
 import WordHuntDemo       from '../components/demos/WordHuntDemo'
+import FinancialPlaybookKids from '../components/FinancialPlaybookKids'
 
 const DEMOS = {
   'quiz':             QuizDemo,
@@ -17,6 +18,7 @@ const DEMOS = {
   'mood':             MoodDemo,
   'life-word':        LifeWordDemo,
   'word-hunt':        WordHuntDemo,
+  'financial-playbook-kids': FinancialPlaybookKids,
 }
 
 function Disclaimer() {

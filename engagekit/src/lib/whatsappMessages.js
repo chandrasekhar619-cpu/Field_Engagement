@@ -120,6 +120,19 @@ Edelweiss Life Insurance Company`,
     'Thinker':   (name, link) => `Hi ${name}! Sharing this with you. ${link}`,
     generic:     (name, link) => `Hi ${name}! Sharing this with you — hope it brings a smile. ${link}`,
   },
+  'financial-playbook-kids': {
+    generic: (name, link) => `Hi ${name},
+
+As parents, teaching our children how to make smart money choices early sets them up for lifelong independence.
+
+We've put together a quick 1-minute guide featuring 5 essential financial rules to help pass down smart money habits to the next generation.
+
+Read it here: 💡
+
+*${link}*
+
+Feel free to share this with anyone in your network who might benefit from it!`,
+  },
 }
 
 // Persona-specific messages for word-hunt and book-insight

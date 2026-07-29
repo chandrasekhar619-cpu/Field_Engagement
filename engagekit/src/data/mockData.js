@@ -110,6 +110,16 @@ export const contentItems = [
     previewSrc: '/previews/book-insight.html',
   },
   {
+    id: 'financial-playbook-kids',
+    emoji: '📘',
+    category: 'Read',
+    title: 'Financial Playbook for Kids',
+    description: 'A quick 1-minute guide with 5 essential money rules to build smart habits in children.',
+    personas: ['Go-Getter', 'Protector', 'Caregiver', 'Thinker'],
+    languages: ['EN'],
+    demoType: 'financial-playbook-kids',
+  },
+  {
     id: 'book-insight-2',
     emoji: '📖',
     category: 'Read',

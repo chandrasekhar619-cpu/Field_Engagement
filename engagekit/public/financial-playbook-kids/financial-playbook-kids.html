@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Financial Rules for the Next Generation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #fafbfc;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --navy-dark: #0f172a;
+      --gold-accent: #b89047;
+      --gold-light: #fdfaf4;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.5;
+      padding: 32px 16px;
+    }
+    .container { max-width: 680px; margin: 0 auto; }
+    header { text-align: center; margin-bottom: 24px; }
+    header h1 { font-size: 24px; font-weight: 700; color: var(--navy-dark); margin-bottom: 4px; letter-spacing: -0.3px; }
+    header p { color: var(--text-muted); font-size: 13.5px; }
+    .intro-box {
+      background: var(--card-bg);
+      padding: 18px 20px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      font-size: 13.5px;
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--gold-accent);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .intro-box strong { color: var(--navy-dark); display: block; margin-bottom: 4px; font-size: 15px; }
+    .grid-wrapper { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .chapter-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .chapter-box.full-width { grid-column: 1 / -1; border-top: 2px solid var(--gold-accent); }
+    .chapter-box h3 { font-size: 14.5px; font-weight: 700; color: var(--navy-dark); margin-bottom: 8px; line-height: 1.35; }
+    .chapter-box p { font-size: 13px; color: #475569; margin-bottom: 16px; flex-grow: 1; }
+    .action-box {
+      background: var(--gold-light);
+      border-left: 3px solid var(--gold-accent);
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-top: auto;
+    }
+    .action-box p { margin: 0; font-size: 12.5px; color: #5c4d37; }
+    .action-box strong { color: var(--gold-accent); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; display: block; margin-bottom: 2px; }
+    @media (max-width: 540px) { .grid-wrapper { grid-template-columns: 1fr; } }
+    footer { margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--border-color); text-align: center; }
+    footer p { font-size: 14px; font-weight: 600; color: var(--navy-dark); max-width: 460px; margin: 0 auto 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Financial Rules for the Next Generation</h1>
+      <p>5 essential money habits to start early</p>
+    </header>
+
+    <div class="intro-box">
+      <strong>Starting Financial Planning Early</strong>
+      Building financial discipline early is the greatest headstart you can give your child. Teaching them how money works today ensures they make smart, independent choices tomorrow.
+    </div>
+
+    <div class="grid-wrapper">
+      <div class="chapter-box">
+        <h3>1. Spending Money Means Saying "No" to Something Else</h3>
+        <p>Spending Rs. 500 on a snack today means that same Rs. 500 cannot be used for another goal tomorrow. Every purchase has an opportunity cost.</p>
+        <div class="action-box"><p><strong>Daily Action</strong>Pause before an impulse buy and name one bigger goal you are choosing instead.</p></div>
+      </div>
+      <div class="chapter-box">
+        <h3>2. Divide Money into 3 Jars</h3>
+        <p>Split every incoming amount into three buckets: Spend (now), Save (later), and Give (for others).</p>
+        <div class="action-box"><p><strong>Daily Action</strong>Create 3 jars today and split pocket money as soon as it comes in.</p></div>
+      </div>
+      <div class="chapter-box">
+        <h3>3. Needs vs. Wants</h3>
+        <p>A need is essential (food, water, school basics). A want is optional (toys, treats, extra game passes).</p>
+        <div class="action-box"><p><strong>Daily Action</strong>Pick 3 things at home that are needs and 3 that are wants.</p></div>
+      </div>
+      <div class="chapter-box">
+        <h3>4. Money Represents Time and Effort</h3>
+        <p>Money does not appear automatically. It comes from time, energy, and skills applied through work.</p>
+        <div class="action-box"><p><strong>Daily Action</strong>Link one household task to effort and value to understand how earning works.</p></div>
+      </div>
+      <div class="chapter-box full-width">
+        <h3>5. Save Before You Spend</h3>
+        <p>The most effective habit is to move savings first and spend what remains, not the other way around.</p>
+        <div class="action-box"><p><strong>Daily Action</strong>As soon as pocket money arrives, put a part into savings before spending anything.</p></div>
+      </div>
+    </div>
+
+    <footer>
+      <p>Want to understand how your current planning is shaping your child's long-term milestones?</p>
+    </footer>
+  </div>
+</body>
+</html>
