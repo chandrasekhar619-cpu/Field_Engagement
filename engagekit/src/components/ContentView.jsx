@@ -22,6 +22,7 @@ export default function ContentView() {
   const [bonusShareItem, setBonusShareItem] = useState(null)
   const [renewalPreviewOpen, setRenewalPreviewOpen] = useState(false)
   const [bookInsightVariantOpen, setBookInsightVariantOpen] = useState(false)
+  const [bonusTrialVariantOpen, setBonusTrialVariantOpen] = useState(false)
   const [activeCustomer, setActiveCustomer] = useState(null)
   const [firstCustomer, setFirstCustomer] = useState(null)
   const [searchParams, setSearchParams] = useSearchParams()
@@ -56,6 +57,8 @@ export default function ContentView() {
       setCreativeItem(item)
     } else if (item.demoType === 'renewal-card') {
       setRenewalPreviewOpen(true)
+    } else if (item.id === 'bonus-announcement') {
+      setBonusTrialVariantOpen(true)
     } else if (item.trialOnly) {
       window.open(`/preview/${item.id}`, '_blank')
     } else if (item.previewSrc) {
@@ -216,6 +219,31 @@ export default function ContentView() {
             setBookInsightVariantOpen(false)
           }}
           onClose={() => setBookInsightVariantOpen(false)}
+        />
+      )}
+
+      {bonusTrialVariantOpen && (
+        <BookInsightVariantModal
+          items={[
+            {
+              id: 'bonus-announcement-premium-trial',
+              emoji: '🏅',
+              title: 'Premium Paying Variant',
+              description: 'Preview the Premium Paying bonus announcement template.',
+            },
+            {
+              id: 'bonus-announcement-rpu-trial',
+              emoji: '🏅',
+              title: 'Reduced Paid-Up Variant',
+              description: 'Preview the RPU bonus announcement template.',
+            },
+          ]}
+          onSelect={(picked) => {
+            const variant = picked.id === 'bonus-announcement-rpu-trial' ? 'rpu' : 'premium'
+            window.open(`/preview/bonus-announcement?variant=${variant}`, '_blank')
+            setBonusTrialVariantOpen(false)
+          }}
+          onClose={() => setBonusTrialVariantOpen(false)}
         />
       )}
     </>

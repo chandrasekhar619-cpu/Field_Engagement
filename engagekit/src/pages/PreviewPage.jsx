@@ -1,4 +1,4 @@
-import { useParams, Navigate } from 'react-router-dom'
+import { useParams, Navigate, useSearchParams } from 'react-router-dom'
 import { contentItems } from '../data/mockData'
 import { useAuth } from '../context/AuthContext'
 import QuizDemo           from '../components/demos/QuizDemo'
@@ -32,9 +32,12 @@ function Disclaimer() {
 }
 
 // Rendered in a new tab for TRIAL-only cards — shows realistic customer view
-function TrialPreview({ item }) {
+function TrialPreview({ item, variant }) {
   const { user } = useAuth()
   const rpmName = user?.name || 'Your Advisor'
+  const trialSrc = item.id === 'bonus-announcement'
+    ? `/bonus-announcement/${encodeURIComponent(variant === 'rpu' ? 'bonus-announcement reduced-paid-up.html' : 'bonus-announcement premium-paying.html')}?v=v4-20260729`
+    : item.previewSrc
 
   return (
     <div style={{ height: '100dvh', display: 'flex', flexDirection: 'column', overflow: 'hidden', background: '#f9fafb' }}>
@@ -62,7 +65,7 @@ function TrialPreview({ item }) {
 
       {/* Iframe filling all remaining space */}
       <iframe
-        src={item.previewSrc}
+        src={trialSrc}
         title={item.title}
         style={{ flex: 1, width: '100%', border: 'none', display: 'block', overflow: 'auto' }}
       />
@@ -74,11 +77,13 @@ function TrialPreview({ item }) {
 
 export default function PreviewPage() {
   const { contentId } = useParams()
+  const [searchParams] = useSearchParams()
+  const variant = searchParams.get('variant') === 'rpu' ? 'rpu' : 'premium'
   const item = contentItems.find(c => c.id === contentId)
 
   // Trial-only cards get the customer-simulation preview
   if (item?.demoType === 'trial') {
-    return <TrialPreview item={item} />
+    return <TrialPreview item={item} variant={variant} />
   }
 
   // Creatives are shown in a modal in the main app, not in a preview tab
