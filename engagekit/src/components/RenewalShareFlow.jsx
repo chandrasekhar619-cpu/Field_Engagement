@@ -56,6 +56,12 @@ const PAYMENT_MODE_OPTIONS = [
   { value: 'Annually',       label: 'Annually' },
 ]
 
+const REMINDER_LABELS = {
+  1: 'Final Reminder',
+  2: '30-Day Reminder',
+  3: '2-Week Reminder',
+}
+
 export default function RenewalShareFlow({ item, onClose }) {
   const { user } = useAuth()
 
@@ -213,7 +219,7 @@ export default function RenewalShareFlow({ item, onClose }) {
         rpm_device:    navigator.userAgent,
         rpm_name:      user?.name    ?? null,
         customer_name: selected.name ?? null,
-        reminder_type: { 1: 'Final Reminder', 2: '30-Day Reminder', 3: '2-Week Reminder' }[selectedCard],
+        reminder_type: REMINDER_LABELS[selectedCard],
       })
       if (linkErr) throw linkErr
 
@@ -251,7 +257,10 @@ export default function RenewalShareFlow({ item, onClose }) {
       })
     : ''
   const activeMsg = cardLink && selected
-    ? getWhatsAppMessage('renewal-card', selected.persona, selected.name || 'there', cardLink, user?.name || 'Your Advisor')
+    ? getWhatsAppMessage('renewal-card', selected.persona, selected.name || 'there', cardLink, user?.name || 'Your Advisor', {
+      policyNumber: selected.policy_number || selected.policyNumber || '',
+      policyName: selected.product_name || '',
+    })
     : ''
 
   function openWhatsApp() {

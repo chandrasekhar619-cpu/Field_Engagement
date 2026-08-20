@@ -205,7 +205,11 @@ export default function BonusAnnouncementShareFlow({ item, onClose, preselectedC
       selected.name || 'there',
       linkUrl(token),
       user?.name || 'Your Advisor',
-      { productName: selected.product_name || 'your policy' }
+      {
+        productName: selected.product_name || 'your policy',
+        policyName: selected.product_name || '',
+        policyNumber: selected.policy_number || selected.policyNumber || '',
+      }
     )
     : ''
 

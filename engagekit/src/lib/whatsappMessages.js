@@ -132,11 +132,11 @@ Read it here: ${link}
 Feel free to share this with anyone in your network who might benefit from it!`,
   },
   'bonus-announcement': {
-    generic: (name, link, _rpmName, productName) => `Hi ${name},
+    generic: (name, link, _rpmName, _productName, context = {}) => `Hi ${name},
 
 Good news!
 
-We've declared our *14th consecutive annual bonus* on your policy *${productName || 'your policy'}*.
+We've declared our *14th consecutive annual bonus* on your policy${renewalPolicyInline(context)}.
 
 Click the image to view your bonus amount details.
 
@@ -313,35 +313,35 @@ Best regards,
 ${rpmName}`
   },
   'renewal-card': {
-    'Go-Getter': (name, link, rpmName) => `Hi ${name} 👋 Your policy renewal is coming up — here's a quick update put together just for you.
+    'Go-Getter': (name, link, rpmName, context = {}) => `Hi ${name} 👋 Your policy renewal is coming up${renewalPolicyInline(context)} — here's a quick update put together just for you.
 
 ${link}
 
 Best regards,
 
 ${rpmName}`,
-    'Protector': (name, link, rpmName) => `Hi ${name} 👋 Wanted to make sure your family's cover stays uninterrupted. Here's your renewal update.
+    'Protector': (name, link, rpmName, context = {}) => `Hi ${name} 👋 Wanted to make sure your family's cover stays uninterrupted. Your policy renewal is coming up${renewalPolicyInline(context)}.
 
 ${link}
 
 Best regards,
 
 ${rpmName}`,
-    'Caregiver': (name, link, rpmName) => `Hi ${name} 👋 Just checking in — your renewal is coming up and I've put this together for you.
+    'Caregiver': (name, link, rpmName, context = {}) => `Hi ${name} 👋 Just checking in — your renewal is coming up${renewalPolicyInline(context)} and I've put this together for you.
 
 ${link}
 
 Best regards,
 
 ${rpmName}`,
-    'Thinker': (name, link, rpmName) => `Hi ${name} 👋 Your renewal details are ready for review. Take a look when you get a moment.
+    'Thinker': (name, link, rpmName, context = {}) => `Hi ${name} 👋 Your policy renewal is coming up${renewalPolicyInline(context)}. Your details are ready for review.
 
 ${link}
 
 Best regards,
 
 ${rpmName}`,
-    generic: (name, link, rpmName) => `Hi ${name} 👋 Your policy renewal is coming up. Here's a quick update for you.
+    generic: (name, link, rpmName, context = {}) => `Hi ${name} 👋 Your policy renewal is coming up${renewalPolicyInline(context)}. Here's a quick update for you.
 
 ${link}
 
@@ -366,6 +366,36 @@ function withStandardSignature(message, rpmName) {
   return `${body}\n\n${buildSignature(rpmName)}`
 }
 
+function renewalPolicyInline(context = {}) {
+  const policyNumber = (context.policyNumber || '').toString().trim()
+  const policyName = (context.policyName || context.productName || '').toString().trim()
+
+  if (policyNumber && policyName) return ` (${policyNumber}, ${policyName})`
+  if (policyNumber) return ` (${policyNumber})`
+  if (policyName) return ` (${policyName})`
+  return ''
+}
+
+function withMessageContext(message, context = {}) {
+  const policyNumber = (context.policyNumber || '').toString().trim()
+  const policyName = (context.policyName || context.productName || '').toString().trim()
+
+  const contextParts = []
+  if (policyNumber) contextParts.push(`Policy Number: ${policyNumber}`)
+  if (policyName) contextParts.push(`Policy Name: ${policyName}`)
+  if (contextParts.length === 0) return message
+
+  const contextLine = contextParts.join(' | ')
+
+  // Insert context right after greeting so customer sees policy details immediately.
+  const greetingBreak = message.indexOf('\n\n')
+  if (greetingBreak === -1) {
+    return `${message}\n\n${contextLine}`
+  }
+
+  return `${message.slice(0, greetingBreak)}\n\n${contextLine}\n\n${message.slice(greetingBreak + 2)}`
+}
+
 export function getWhatsAppMessage(demoType, persona, customerName, link, rpmName, context = {}) {
   const variants = MESSAGES[demoType] || MESSAGES.creative
   const fn = (persona && variants[persona]) ? variants[persona] : variants.generic
@@ -374,11 +404,27 @@ export function getWhatsAppMessage(demoType, persona, customerName, link, rpmNam
   if ((demoType === 'word-hunt' || demoType === 'book-insight' || demoType === 'mood' || demoType === 'renewal-card') && rpmName) {
     const personaMessages = PERSONA_MESSAGES[demoType]
     const messageFn = (persona && personaMessages[persona]) ? personaMessages[persona] : personaMessages.generic
-    return withStandardSignature(messageFn(customerName || 'there', link, rpmName), rpmName)
+    if (demoType === 'renewal-card') {
+      return withStandardSignature(messageFn(customerName || 'there', link, rpmName, context), rpmName)
+    }
+    return withStandardSignature(
+      messageFn(customerName || 'there', link, rpmName),
+      rpmName
+    )
+  }
+
+  if (demoType === 'bonus-announcement') {
+    return withStandardSignature(
+      fn(customerName || 'there', link, rpmName || 'Your Advisor', context.productName, context),
+      rpmName || 'Your Advisor'
+    )
   }
 
   return withStandardSignature(
-    fn(customerName || 'there', link, rpmName || 'Your Advisor', context.productName),
+    withMessageContext(
+      fn(customerName || 'there', link, rpmName || 'Your Advisor', context.productName, context),
+      context
+    ),
     rpmName || 'Your Advisor'
   )
 }
