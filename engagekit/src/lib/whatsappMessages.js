@@ -399,6 +399,13 @@ function withMessageContext(message, context = {}) {
 export function getWhatsAppMessage(demoType, persona, customerName, link, rpmName, context = {}) {
   const variants = MESSAGES[demoType] || MESSAGES.creative
   const fn = (persona && variants[persona]) ? variants[persona] : variants.generic
+
+  if (demoType === 'creative' && context.contentTitle?.toLowerCase().includes('raksha bandhan')) {
+    return withStandardSignature(
+      `Hi ${customerName || 'there'},\n\nWishing you and your family a very happy Raksha Bandhan.`,
+      rpmName || 'Your Advisor'
+    )
+  }
   
   // For word-hunt, book-insight, mood, and renewal-card, use persona-specific multi-line format with RPM name
   if ((demoType === 'word-hunt' || demoType === 'book-insight' || demoType === 'mood' || demoType === 'renewal-card') && rpmName) {

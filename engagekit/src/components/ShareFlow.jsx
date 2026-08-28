@@ -41,6 +41,14 @@ function CreativePreview({ item, name, designation }) {
   const theme = CREATIVE_THEMES[item.category] || CREATIVE_THEMES.default
   return (
     <div className={`relative bg-gradient-to-br ${theme.bg} aspect-[3/4] flex flex-col items-center justify-center overflow-hidden`}>
+      {item.shareImageSrc && (
+        <img
+          src={item.shareImageSrc}
+          alt={item.title}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      )}
+      {item.shareImageSrc && <div className="absolute inset-0 bg-black/10" />}
       <div className="absolute top-6 right-6 w-20 h-20 rounded-full opacity-10" style={{ background: theme.accent }} />
       <div className="absolute bottom-16 left-4 w-12 h-12 rounded-full opacity-10" style={{ background: theme.accent }} />
       <div className="relative z-10 flex flex-col items-center text-center px-6">
@@ -85,8 +93,8 @@ function InteractivePreview({ item, name }) {
   )
 }
 
-function WaMessagePreview({ demoType, persona, customerName }) {
-  const message = getWhatsAppMessage(demoType, persona, customerName || '[Customer Name]', '[link]', '[Service Manager Name]')
+function WaMessagePreview({ demoType, persona, customerName, contentTitle }) {
+  const message = getWhatsAppMessage(demoType, persona, customerName || '[Customer Name]', '[link]', '[Service Manager Name]', { contentTitle })
   return (
     <div className="px-4 py-3 bg-gray-50 border-t border-[#e4e7f0]">
       <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-2">WhatsApp message preview</p>
@@ -246,16 +254,13 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
         usePersonaMessage ? selected.persona : null,
         selected.name || 'there',
         linkUrl(token),
-        user?.name || 'Your Advisor'
+        user?.name || 'Your Advisor',
+        { contentTitle: item.title }
       )
     : ''
 
   function openWhatsApp() {
     const num = waPhoneNumber.trim().replace(/\D/g, '')
-    if (num && num.length === 10) {
-      window.open(`https://wa.me/91${num}?text=${encodeURIComponent(activeMsg)}`, '_blank')
-      return
-    }
     if (shareImageFile && navigator.share && navigator.canShare?.({ files: [shareImageFile] })) {
       navigator.share({ files: [shareImageFile], text: activeMsg })
         .catch(err => {
@@ -263,6 +268,10 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
             window.open(`https://wa.me/?text=${encodeURIComponent(activeMsg)}`, '_blank')
           }
         })
+      return
+    }
+    if (num && num.length === 10) {
+      window.open(`https://wa.me/91${num}?text=${encodeURIComponent(activeMsg)}`, '_blank')
       return
     }
     window.open(`https://wa.me/?text=${encodeURIComponent(activeMsg)}`, '_blank')
@@ -299,6 +308,7 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
                 demoType={item.demoType}
                 persona={preselectedCustomer?.persona}
                 customerName={preselectedCustomer?.name}
+                contentTitle={item.title}
               />
             </div>
 

@@ -21,13 +21,14 @@ export const contentItems = [
   },
   {
     id: '5',
-    emoji: '🪔',
+    emoji: '🎁',
     category: 'Festive',
-    title: 'Diwali Savings Gift',
-    description: 'Share a personalised Diwali message bundled with an interactive savings insight.',
+    title: 'Raksha Bandhan Wish',
+    description: 'Share a heartfelt Raksha Bandhan wish with your customer.',
     personas: [],
     languages: ['EN', 'HI', 'MR', 'TE', 'TA'],
     demoType: 'creative',
+    shareImageSrc: '/raksha-bandhan.png',
   },
   {
     id: '8',

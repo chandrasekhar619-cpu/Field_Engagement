@@ -149,6 +149,14 @@ function drawEngagementCard(item, rpmName) {
 
 // Public entry point — creatives delegate to the existing drawCreativeCard
 export function generateShareImage(item, rpmName, rpmDesignation) {
+  if (item.shareImageSrc) {
+    return fetch(item.shareImageSrc)
+      .then(response => {
+        if (!response.ok) throw new Error(`Could not load share image: ${response.status}`)
+        return response.blob()
+      })
+      .then(blob => new File([blob], 'raksha-bandhan.png', { type: blob.type || 'image/png' }))
+  }
   if (item.demoType === 'creative') {
     return drawCreativeCard(item, rpmName, rpmDesignation)
   }
