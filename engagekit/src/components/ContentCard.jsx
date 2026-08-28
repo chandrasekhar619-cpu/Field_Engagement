@@ -21,12 +21,8 @@ export default function ContentCard({ item, onTryIt, onShare }) {
 
       {/* Emoji area — TRIAL badge overlaid top-right */}
       <div className="relative">
-        <div className={`${style.emoji} rounded-t-xl flex items-center justify-center overflow-hidden select-none ${item.shareImageSrc ? 'aspect-[1.15/1]' : 'py-6 text-4xl'}`}>
-          {item.shareImageSrc ? (
-            <img src={item.shareImageSrc} alt={item.title} className="w-full h-full object-cover" />
-          ) : (
-            item.emoji
-          )}
+        <div className={`${style.emoji} rounded-t-xl flex items-center justify-center py-6 text-4xl select-none`}>
+          {item.emoji}
         </div>
         {item.trialOnly && (
           <span className="absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#e8a020] text-[#e8a020] bg-white leading-none">

@@ -41,14 +41,6 @@ function CreativePreview({ item, name, designation }) {
   const theme = CREATIVE_THEMES[item.category] || CREATIVE_THEMES.default
   return (
     <div className={`relative bg-gradient-to-br ${theme.bg} aspect-[3/4] flex flex-col items-center justify-center overflow-hidden`}>
-      {item.shareImageSrc && (
-        <img
-          src={item.shareImageSrc}
-          alt={item.title}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-      )}
-      {item.shareImageSrc && <div className="absolute inset-0 bg-black/10" />}
       <div className="absolute top-6 right-6 w-20 h-20 rounded-full opacity-10" style={{ background: theme.accent }} />
       <div className="absolute bottom-16 left-4 w-12 h-12 rounded-full opacity-10" style={{ background: theme.accent }} />
       <div className="relative z-10 flex flex-col items-center text-center px-6">
