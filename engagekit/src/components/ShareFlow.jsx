@@ -116,6 +116,7 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
   const [waPhoneNumber,    setWaPhoneNumber]    = useState('')
 
   const isCreative = item.demoType === 'creative'
+  const hasShareImage = Boolean(item.shareImageSrc)
   const name        = user?.name        || 'Your Advisor'
   const designation = user?.designation || 'Relationship Portfolio Manager'
 
@@ -499,14 +500,16 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
 
               <div className="flex gap-2">
                 <button
-                  onClick={copyMessage}
+                  onClick={hasShareImage ? openWhatsApp : copyMessage}
+                  disabled={hasShareImage && imageGenerating}
+                  title={hasShareImage ? 'Share image and message' : 'Copy message'}
                   className={`flex-1 py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
                     copied
                       ? 'bg-green-50 border-green-400 text-green-700'
                       : 'bg-white border-[#e4e7f0] text-[#0f1f3d] hover:border-[#0f1f3d]/40'
                   }`}
                 >
-                  {copied ? '✓ Copied!' : 'Copy Message'}
+                  {hasShareImage ? 'Share Image + Message' : (copied ? '✓ Copied!' : 'Copy Message')}
                 </button>
                 <button
                   onClick={openWhatsApp}
