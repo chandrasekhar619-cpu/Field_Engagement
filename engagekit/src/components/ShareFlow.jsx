@@ -233,7 +233,24 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
     setStep('selector')
   }
 
-  async function copyLink() {
+  async function copyMessage() {
+    if (shareImageFile && navigator.clipboard?.write && window.ClipboardItem) {
+      try {
+        const imageBlob = new Blob([shareImageFile], { type: shareImageFile.type || 'image/png' })
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            'text/plain': new Blob([activeMsg], { type: 'text/plain' }),
+            [imageBlob.type]: imageBlob,
+          }),
+        ])
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+        return
+      } catch (error) {
+        console.warn('Image clipboard copy unavailable:', error)
+      }
+    }
+
     await navigator.clipboard.writeText(activeMsg)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -482,7 +499,7 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
 
               <div className="flex gap-2">
                 <button
-                  onClick={copyLink}
+                  onClick={copyMessage}
                   className={`flex-1 py-3 rounded-xl border-2 text-sm font-semibold transition-all ${
                     copied
                       ? 'bg-green-50 border-green-400 text-green-700'
