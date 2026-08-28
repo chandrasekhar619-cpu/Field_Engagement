@@ -38,7 +38,7 @@ export const contentItems = [
     personas: [],
     languages: ['EN', 'HI', 'MR', 'TE', 'TA'],
     demoType: 'creative',
-    shareImageSrc: '/raksha-bandhan.png',
+    shareImageSrc: '/Rakshabandhan.png',
   },
   {
     id: '8',

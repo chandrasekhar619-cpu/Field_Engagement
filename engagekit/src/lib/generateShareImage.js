@@ -155,7 +155,7 @@ export function generateShareImage(item, rpmName, rpmDesignation) {
         if (!response.ok) throw new Error(`Could not load share image: ${response.status}`)
         return response.blob()
       })
-      .then(blob => new File([blob], 'raksha-bandhan.png', { type: blob.type || 'image/png' }))
+      .then(blob => new File([blob], 'Rakshabandhan.png', { type: blob.type || 'image/png' }))
   }
   if (item.demoType === 'creative') {
     return drawCreativeCard(item, rpmName, rpmDesignation)
