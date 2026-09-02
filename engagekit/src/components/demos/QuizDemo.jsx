@@ -231,30 +231,8 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
   if (phase === 'result') {
     const p = PERSONAS[getPersona(answers)]
 
-    function downloadAndToast(file) {
-      const url = URL.createObjectURL(file)
-      const a = document.createElement('a')
-      a.href = url; a.download = file.name
-      document.body.appendChild(a); a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-      setToast('Image saved — attach it in WhatsApp')
-    }
-
     function handleShareResult() {
-      console.log('[QuizDemo] shareFile at tap time:', shareFile)
-      if (!shareFile) {
-        setToast('Could not prepare image — try again')
-        return
-      }
-
-      if (navigator.share && navigator.canShare({ files: [shareFile] })) {
-        // Native share sheet — called synchronously from tap, gesture is intact
-        navigator.share({ files: [shareFile], text: p.waMessage })
-          .catch(err => { if (err.name !== 'AbortError') downloadAndToast(shareFile) })
-      } else {
-        downloadAndToast(shareFile)
-      }
+      window.open(`https://wa.me/?text=${encodeURIComponent(p.waMessage)}`, '_blank')
     }
 
     /* Customer-facing result */

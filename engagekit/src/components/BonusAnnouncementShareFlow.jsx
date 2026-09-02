@@ -47,7 +47,6 @@ export default function BonusAnnouncementShareFlow({ item, onClose, preselectedC
   const [token, setToken] = useState(null)
   const [linkError, setLinkError] = useState('')
   const [copied, setCopied] = useState(false)
-  const [shareImageFile, setShareImageFile] = useState(null)
   const [imageGenerating, setImageGenerating] = useState(false)
   const [waPhoneNumber, setWaPhoneNumber] = useState('')
 
@@ -94,7 +93,6 @@ export default function BonusAnnouncementShareFlow({ item, onClose, preselectedC
 
   useEffect(() => {
     if (step !== 'link') return
-    setShareImageFile(null)
     setImageGenerating(true)
 
     requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -112,7 +110,6 @@ export default function BonusAnnouncementShareFlow({ item, onClose, preselectedC
         })
           .then(canvas => canvas.toBlob(
             blob => {
-              if (blob) setShareImageFile(new File([blob], 'bonus-announcement.jpg', { type: 'image/jpeg' }))
               setImageGenerating(false)
             },
             'image/jpeg',
@@ -219,17 +216,6 @@ export default function BonusAnnouncementShareFlow({ item, onClose, preselectedC
       window.open(`https://wa.me/91${num}?text=${encodeURIComponent(activeMsg)}`, '_blank')
       return
     }
-
-    if (shareImageFile && navigator.share && navigator.canShare?.({ files: [shareImageFile] })) {
-      navigator.share({ files: [shareImageFile], text: activeMsg })
-        .catch(err => {
-          if (err.name !== 'AbortError') {
-            window.open(`https://wa.me/?text=${encodeURIComponent(activeMsg)}`, '_blank')
-          }
-        })
-      return
-    }
-
     window.open(`https://wa.me/?text=${encodeURIComponent(activeMsg)}`, '_blank')
   }
 

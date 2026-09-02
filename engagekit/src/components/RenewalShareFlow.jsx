@@ -75,7 +75,6 @@ export default function RenewalShareFlow({ item, onClose }) {
   const [linkError,       setLinkError]       = useState('')
   const [token,           setToken]           = useState(null)
   const [copied,          setCopied]          = useState(false)
-  const [shareImageFile,  setShareImageFile]  = useState(null)
   const [imageGenerating, setImageGenerating] = useState(false)
   const [prefilled,       setPrefilled]       = useState(false)
   const [nomineeName,     setNomineeName]     = useState('')
@@ -117,7 +116,6 @@ export default function RenewalShareFlow({ item, onClose }) {
   // Capture the off-screen share card as a PNG once the link step mounts
   useEffect(() => {
     if (step !== 'link') return
-    setShareImageFile(null)
     setImageGenerating(true)
     // Double-rAF ensures the card element is fully painted before html2canvas reads it
     requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -131,7 +129,6 @@ export default function RenewalShareFlow({ item, onClose }) {
         })
           .then(canvas => canvas.toBlob(
             blob => {
-              if (blob) setShareImageFile(new File([blob], 'renewal-reminder.png', { type: 'image/png' }))
               setImageGenerating(false)
             },
             'image/png'
@@ -267,15 +264,6 @@ export default function RenewalShareFlow({ item, onClose }) {
     const num = waPhoneNumber.trim().replace(/\D/g, '')
     if (num && num.length === 10) {
       window.open(`https://wa.me/91${num}?text=${encodeURIComponent(activeMsg)}`, '_blank')
-      return
-    }
-    if (shareImageFile && navigator.share && navigator.canShare?.({ files: [shareImageFile] })) {
-      navigator.share({ files: [shareImageFile], text: activeMsg })
-        .catch(err => {
-          if (err.name !== 'AbortError') {
-            window.open(`https://wa.me/?text=${encodeURIComponent(activeMsg)}`, '_blank')
-          }
-        })
       return
     }
     window.open(`https://wa.me/?text=${encodeURIComponent(activeMsg)}`, '_blank')

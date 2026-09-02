@@ -110,7 +110,6 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
   const [linkError,       setLinkError]       = useState('')
   const [token,           setToken]           = useState(null)
   const [copied,           setCopied]           = useState(false)
-  const [shareImageFile,   setShareImageFile]   = useState(null)
   const [imageGenerating,  setImageGenerating]  = useState(false)
   const [usePersonaMessage, setUsePersonaMessage] = useState(true)
   const [waPhoneNumber,    setWaPhoneNumber]    = useState('')
@@ -211,11 +210,11 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
       setUsePersonaMessage(true)
       setStep('link')
 
-      // Generate share image in parallel — ready by the time the RPM taps WhatsApp
-      setImageGenerating(true)
-      generateShareImage(item, name, designation)
-        .then(file => { setShareImageFile(file); setImageGenerating(false) })
-        .catch(() => setImageGenerating(false))
+      if (item.shareImageSrc) {
+        setImageGenerating(true)
+        generateShareImage(item, name, designation)
+          .finally(() => setImageGenerating(false))
+      }
     } catch (err) {
       setLinkError('Could not generate link. Please try again.')
       console.error('Link generation error:', err)
@@ -272,15 +271,6 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
   function openWhatsApp() {
     const num = waPhoneNumber.trim().replace(/\D/g, '')
     if (item.shareImageSrc && imageGenerating) return
-    if (shareImageFile && navigator.share && navigator.canShare?.({ files: [shareImageFile] })) {
-      navigator.share({ files: [shareImageFile], text: activeMsg })
-        .catch(err => {
-          if (err.name !== 'AbortError') {
-            window.open(`https://wa.me/?text=${encodeURIComponent(activeMsg)}`, '_blank')
-          }
-        })
-      return
-    }
     if (num && num.length === 10) {
       window.open(`https://wa.me/91${num}?text=${encodeURIComponent(activeMsg)}`, '_blank')
       return
