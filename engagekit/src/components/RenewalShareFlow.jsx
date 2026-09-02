@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 import { getWhatsAppMessage } from '../lib/whatsappMessages'
-import RenewalShareCard from './RenewalShareCard'
 
 function linkUrl(token, extra) {
   const base = `${window.location.origin}/c?token=${token}`
@@ -30,6 +29,18 @@ function formatDDMMYYYY(dateStr) {
   const d = new Date(yyyy_mm_dd)
   if (isNaN(d.getTime())) return ''
   return d.toLocaleDateString('en-IN')
+}
+
+function isManualDueDateRequired(paymentMode) {
+  const normalizedMode = paymentMode.trim().toLowerCase()
+  return ['monthly', 'quarterly', 'semi-annually', 'semiannually'].includes(normalizedMode)
+}
+
+function isValidDDMMYYYY(dateStr) {
+  if (!/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) return false
+  const [day, month, year] = dateStr.split('-').map(Number)
+  const date = new Date(year, month - 1, day)
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day
 }
 
 const avatarBg = ['bg-[#0f1f3d]', 'bg-indigo-700', 'bg-emerald-700', 'bg-rose-700', 'bg-violet-700']
@@ -75,16 +86,15 @@ export default function RenewalShareFlow({ item, onClose }) {
   const [linkError,       setLinkError]       = useState('')
   const [token,           setToken]           = useState(null)
   const [copied,          setCopied]          = useState(false)
-  const [imageGenerating, setImageGenerating] = useState(false)
   const [prefilled,       setPrefilled]       = useState(false)
   const [nomineeName,     setNomineeName]     = useState('')
   const [paymentMode,     setPaymentMode]     = useState('')
   const [pptTerm,         setPptTerm]         = useState('')
+  const [manualDueDate,   setManualDueDate]   = useState('')
 
   const [allCustomers,     setAllCustomers]     = useState([])
   const [customersLoading, setCustomersLoading] = useState(false)
   const debounceRef = useRef(null)
-  const cardRef     = useRef(null)
 
   // Customer search — same pattern as ShareFlow
   useEffect(() => {
@@ -113,36 +123,12 @@ export default function RenewalShareFlow({ item, onClose }) {
 
   const [waPhoneNumber,   setWaPhoneNumber]   = useState('')
 
-  // Capture the off-screen share card as a PNG once the link step mounts
-  useEffect(() => {
-    if (step !== 'link') return
-    setImageGenerating(true)
-    // Double-rAF ensures the card element is fully painted before html2canvas reads it
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (!cardRef.current) { setImageGenerating(false); return }
-      import('html2canvas').then(({ default: html2canvas }) =>
-        html2canvas(cardRef.current, {
-          scale:           2,
-          useCORS:         true,
-          backgroundColor: '#ffffff',
-          logging:         false,
-        })
-          .then(canvas => canvas.toBlob(
-            blob => {
-              setImageGenerating(false)
-            },
-            'image/png'
-          ))
-          .catch(() => setImageGenerating(false))
-      )
-    }))
-  }, [step]) // eslint-disable-line react-hooks/exhaustive-deps
-
   async function handleSelectCustomer(c) {
     setSelected(c)
     setPrefilled(false)
     setDetails(EMPTY_DETAILS)
     setPaymentMode('')
+    setManualDueDate('')
     if (!c.policy_number) return
     const { data } = await supabase
       .from('policy_metadata')
@@ -164,6 +150,8 @@ export default function RenewalShareFlow({ item, onClose }) {
     if (!details.premium)     errs.premium = 'Required'
     if (selectedCard === 1 && !pptTerm) errs.ppt = 'Required'
     if (selectedCard === 2 && !paymentMode) errs.payment_mode = 'Required'
+    if (isManualDueDateRequired(paymentMode) && !manualDueDate) errs.due_date = 'Required'
+    if (manualDueDate && !isValidDDMMYYYY(manualDueDate)) errs.due_date = 'Use DD-MM-YYYY'
     setDetailErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -173,6 +161,7 @@ export default function RenewalShareFlow({ item, onClose }) {
     setGenerating(true)
     setLinkError('')
     try {
+      const dueDate = isManualDueDateRequired(paymentMode) ? manualDueDate : selected.premium_due_date
       const { data: { user: authUser } } = await supabase.auth.getUser()
 
       const { data: tokenData, error: tokenErr } = await supabase
@@ -185,9 +174,9 @@ export default function RenewalShareFlow({ item, onClose }) {
             premium:      parseInt(details.premium),
             policy_number: selected.policy_number ?? '',
             product_name: selected.product_name ?? '',
-            ...(selectedCard === 1 && pptTerm && { ppt: parseInt(pptTerm), premium_due_date: selected.premium_due_date }),
+            ...(selectedCard === 1 && pptTerm && { ppt: parseInt(pptTerm), premium_due_date: dueDate }),
             ...(selectedCard === 2 && paymentMode && { payment_mode: paymentMode }),
-            ...(selectedCard === 3 && { premium_due_date: selected.premium_due_date }),
+            ...(selectedCard === 3 && { premium_due_date: dueDate }),
           },
         })
         .select('token')
@@ -228,6 +217,15 @@ export default function RenewalShareFlow({ item, onClose }) {
         updated_at:    new Date().toISOString(),
       }, { onConflict: 'policy_number' })
       if (metaErr) console.error('policy_metadata upsert failed:', metaErr)
+
+      if (isManualDueDateRequired(paymentMode)) {
+        const { error: dueDateErr } = await supabase
+          .from('customers')
+          .update({ premium_due_date: dueDate })
+          .eq('id', selected.id)
+        if (dueDateErr) console.error('Customer due-date update failed:', dueDateErr)
+        else setSelected(customer => ({ ...customer, premium_due_date: dueDate }))
+      }
 
       setToken(uuid)
       setStep('link')
@@ -279,24 +277,11 @@ export default function RenewalShareFlow({ item, onClose }) {
     setNomineeName('')
     setPaymentMode('')
     setPptTerm('')
+    setManualDueDate('')
   }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      {/* Off-screen card for html2canvas capture — never visible to user */}
-      {step === 'link' && (
-        <div style={{ position: 'fixed', top: -9999, left: -9999, pointerEvents: 'none' }}>
-          <RenewalShareCard
-            ref={cardRef}
-            cardNumber={selectedCard}
-            persona={selected?.persona}
-            customerName={selected?.name}
-            policyName={selected?.policyNumber}
-            dueDate={selected?.premium_due_date}
-          />
-        </div>
-      )}
-
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden z-10 max-h-[88vh] flex flex-col">
@@ -513,17 +498,6 @@ export default function RenewalShareFlow({ item, onClose }) {
                       <p className="text-red-400 text-xs mt-1">{detailErrors.ppt}</p>
                     )}
                   </div>
-                  <div>
-                    <label className="text-[#0f1f3d] text-xs font-semibold block mb-1.5">
-                      Renewal Due Date <span className="text-gray-400 font-normal">(auto-filled)</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={formatDDMMYYYY(selected?.premium_due_date)}
-                      disabled
-                      className="w-full bg-gray-100 border border-[#e4e7f0] rounded-xl px-3 py-2.5 text-sm outline-none text-gray-600 cursor-not-allowed"
-                    />
-                  </div>
                 </>
               )}
               {selectedCard === 2 && (
@@ -560,17 +534,6 @@ export default function RenewalShareFlow({ item, onClose }) {
                     <input
                       type="text"
                       value={selected?.policy_number || ''}
-                      disabled
-                      className="w-full bg-gray-100 border border-[#e4e7f0] rounded-xl px-3 py-2.5 text-sm outline-none text-gray-600 cursor-not-allowed"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[#0f1f3d] text-xs font-semibold block mb-1.5">
-                      Renewal Due Date <span className="text-gray-400 font-normal">(auto-filled)</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={formatDDMMYYYY(selected?.premium_due_date)}
                       disabled
                       className="w-full bg-gray-100 border border-[#e4e7f0] rounded-xl px-3 py-2.5 text-sm outline-none text-gray-600 cursor-not-allowed"
                     />
@@ -625,6 +588,28 @@ export default function RenewalShareFlow({ item, onClose }) {
                 {paymentMode && (
                   <p className="text-green-600 text-xs mt-2 px-3 py-1.5 bg-green-50 rounded-lg">✓ Entered: <strong>{paymentMode}</strong></p>
                 )}
+              </div>
+              <div>
+                <label className="text-[#0f1f3d] text-xs font-semibold block mb-1.5">
+                  Renewal Due Date {isManualDueDateRequired(paymentMode) ? <span className="text-red-400">*</span> : <span className="text-gray-400 font-normal">(auto-filled)</span>}
+                </label>
+                <input
+                  type="text"
+                  value={isManualDueDateRequired(paymentMode) ? manualDueDate : formatDDMMYYYY(selected?.premium_due_date)}
+                  onChange={e => {
+                    setManualDueDate(e.target.value)
+                    if (detailErrors.due_date) setDetailErrors(errors => { const nextErrors = { ...errors }; delete nextErrors.due_date; return nextErrors })
+                  }}
+                  placeholder="DD-MM-YYYY"
+                  maxLength="10"
+                  disabled={!isManualDueDateRequired(paymentMode)}
+                  className={`w-full border rounded-xl px-3 py-2.5 text-sm outline-none transition-colors ${
+                    isManualDueDateRequired(paymentMode)
+                      ? detailErrors.due_date ? 'bg-gray-50 border-red-300 focus:border-red-400' : 'bg-gray-50 border-[#e4e7f0] focus:border-[#0f1f3d]/30'
+                      : 'bg-gray-100 border-[#e4e7f0] text-gray-600 cursor-not-allowed'
+                  }`}
+                />
+                {detailErrors.due_date && <p className="text-red-400 text-xs mt-1">{detailErrors.due_date}</p>}
               </div>
             </div>
 
