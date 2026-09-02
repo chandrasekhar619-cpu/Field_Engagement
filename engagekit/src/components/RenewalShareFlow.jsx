@@ -33,7 +33,7 @@ function formatDDMMYYYY(dateStr) {
 
 function isManualDueDateRequired(paymentMode) {
   const normalizedMode = paymentMode.trim().toLowerCase()
-  return ['monthly', 'quarterly', 'semi-annually', 'semiannually'].includes(normalizedMode)
+  return !['annual', 'annually', 'yearly', 'year'].includes(normalizedMode)
 }
 
 function isValidDDMMYYYY(dateStr) {
