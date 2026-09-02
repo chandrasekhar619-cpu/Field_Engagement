@@ -193,6 +193,7 @@ export default function ContentView() {
         <RenewalShareFlow
           item={renewalShareItem}
           onClose={() => setRenewalShareItem(null)}
+          preselectedCustomer={activeCustomer}
         />
       )}
 

@@ -73,7 +73,7 @@ const REMINDER_LABELS = {
   3: '2-Week Reminder',
 }
 
-export default function RenewalShareFlow({ item, onClose }) {
+export default function RenewalShareFlow({ item, onClose, preselectedCustomer }) {
   const { user } = useAuth()
 
   const [step,         setStep]         = useState('card')
@@ -122,6 +122,37 @@ export default function RenewalShareFlow({ item, onClose }) {
   }, [search])
 
   const [waPhoneNumber,   setWaPhoneNumber]   = useState('')
+
+  useEffect(() => {
+    if (!preselectedCustomer) return
+    let cancelled = false
+
+    async function loadPreselectedCustomer() {
+      setSelected(preselectedCustomer)
+      setPrefilled(false)
+      setDetails(EMPTY_DETAILS)
+      setPaymentMode('')
+      setManualDueDate('')
+      if (!preselectedCustomer.policy_number) return
+
+      const { data } = await supabase
+        .from('policy_metadata')
+        .select('premium, payment_mode')
+        .eq('policy_number', preselectedCustomer.policy_number)
+        .single()
+      if (cancelled || !data) return
+
+      setDetails({
+        premium: data.premium != null ? String(data.premium) : '',
+        payment_mode: data.payment_mode != null ? String(data.payment_mode) : '',
+      })
+      setPaymentMode(data.payment_mode || '')
+      setPrefilled(true)
+    }
+
+    loadPreselectedCustomer()
+    return () => { cancelled = true }
+  }, [preselectedCustomer?.id])
 
   async function handleSelectCustomer(c) {
     setSelected(c)
@@ -301,7 +332,7 @@ export default function RenewalShareFlow({ item, onClose }) {
               {CARD_OPTIONS.map(opt => (
                 <button
                   key={opt.cardNumber}
-                  onClick={() => { setSelectedCard(opt.cardNumber); setNomineeName(''); setPaymentMode('') }}
+                  onClick={() => { setSelectedCard(opt.cardNumber); setNomineeName('') }}
                   className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
                     selectedCard === opt.cardNumber
                       ? 'border-[#0f1f3d] bg-[#0f1f3d]/[0.03]'
@@ -323,11 +354,11 @@ export default function RenewalShareFlow({ item, onClose }) {
 
             <div className="p-4 border-t border-[#e4e7f0] flex-shrink-0">
               <button
-                onClick={() => setStep('customer')}
+                onClick={() => setStep(preselectedCustomer ? 'details' : 'customer')}
                 disabled={!selectedCard}
                 className="w-full bg-[#0f1f3d] hover:bg-[#0f1f3d]/90 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold py-3.5 rounded-xl text-sm transition-colors"
               >
-                Next — Select Customer →
+                {preselectedCustomer ? `Next — ${preselectedCustomer.name} →` : 'Next — Select Customer →'}
               </button>
             </div>
           </>
