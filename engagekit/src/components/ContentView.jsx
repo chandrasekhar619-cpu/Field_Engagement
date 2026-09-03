@@ -9,6 +9,7 @@ import ShareFlow from './ShareFlow'
 import RenewalShareFlow from './RenewalShareFlow'
 import BonusAnnouncementShareFlow from './BonusAnnouncementShareFlow'
 import RenewalPreviewModal from './RenewalPreviewModal'
+import RMIntroductionPreviewModal from './RMIntroductionPreviewModal'
 
 const CATEGORIES = ['All', 'Quiz', 'Calculator', 'Game', 'Mood', 'Festive', 'Occasion', 'Interactive Game', 'Read', 'Reminder']
 const LANGUAGES = ['EN', 'HI', 'MR', 'TE', 'TA', 'ML']
@@ -23,6 +24,7 @@ export default function ContentView() {
   const [renewalPreviewOpen, setRenewalPreviewOpen] = useState(false)
   const [bookInsightVariantOpen, setBookInsightVariantOpen] = useState(false)
   const [bonusTrialVariantOpen, setBonusTrialVariantOpen] = useState(false)
+  const [rmIntroductionPreviewOpen, setRmIntroductionPreviewOpen] = useState(false)
   const [activeCustomer, setActiveCustomer] = useState(null)
   const [firstCustomer, setFirstCustomer] = useState(null)
   const [searchParams, setSearchParams] = useSearchParams()
@@ -55,6 +57,8 @@ export default function ContentView() {
   function handleTryIt(item) {
     if (item.demoType === 'creative') {
       setCreativeItem(item)
+    } else if (item.demoType === 'rm-introduction') {
+      setRmIntroductionPreviewOpen(true)
     } else if (item.demoType === 'contact-card') {
       window.open(`/preview/${item.id}`, '_blank')
     } else if (item.demoType === 'renewal-card') {
@@ -248,6 +252,10 @@ export default function ContentView() {
           }}
           onClose={() => setBonusTrialVariantOpen(false)}
         />
+      )}
+
+      {rmIntroductionPreviewOpen && (
+        <RMIntroductionPreviewModal onClose={() => setRmIntroductionPreviewOpen(false)} />
       )}
     </>
   )
