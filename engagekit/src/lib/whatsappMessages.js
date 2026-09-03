@@ -400,6 +400,15 @@ export function getWhatsAppMessage(demoType, persona, customerName, link, rpmNam
   const variants = MESSAGES[demoType] || MESSAGES.creative
   const fn = (persona && variants[persona]) ? variants[persona] : variants.generic
 
+  if (demoType === 'rm-introduction') {
+    const phone = (context.rpmPhone || '').replace(/\D/g, '')
+    const phoneLine = phone ? `\n\nYou can reach me at +91 ${phone}.` : ''
+    return withStandardSignature(
+      `Hi ${customerName || 'there'},\n\nI’m ${rpmName || 'your Relationship Manager'}, your ${context.designation || 'Relationship Manager'} from Edelweiss Life Insurance.\n\nI hope you received our message introducing me as your Relationship Manager. Please save my number and feel free to reach out for any policy-related queries or assistance.${phoneLine}`,
+      rpmName || 'Your Advisor'
+    )
+  }
+
   if (demoType === 'creative' && context.contentTitle?.toLowerCase().includes('raksha bandhan')) {
     return withStandardSignature(
       `Hi ${customerName || 'there'},\n\nWishing you and your family a very happy Raksha Bandhan.`,

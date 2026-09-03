@@ -169,6 +169,13 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
     setGenerating(true)
     setLinkError('')
     try {
+      if (item.messageOnly) {
+        setSelected(customer)
+        setUsePersonaMessage(true)
+        setStep('link')
+        return
+      }
+
       // Get authenticated user ID for share_tokens
       const { data: { user: authUser } } = await supabase.auth.getUser()
 
@@ -257,14 +264,14 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
   }
 
   // Derive the active WhatsApp message from current state
-  const activeMsg = token && selected
+  const activeMsg = selected && (token || item.messageOnly)
     ? getWhatsAppMessage(
         item.demoType,
         usePersonaMessage ? selected.persona : null,
         selected.name || 'there',
-        linkUrl(token),
+        item.messageOnly ? '' : linkUrl(token),
         user?.name || 'Your Advisor',
-        { contentTitle: item.title }
+        { contentTitle: item.title, rpmPhone: user?.phone || '', designation: user?.designation || 'Relationship Manager' }
       )
     : ''
 
@@ -429,19 +436,21 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
           <>
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-[#e4e7f0] flex-shrink-0">
               <div>
-                <h3 className="text-[#0f1f3d] font-bold text-base">Link Ready 🎉</h3>
+                <h3 className="text-[#0f1f3d] font-bold text-base">{item.messageOnly ? 'Message Ready' : 'Link Ready 🎉'}</h3>
                 <p className="text-gray-400 text-xs mt-0.5">For {selected?.name}</p>
               </div>
               <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-lg leading-none">✕</button>
             </div>
 
             <div className="p-5 flex flex-col gap-4 overflow-y-auto">
-              <div className="bg-[#f4f5f9] border border-[#e4e7f0] rounded-xl p-4">
-                <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-1.5">Unique link</p>
-                <p className="text-[#0f1f3d] font-mono text-sm break-all leading-relaxed">
-                  {`${window.location.origin}/c?token=`}<span className="text-[#e8a020] font-bold">{token}</span>
-                </p>
-              </div>
+              {!item.messageOnly && (
+                <div className="bg-[#f4f5f9] border border-[#e4e7f0] rounded-xl p-4">
+                  <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-1.5">Unique link</p>
+                  <p className="text-[#0f1f3d] font-mono text-sm break-all leading-relaxed">
+                    {`${window.location.origin}/c?token=`}<span className="text-[#e8a020] font-bold">{token}</span>
+                  </p>
+                </div>
+              )}
 
               {/* Message preview with persona toggle */}
               <div className="flex flex-col gap-2">

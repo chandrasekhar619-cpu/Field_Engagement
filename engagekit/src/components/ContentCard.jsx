@@ -43,7 +43,16 @@ export default function ContentCard({ item, onTryIt, onShare }) {
         </p>
       </div>
 
-      {item.trialOnly ? (
+      {item.shareOnly ? (
+        <div className="border-t border-[#e4e7f0]">
+          <button
+            onClick={() => onShare(item)}
+            className="w-full py-2.5 text-xs font-semibold text-[#e8a020] hover:bg-amber-50 transition-colors rounded-b-xl active:bg-amber-100"
+          >
+            Share
+          </button>
+        </div>
+      ) : item.trialOnly ? (
         /* Trial-only: single full-width "Try it now" button, no Share */
         <div className="border-t border-[#e4e7f0]">
           <button
