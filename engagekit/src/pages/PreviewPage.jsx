@@ -9,6 +9,7 @@ import MoodDemo           from '../components/demos/MoodDemo'
 import LifeWordDemo       from '../components/demos/LifeWordDemo'
 import WordHuntDemo       from '../components/demos/WordHuntDemo'
 import FinancialPlaybookKids from '../components/FinancialPlaybookKids'
+import ContactShareTrial from '../components/ContactShareTrial'
 
 const DEMOS = {
   'quiz':             QuizDemo,
@@ -80,6 +81,10 @@ export default function PreviewPage() {
   const [searchParams] = useSearchParams()
   const variant = searchParams.get('variant') === 'rpu' ? 'rpu' : 'premium'
   const item = contentItems.find(c => c.id === contentId)
+
+  if (item?.demoType === 'contact-card') {
+    return <ContactShareTrial />
+  }
 
   // Bonus announcement uses static HTML preview with selectable variant.
   if (item?.id === 'bonus-announcement') {

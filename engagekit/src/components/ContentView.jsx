@@ -55,6 +55,8 @@ export default function ContentView() {
   function handleTryIt(item) {
     if (item.demoType === 'creative') {
       setCreativeItem(item)
+    } else if (item.demoType === 'contact-card') {
+      window.open(`/preview/${item.id}`, '_blank')
     } else if (item.demoType === 'renewal-card') {
       setRenewalPreviewOpen(true)
     } else if (item.id === 'bonus-announcement') {

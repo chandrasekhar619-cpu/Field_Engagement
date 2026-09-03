@@ -61,6 +61,17 @@ export const contentItems = [
     demoType: 'creative',
   },
   {
+    id: 'share-my-contact',
+    emoji: '👤',
+    category: 'Occasion',
+    title: 'Share My Contact',
+    description: 'Create a contact card that customers can save to their phone.',
+    personas: [],
+    languages: ['EN'],
+    demoType: 'contact-card',
+    trialOnly: true,
+  },
+  {
     id: '13',
     emoji: '🔍',
     category: 'Game',
