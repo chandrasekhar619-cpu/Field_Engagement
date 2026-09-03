@@ -60,14 +60,6 @@ function renderBold(text) {
   return parts.map((part, i) => (i % 2 === 1 ? <strong key={i}>{part}</strong> : part))
 }
 
-async function markTokenUsed(shareToken) {
-  if (!shareToken) return
-  try {
-    const { error } = await supabase.from('share_tokens').update({ used: true }).eq('token', shareToken)
-    if (error) console.error('share_token mark-used failed:', error)
-  } catch (e) { console.error('share_token mark-used exception:', e) }
-}
-
 // ── CSS (injected once) ───────────────────────────────────────────────────────
 
 const INJECTED_STYLES = `
@@ -339,7 +331,6 @@ export default function WordHuntDemo({
   useEffect(() => {
     if (!allFound || !isCustomerView || markedUsedRef.current) return
     markedUsedRef.current = true
-    markTokenUsed(shareToken)
     if (linkId) logOutcome(linkId, 'Completed')
     onStep?.({ step: 'completed', timestamp: new Date().toISOString() })
   }, [allFound]) // eslint-disable-line react-hooks/exhaustive-deps

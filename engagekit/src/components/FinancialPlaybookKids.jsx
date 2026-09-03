@@ -27,12 +27,6 @@ export default function FinancialPlaybookKids({ customer, token, linkId, custome
     if (markedUsedRef.current || !token) return
     markedUsedRef.current = true
 
-    await supabase
-      .from('share_tokens')
-      .update({ used: true })
-      .eq('token', token)
-      .then(({ error }) => { if (error) console.error('Failed to mark token as used:', error) })
-
     if (linkId) {
       await supabase
         .from('interactions')

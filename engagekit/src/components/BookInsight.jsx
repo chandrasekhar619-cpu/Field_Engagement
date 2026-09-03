@@ -29,13 +29,6 @@ export default function BookInsight({ customer, token, linkId, customerIp, conte
     if (markedUsedRef.current || !token) return
     markedUsedRef.current = true
 
-    // Mark token as used
-    await supabase
-      .from('share_tokens')
-      .update({ used: true })
-      .eq('token', token)
-      .then(({ error }) => { if (error) console.error('Failed to mark token as used:', error) })
-
     // Log the interaction
     if (linkId) {
       await supabase

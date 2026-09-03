@@ -41,14 +41,10 @@ export default function CreativesDemo({
 
   const theme = THEMES[item.category] || THEMES.default
 
-  // Viewing IS completion for creatives — log outcome and mark token used on render
+  // Viewing is recorded as completion for creatives.
   useEffect(() => {
     if (!isCustomerView) return
     if (linkId) logOutcome(linkId, 'Viewed')
-    if (shareToken) {
-      supabase.from('share_tokens').update({ used: true }).eq('token', shareToken)
-        .then(({ error }) => { if (error) console.error('share_token mark-used failed:', error) })
-    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (

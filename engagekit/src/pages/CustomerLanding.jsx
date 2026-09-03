@@ -89,7 +89,7 @@ export default function CustomerLanding() {
           setError('This link has expired.')
           return
         }
-        if (shareToken.used || (shareToken.expires_at && new Date(shareToken.expires_at) < new Date())) {
+        if (shareToken.expires_at && new Date(shareToken.expires_at) < new Date()) {
           setError('This link has expired.')
           return
         }
@@ -121,6 +121,19 @@ export default function CustomerLanding() {
           return
         }
         setLink(linkRecord)
+
+        // A shared link can be opened five times. Count prior customer opens
+        // before recording this visit so the sixth attempt is rejected.
+        const { count: openCount, error: openCountErr } = await supabase
+          .from('interactions')
+          .select('id', { count: 'exact', head: true })
+          .eq('link_id', linkRecord.id)
+          .eq('action', 'opened')
+        if (cancelled) return
+        if (openCountErr || (openCount ?? 0) >= 5) {
+          setError('This link has reached its 5-open limit. Please ask the sender to share a new link.')
+          return
+        }
 
         // 4. Resolve content from local mock (content_id is the item id string)
         const item = contentItems.find(c => c.id === linkRecord.content_id)

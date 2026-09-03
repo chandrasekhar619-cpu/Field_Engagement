@@ -187,11 +187,6 @@ export default function QuizDemo({ onShare, onStep, isCustomerView = false, link
         else console.log('Persona propagated to all records with master_id:', customerData.customer_master_id)
       }
 
-      if (shareToken) {
-        const { error: tokenErr } = await supabase
-          .from('share_tokens').update({ used: true }).eq('token', shareToken)
-        if (tokenErr) console.error('share_token mark-used failed:', tokenErr)
-      }
     })()
   }, [phase]) // eslint-disable-line react-hooks/exhaustive-deps
 
