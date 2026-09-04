@@ -241,23 +241,6 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
   }
 
   async function copyMessage() {
-    if (shareImageFile && navigator.clipboard?.write && window.ClipboardItem) {
-      try {
-        const imageBlob = new Blob([shareImageFile], { type: shareImageFile.type || 'image/png' })
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            'text/plain': new Blob([activeMsg], { type: 'text/plain' }),
-            [imageBlob.type]: imageBlob,
-          }),
-        ])
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
-        return
-      } catch (error) {
-        console.warn('Image clipboard copy unavailable:', error)
-      }
-    }
-
     await navigator.clipboard.writeText(activeMsg)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
