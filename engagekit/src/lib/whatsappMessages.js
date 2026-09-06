@@ -356,14 +356,15 @@ function stripExistingSignature(message = '') {
   return message.replace(/\n+\s*Best regards,?\s*\n+[\s\S]*$/i, '').trim()
 }
 
-function buildSignature(rpmName) {
+function buildSignature(rpmName, designation) {
   const safeRpmName = rpmName || 'Your Advisor'
-  return `Best regards,\n\n${safeRpmName}\n(Service Manager)\nEdelweiss Life Insurance`
+  const safeDesignation = designation || 'Service Manager'
+  return `Best regards,\n\n${safeRpmName}\n(${safeDesignation})\nEdelweiss Life Insurance`
 }
 
-function withStandardSignature(message, rpmName) {
+function withStandardSignature(message, rpmName, designation) {
   const body = stripExistingSignature(message)
-  return `${body}\n\n${buildSignature(rpmName)}`
+  return `${body}\n\n${buildSignature(rpmName, designation)}`
 }
 
 function renewalPolicyInline(context = {}) {
@@ -399,6 +400,16 @@ function withMessageContext(message, context = {}) {
 export function getWhatsAppMessage(demoType, persona, customerName, link, rpmName, context = {}) {
   const variants = MESSAGES[demoType] || MESSAGES.creative
   const fn = (persona && variants[persona]) ? variants[persona] : variants.generic
+
+  if (demoType === 'quiz') {
+    const phone = (context.rpmPhone || '').replace(/\D/g, '')
+    const phoneLine = phone ? ` (+91 ${phone})` : ''
+    return withStandardSignature(
+      `Hi ${customerName || 'there'},\n\nI\u2019m ${rpmName || 'your Relationship Manager'}, your Relationship Manager from Edelweiss Life Insurance.\n\nPlease save my number${phoneLine} and feel free to reach out anytime for any policy-related queries or assistance.\n\nAlso, here\u2019s a quick 1-minute activity for you\u2014discover your Money Personality:\n\n\ud83d\udc49 ${link}`,
+      rpmName || 'Your Advisor',
+      context.designation
+    )
+  }
 
   if (demoType === 'rm-introduction') {
     const phone = (context.rpmPhone || '').replace(/\D/g, '')

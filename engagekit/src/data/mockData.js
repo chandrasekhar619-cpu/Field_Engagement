@@ -3,7 +3,7 @@ export const contentItems = [
     id: '1',
     emoji: '🎯',
     category: 'Quiz',
-    title: 'How Do You Think About Money?',
+    title: 'RPM Introductory Msg + Quiz',
     description: 'Discover your customer\'s money personality in 4 quick questions.',
     personas: ['Young Professional', 'Millennial'],
     languages: ['EN', 'HI', 'MR'],

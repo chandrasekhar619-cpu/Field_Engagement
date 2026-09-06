@@ -85,8 +85,8 @@ function InteractivePreview({ item, name }) {
   )
 }
 
-function WaMessagePreview({ demoType, persona, customerName, contentTitle }) {
-  const message = getWhatsAppMessage(demoType, persona, customerName || '[Customer Name]', '[link]', '[Service Manager Name]', { contentTitle })
+function WaMessagePreview({ demoType, persona, customerName, contentTitle, rpmPhone, designation }) {
+  const message = getWhatsAppMessage(demoType, persona, customerName || '[Customer Name]', '[link]', '[Service Manager Name]', { contentTitle, rpmPhone, designation })
   return (
     <div className="px-4 py-3 bg-gray-50 border-t border-[#e4e7f0]">
       <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-2">WhatsApp message preview</p>
@@ -300,6 +300,8 @@ export default function ShareFlow({ item, onClose, preselectedCustomer }) {
                 persona={preselectedCustomer?.persona}
                 customerName={preselectedCustomer?.name}
                 contentTitle={item.title}
+                rpmPhone={user?.phone}
+                designation={designation}
               />
             </div>
 
