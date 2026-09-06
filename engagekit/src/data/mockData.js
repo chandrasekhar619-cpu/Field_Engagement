@@ -69,7 +69,8 @@ export const contentItems = [
     personas: [],
     languages: ['EN'],
     demoType: 'rm-introduction',
-    trialOnly: true,
+    messageOnly: true,
+    shareOnly: true,
   },
   {
     id: '13',
