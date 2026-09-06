@@ -17,9 +17,9 @@ const FOUR_MONTH_PLAN = {
 
 const SEVEN_MONTH_PLAN = {
   'M-6': ['RPM Introduction Message + Quiz', 'Word Hunt'],
-  'M-5': ['Financial Read', 'The Money Word'],
+  'M-5': ['Demystifying Money', 'The Money Word'],
   'M-4': ['Financial Playbook for Kids', 'Word Hunt'],
-  'M-3': ['Financial Read', 'The Money Word'],
+  'M-3': ['Demystifying Money', 'The Money Word'],
   'M-2': ['Check-in Call', 'Word Hunt'],
   'M-1': ['The Money Word', 'Renewal Card 1'],
   M0:    ['Renewal Card 2', 'Renewal Card 3'],
