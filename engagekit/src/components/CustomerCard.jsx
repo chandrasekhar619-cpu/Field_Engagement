@@ -2,18 +2,27 @@ import { useNavigate } from 'react-router-dom'
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 
-const RENEWAL_ACTIVITY_MAP = {
-  'M-10': ['Central Trigger into MSG', 'How do you think about money quiz'],
-  'M-9':  ['Demystifying money', 'Word hunt'],
-  'M-8':  ['ULIP/Payout Game', 'Demystifying money 2'],
-  'M-7':  ['Financial Playbook for Kids', 'Demystifying money 3'],
-  'M-6':  ['The Money word', 'Quizzes'],
-  'M-5':  ['Demystifying money 4', 'Calculator'],
-  'M-4':  ['Policy Snapshot', 'Word Hunt 2'],
-  'M-3':  ['Demystifying money 5', 'Product and Org Knowledge'],
-  'M-2':  ['Check-in Call', 'Renewal nominee'],
-  'M-1':  ['Renewal Reminder Card m-30', '-'],
-  M0:     ['Renewal final reminder', '-'],
+// Campaign plans, keyed by month-bucket relative to the due date (M0 = due month)
+const TWO_MONTH_PLAN = {
+  'M-1': ['RPM Introduction Message + Quiz', 'Renewal Card 1'],
+  M0:    ['Renewal Card 2', 'Renewal Card 3'],
+}
+
+const FOUR_MONTH_PLAN = {
+  'M-3': ['RPM Introduction Message + Quiz', 'Word Hunt'],
+  'M-2': ['Check-in Call', 'The Money Word'],
+  'M-1': ['Financial Playbook for Kids', 'Renewal Card 1'],
+  M0:    ['Renewal Card 2', 'Renewal Card 3'],
+}
+
+const SEVEN_MONTH_PLAN = {
+  'M-6': ['RPM Introduction Message + Quiz', 'Word Hunt'],
+  'M-5': ['Financial Read', 'The Money Word'],
+  'M-4': ['Financial Playbook for Kids', 'Word Hunt'],
+  'M-3': ['Financial Read', 'The Money Word'],
+  'M-2': ['Check-in Call', 'Word Hunt'],
+  'M-1': ['The Money Word', 'Renewal Card 1'],
+  M0:    ['Renewal Card 2', 'Renewal Card 3'],
 }
 
 function fmtDueDate(str) {
@@ -24,7 +33,8 @@ function fmtDueDate(str) {
   return `Due: ${parseInt(d, 10)}-${MONTHS[mi]}-${y}`
 }
 
-function dueMonthIndex(str) {
+// Reads the due date's month (0-11) and year out of DD-MM-YYYY (or DD-Mon-YYYY)
+function parseDueDate(str) {
   if (!str) return null
   const parts = str.split('-')
   if (parts.length < 2) return null
@@ -32,29 +42,46 @@ function dueMonthIndex(str) {
   const token = (parts[1] || '').trim()
   if (!token) return null
 
+  let month = null
   if (/^\d+$/.test(token)) {
     const mi = parseInt(token, 10) - 1
-    return mi >= 0 && mi <= 11 ? mi : null
+    if (mi >= 0 && mi <= 11) month = mi
+  } else {
+    const abbr = token.slice(0, 3).toLowerCase()
+    const idx = MONTHS.findIndex(m => m.toLowerCase() === abbr)
+    if (idx >= 0) month = idx
   }
+  if (month == null) return null
 
-  const abbr = token.slice(0, 3).toLowerCase()
-  const idx = MONTHS.findIndex(m => m.toLowerCase() === abbr)
-  return idx >= 0 ? idx : null
+  const yearToken = (parts[2] || '').trim()
+  const year = yearToken ? parseInt(yearToken, 10) : null
+  return { month, year: Number.isFinite(year) ? year : null }
 }
 
-function getMonthBucket(str) {
-  const renewalMonth = dueMonthIndex(str)
-  if (renewalMonth == null) return null
+// Which campaign plan applies, based on the due date's calendar month + year.
+// Missing due date (or unknown year) defaults to the full 7-month plan.
+function getPlan(due) {
+  if (!due || due.year == null) return SEVEN_MONTH_PLAN
+  const { month, year } = due
+  if (year === 2026 && (month === 8 || month === 9))   return TWO_MONTH_PLAN   // Sep/Oct 2026
+  if (year === 2026 && (month === 10 || month === 11)) return FOUR_MONTH_PLAN  // Nov/Dec 2026
+  if (year === 2027 && month >= 0 && month <= 2)        return SEVEN_MONTH_PLAN // Jan-Mar 2027
+  return null // outside the supported campaign window
+}
 
+// Current month offset from the due month, e.g. 'M-2', 'M0'.
+// No due date on record — default to the plan's first stage.
+function getMonthBucket(due) {
+  if (!due) return 'M-6'
   const currentMonth = new Date().getMonth()
-  let offset = currentMonth - renewalMonth
+  let offset = currentMonth - due.month
   if (offset > 0) offset -= 12
   return `M${offset}`
 }
 
-function getActivities(bucket) {
-  if (!bucket) return ['-', '-']
-  return RENEWAL_ACTIVITY_MAP[bucket] || ['-', '-']
+function getActivities(plan, bucket) {
+  if (!plan) return ['-', '-']
+  return plan[bucket] || ['-', '-']
 }
 
 const policyTypeBadge = {
@@ -74,8 +101,10 @@ export default function CustomerCard({ customer }) {
   const navigate = useNavigate()
   const bg = avatarBg[customer.name.charCodeAt(0) % avatarBg.length]
   const badgeClass = policyTypeBadge[customer.policyType] || 'bg-gray-100 text-gray-600'
-  const monthBucket = getMonthBucket(customer.premium_due_date)
-  const [activity1, activity2] = getActivities(monthBucket)
+  const due = parseDueDate(customer.premium_due_date)
+  const plan = getPlan(due)
+  const monthBucket = plan ? getMonthBucket(due) : null
+  const [activity1, activity2] = getActivities(plan, monthBucket)
 
   return (
     <button
@@ -117,11 +146,15 @@ export default function CustomerCard({ customer }) {
             <p className="text-xs font-bold text-[#0f1f3d] mt-0.5">{monthBucket || '-'}</p>
           </div>
           <div className="rounded-lg border border-[#bcd2ff] bg-[#eaf2ff] px-2.5 py-2 shadow-[0_1px_0_rgba(24,62,120,0.08)]">
-            <p className="text-[10px] uppercase tracking-wide text-[#36578c] font-semibold">Activity 1</p>
+            <p className="text-[10px] uppercase tracking-wide text-[#36578c] font-semibold">
+              Activity 1 <span className="normal-case font-medium text-[#6b7fa8]">(1st–3rd)</span>
+            </p>
             <p className="text-xs font-semibold text-[#1f3d70] mt-0.5 leading-[1.15rem]">{activity1}</p>
           </div>
           <div className="rounded-lg border border-[#bfe6dc] bg-[#eaf8f3] px-2.5 py-2 shadow-[0_1px_0_rgba(24,88,74,0.08)]">
-            <p className="text-[10px] uppercase tracking-wide text-[#2e7666] font-semibold">Activity 2</p>
+            <p className="text-[10px] uppercase tracking-wide text-[#2e7666] font-semibold">
+              Activity 2 <span className="normal-case font-medium text-[#4f9184]">(16th–18th)</span>
+            </p>
             <p className="text-xs font-semibold text-[#1f6a5a] mt-0.5 leading-[1.15rem]">{activity2}</p>
           </div>
         </div>
