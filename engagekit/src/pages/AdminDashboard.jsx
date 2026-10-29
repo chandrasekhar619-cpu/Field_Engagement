@@ -152,6 +152,7 @@ export default function AdminDashboard() {
   const [chartRange,     setChartRange]     = useState(30)
   const [activityView,   setActivityView]   = useState('chart')
   const [activityPeriod, setActivityPeriod] = useState('yesterday')
+  const [eaView,         setEaView]         = useState('activity')
   const [showAllAlerts,  setShowAllAlerts]  = useState(false)
   const [tableRpmFilter, setTableRpmFilter] = useState('all')
 
@@ -185,6 +186,11 @@ export default function AdminDashboard() {
       .select('id')
       .in('phone', EXCLUDED_PHONES)
     const exIds = (exUsers || []).map(u => u.id).filter(Boolean)
+
+    const { data: rpmUsers } = await supabase
+      .from('users')
+      .select('id, name, phone')
+      .eq('role', 'rpm')
 
     // 2. Fetch links (exclude admin RPMs)
     let lq = supabase
@@ -221,6 +227,7 @@ export default function AdminDashboard() {
       interactions: interactions || [],
       customers:    customers    || [],
       feedbacks:    feedbacks    || [],
+      rpms:         (rpmUsers    || []).filter(rpm => !EXCLUDED_PHONES.includes(rpm.phone)),
     })
     setLoading(false)
   }
@@ -232,7 +239,7 @@ export default function AdminDashboard() {
   // All hooks must be above early returns
   const d = useMemo(() => {
     if (!rawData) return null
-    const { links, interactions, customers, feedbacks } = rawData
+    const { links, interactions, customers, feedbacks, rpms } = rawData
 
     const linkMap = {}
     links.forEach(l => { linkMap[l.id] = l })
@@ -400,6 +407,28 @@ export default function AdminDashboard() {
     })
     const rpmSummaryRows = Object.values(rpmSummaryMap).sort((a, b) => b.links - a.links)
 
+    const rpmShareMap = new Map(
+      rpms.map(rpm => [rpm.id, { id: rpm.id, name: rpm.name || 'Unknown', last7: 0, last30: 0 }])
+    )
+    const rpmIdsByName = new Map(
+      rpms.filter(rpm => rpm.name).map(rpm => [rpm.name.trim().toLowerCase(), rpm.id])
+    )
+    const last7Cutoff = daysAgo(7)
+    const last30Cutoff = daysAgo(30)
+    links.forEach(l => {
+      const name = l.rpm_name || 'Unknown'
+      const key = l.rpm_id || rpmIdsByName.get(name.trim().toLowerCase()) || `name:${name}`
+      if (!rpmShareMap.has(key)) {
+        rpmShareMap.set(key, { id: key, name, last7: 0, last30: 0 })
+      }
+      const createdAt = new Date(l.created_at)
+      const row = rpmShareMap.get(key)
+      if (createdAt >= last30Cutoff) row.last30++
+      if (createdAt >= last7Cutoff) row.last7++
+    })
+    const rpmShareRows = [...rpmShareMap.values()]
+      .sort((a, b) => b.last30 - a.last30 || a.name.localeCompare(b.name))
+
     // ── Engagement Activity — filter at interaction level, not link level ─────
     // An interaction is IP-matched if the customer's IP equals the RPM's share IP.
     // We only count non-IP-matched interactions for Opened and Outcome so that
@@ -455,6 +484,7 @@ export default function AdminDashboard() {
       allEngagementRows, eaAllRpms, eaAllEngs,
       rTotalSent, rTotalOpens, rOpenRate, reminderRows, personaRows, rpmRenewalRows,
       chartData, activityRows, allRpms, rpmSummaryRows, rpmActivityYesterdayRows, rpmActivityMonthRows,
+      rpmShareRows,
       alertRows,
     }
   }, [rawData, chartRange])
@@ -563,10 +593,27 @@ export default function AdminDashboard() {
 
         {/* ── Engagement Activity ───────────────────────────────────────── */}
         <section>
-          <SectionHead title="Engagement Activity" />
+          <SectionHead title="Engagement Activity">
+            <div className="flex bg-white border border-[#e4e7f0] rounded-lg overflow-hidden">
+              {[
+                ['activity', 'Activity Log'],
+                ['rpm-summary', 'RPM Summary'],
+              ].map(([view, label]) => (
+                <button
+                  key={view}
+                  onClick={() => setEaView(view)}
+                  className={`px-3 py-1.5 text-xs font-medium transition-colors border-r border-[#e4e7f0] last:border-r-0 ${
+                    eaView === view ? 'bg-[#0f1f3d] text-white' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </SectionHead>
 
           {/* Filters */}
-          <div className="flex flex-wrap gap-3 mb-4">
+          <div className={`${eaView !== 'activity' ? 'hidden ' : ''}flex flex-wrap gap-3 mb-4`}>
             {/* Date range */}
             <div className="flex bg-white border border-[#e4e7f0] rounded-lg overflow-hidden">
               {[['7','Last 7 days'],['30','Last 30 days'],['90','Last 90 days'],['all','All time']].map(([val, label]) => (
@@ -627,6 +674,7 @@ export default function AdminDashboard() {
             )}
           </div>
 
+          {eaView === 'activity' ? (
           <div className="bg-white rounded-xl border border-[#e4e7f0] overflow-x-auto">
             <table className="w-full min-w-[860px]">
               <thead>
@@ -688,9 +736,37 @@ export default function AdminDashboard() {
               </tbody>
             </table>
           </div>
+          ) : (
+            <div className="bg-white rounded-xl border border-[#e4e7f0] overflow-x-auto">
+              <table className="w-full min-w-[560px]">
+                <thead>
+                  <tr>
+                    <Th>RPM Name</Th>
+                    <Th right>Shared in Last 7 Days</Th>
+                    <Th right>Shared in Last 30 Days</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <LoadingRow cols={3} />
+                  ) : d?.rpmShareRows?.length ? (
+                    d.rpmShareRows.map(r => (
+                      <tr key={r.id} className="border-t border-[#f0f2f7] hover:bg-gray-50/50">
+                        <Td>{r.name}</Td>
+                        <Td right>{r.last7}</Td>
+                        <Td right>{r.last30}</Td>
+                      </tr>
+                    ))
+                  ) : (
+                    <EmptyRow cols={3} msg="No RPM profiles found." />
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           {/* Pagination */}
-          {!loading && eaTotalPages > 1 && (
+          {eaView === 'activity' && !loading && eaTotalPages > 1 && (
             <div className="flex items-center justify-between mt-3">
               <span className="text-xs text-gray-400">
                 Page {eaPage + 1} of {eaTotalPages}
