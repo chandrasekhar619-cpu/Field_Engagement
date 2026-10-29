@@ -737,7 +737,7 @@ export default function AdminDashboard() {
             </table>
           </div>
           ) : (
-            <div className="bg-white rounded-xl border border-[#e4e7f0] overflow-x-auto">
+            <div className="max-w-2xl bg-white rounded-xl border border-[#e4e7f0] overflow-x-auto">
               <table className="w-full min-w-[560px]">
                 <thead>
                   <tr>
